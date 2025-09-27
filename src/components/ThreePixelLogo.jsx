@@ -40,8 +40,8 @@ function Model({ url }) {
         if (hovered) {
             // Cuando está hovered, seguir el ratón (X/Y)
             const targetRotation = new THREE.Vector3(
-                -mouse.y * 0.3, // rotación en X
-                mouse.x * 0.5,  // rotación en Y
+                -mouse.y * 0.2, // rotación en X
+                mouse.x * 0.2,  // rotación en Y
                 0               // Z bloqueado
             );
 
@@ -61,8 +61,8 @@ function Model({ url }) {
             const t = clock.getElapsedTime();
 
             // Oscilaciones suaves y limitadas
-            const idleX = defaultRotation.x + Math.sin(t * 0.5) * 0.05; // tilt leve
-            const idleY = Math.sin(t * 0.3) * 0.2; // giro limitado izquierda-derecha
+            const idleX = defaultRotation.x + Math.sin(t*2.1) * 0.02; // tilt leve
+            const idleY = Math.sin(t * 0.7) * 0.15; // giro limitado izquierda-derecha
             const idleZ = 0; // pequeña oscilación roll
 
             // Aplicar suavemente
@@ -102,19 +102,19 @@ function Model({ url }) {
     );
 }
 
-export default function ThreePixelLogo({ url }) {
+export default function ThreePixelLogo({ url , pixelSize = 6}) {
     return (
         <div
             className="hero-logo"
             style={{
-                width: "1300px",
-                height: "800px",
-                margin: "0 auto",
+                width: "1400px",
+                height: "300px",
+                margin: "auto auto",
             }}
         >
             <Canvas
                 gl={{ antialias: false }}
-                camera={{ position: [0, 0, 15], fov: 50, near: 0.1, far: 100 }}
+                camera={{ position: [0, 0, 15], fov: 20, near: 0.1, far: 100 }}
                 onCreated={({ camera }) => {
                     camera.lookAt(0, 0, 0);
                 }}
@@ -122,7 +122,7 @@ export default function ThreePixelLogo({ url }) {
                 <Model url={url} />
 
                 <EffectComposer multisampling={0}>
-                    <Pixelation granularity={6} />
+                    <Pixelation granularity={pixelSize} />
                 </EffectComposer>
             </Canvas>
         </div>
