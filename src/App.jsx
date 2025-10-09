@@ -26,6 +26,19 @@ const skills = [
   { name: "React", icon_url: skills_icons_url + "/react.png" },
 ]
 
+const sparkFrames = [
+  "/spark/spark1.png",
+  "/spark/spark2.png",
+  "/spark/spark3.png",
+  "/spark/spark4.png",
+  "/spark/spark5.png",
+  "/spark/spark6.png",
+  "/spark/spark7.png",
+  "/spark/spark8.png",
+  "/spark/spark9.png",
+  "/spark/spark10.png",
+];
+
 const dotFrames = [
   skills_icons_url + "/dot1.png",
   skills_icons_url + "/dot2.png",
@@ -83,7 +96,7 @@ function App() {
             icons={getSkillsIconUrls()}
             iconSize={34}
             pixelScale={pxSize}
-            speed={0.3}
+            speed={0.1}
             density={getSkillsIconUrls().length*0.75}
             pixelSnap={false}
             color1="#725900"  // reemplaza el blanco // OLD: 5F4A00
@@ -110,6 +123,7 @@ function App() {
         <ThreeLogo
           url={"/3dmodels/albertdmo_pixel_logo_gold.glb"}
           pixelSize={pxSize}
+          sparkFrames={sparkFrames}
         />
       </div>
     </>

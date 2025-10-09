@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 export default function IconRain({
   icons,
   iconSize = 32,
-  speed = 2,
+  speed = 0.5,
   density = 20,
   pixelScale = 5,
   pixelSnap = true,
@@ -186,7 +186,7 @@ export default function IconRain({
         }
 
         // movimiento
-        drop.y += speed;
+        drop.y += speed*pixelScale;
         if (drop.y > canvas.height + scaled_iconSize) {
           // reposicionar evitando solapamiento
           const pos = findNonOverlappingPosition(drops.current.filter(d => d !== drop));
