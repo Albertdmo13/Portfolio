@@ -1,11 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ThreeLogo from "./components/ThreePixelLogo";
 import PixelBlast from './components/PixelBlast';
 import IconRain from "./components/IconRain";
-import './App.css'
-import { dot } from 'three/tsl';
+import './App.css';
 
-const pxSize = 4;
 const skills_icons_url = "/icons/skills_icons";
 
 const skills = [
@@ -24,7 +22,7 @@ const skills = [
   { name: "Photoshop", icon_url: skills_icons_url + "/photoshop.png" },
   { name: "Python", icon_url: skills_icons_url + "/python.png" },
   { name: "React", icon_url: skills_icons_url + "/react.png" },
-]
+];
 
 const sparkFrames = [
   "/spark/spark1.png",
@@ -48,15 +46,44 @@ const dotFrames = [
   skills_icons_url + "/dot6.png",
   skills_icons_url + "/dot7.png",
   skills_icons_url + "/dot8.png",
-]
+];
 
-// Function to get just the icon URLs from skills
+// Utility to extract just icon URLs
 const getSkillsIconUrls = () => skills.map(skill => skill.icon_url);
 
 function App() {
+  const [pxSize, setPxSize] = useState(4); // initial estimate
+
+  // Dynamically adjust pixelSize based on window width
+  useEffect(() => {
+    const updatePixelSize = () => {
+      const width = window.innerWidth;
+      // Reference: 1920px -> 4
+      const scale = Math.max(1, Math.round((width / 1920) * 4));
+      setPxSize(scale);
+    };
+
+    updatePixelSize(); // run once initially
+
+    // Handle both resize and fullscreen changes
+    window.addEventListener('resize', updatePixelSize);
+    document.addEventListener('fullscreenchange', updatePixelSize);
+    document.addEventListener('webkitfullscreenchange', updatePixelSize); // Safari
+    document.addEventListener('mozfullscreenchange', updatePixelSize);   // older Firefox
+    document.addEventListener('MSFullscreenChange', updatePixelSize);    // old Edge/IE
+
+    return () => {
+      window.removeEventListener('resize', updatePixelSize);
+      document.removeEventListener('fullscreenchange', updatePixelSize);
+      document.removeEventListener('webkitfullscreenchange', updatePixelSize);
+      document.removeEventListener('mozfullscreenchange', updatePixelSize);
+      document.removeEventListener('MSFullscreenChange', updatePixelSize);
+    };
+  }, []);
+
   return (
     <>
-      {/* Fondo de color sólido */}
+      {/* Solid color background */}
       <div
         style={{
           width: '100%',
@@ -68,48 +95,57 @@ function App() {
         }}
       />
 
-      {/* Fondo de PixelBlast encima del color sólido */}
-        <div style={{ width: '100%', height: '100%', position: 'fixed', inset: 0, zIndex: -1 }}>
-          <PixelBlast
-            variant="square"
-            pixelSize={pxSize}
-            color="#443400"
-            patternScale={3}
-            patternDensity={1.2}
-            enableRipples
-            rippleSpeed={0.4}
-            rippleThickness={0.12}
-            rippleIntensityScale={1.5}
-            liquid
-            liquidRadius={1.2}
-            liquidWobbleSpeed={5}
-            speed={0.6}
-            edgeFade={0}
-            transparent
-            antialias={false}
-            shape="circle"
-          />
-        </div>
+      {/* PixelBlast background */}
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'fixed',
+          inset: 0,
+          zIndex: -1
+        }}
+      >
+        <PixelBlast
+          variant="square"
+          pixelSize={pxSize}
+          color="#443400"
+          patternScale={3}
+          patternDensity={1.2}
+          enableRipples
+          rippleSpeed={0.4}
+          rippleThickness={0.12}
+          rippleIntensityScale={1.5}
+          liquid
+          liquidRadius={1.2}
+          liquidWobbleSpeed={5}
+          speed={0.6}
+          edgeFade={0}
+          transparent
+          antialias={false}
+          shape="circle"
+        />
+      </div>
 
-        <div>
-          <IconRain
-            icons={getSkillsIconUrls()}
-            iconSize={34}
-            pixelScale={pxSize}
-            speed={0.1}
-            density={getSkillsIconUrls().length*0.75}
-            pixelSnap={false}
-            color1="#725900"  // reemplaza el blanco // OLD: 5F4A00
-            color2="#251500"  // reemplaza el negro
-            dotFrames={dotFrames}
-            dotInterval={500}        // cada 500 ms
-            dotLifetime={3000}       // dura 3 segundos
-            dotAnimDuration={1000}  // duración de la animación del punto
-            dotSize={10*pxSize}             // tamaño del punto
-          />
-        </div>
+      {/* Icon rain layer */}
+      <div>
+        <IconRain
+          icons={getSkillsIconUrls()}
+          iconSize={34}
+          pixelScale={pxSize}
+          speed={0.4 * (pxSize / 4)}
+          density={getSkillsIconUrls().length * 0.75}
+          pixelSnap={false}
+          color1="#725900"
+          color2="#251500"
+          dotFrames={dotFrames}
+          dotInterval={500}
+          dotLifetime={3000}
+          dotAnimDuration={1000}
+          dotSize={10 * pxSize}
+        />
+      </div>
 
-        {/* Logo centrado */}
+      {/* Centered logo */}
       <div
         style={{
           position: 'fixed',
@@ -127,7 +163,7 @@ function App() {
         />
       </div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

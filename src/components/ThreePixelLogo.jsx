@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 import { EffectComposer, Pixelation } from "@react-three/postprocessing";
 
-function Model({ url, onBoxComputed }) {
+function Model({ url, onBoxComputed, pixelSize }) {
   const { scene } = useGLTF(url);
   const ref = useRef();
   const [hovered, setHovered] = useState(false);
@@ -40,7 +40,7 @@ function Model({ url, onBoxComputed }) {
 
   return (
     <group>
-      <primitive ref={ref} object={scene} scale={2.5} />
+      <primitive ref={ref} object={scene} scale={2.5 * pixelSize * 0.25} />
       <mesh
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
@@ -78,7 +78,7 @@ function Sparks({ sparkFrames, pixelSize }) {
     };
 
     const interval = setInterval(() => {
-      if (Math.random() < 0.015) spawnSpark();
+      if (Math.random() < 0.023) spawnSpark();
     }, 10);
 
     return () => clearInterval(interval);
@@ -105,7 +105,7 @@ function Sparks({ sparkFrames, pixelSize }) {
         return (
           <sprite
             key={spark.id}
-            position={[spark.x * 7, spark.y * 3, 0]}
+            position={[spark.x * 7 * pixelSize * 0.25, spark.y * 3 * pixelSize * 0.25, 0]}
             scale={[pixelSize/45, pixelSize/45, pixelSize/45]} // exact scale factor
             renderOrder={999}
             layers={1}
@@ -150,7 +150,7 @@ export default function ThreePixelLogo({ url, pixelSize = 6, sparkFrames = [] })
         <group layers={0}>
           <ambientLight intensity={1.2} />
           <directionalLight position={[3, 3, 5]} intensity={1.5} />
-          <Model url={url} onBoxComputed={() => {}} />
+          <Model url={url} onBoxComputed={() => {}} pixelSize={pixelSize} />
         </group>
 
         {/* Postprocessing */}

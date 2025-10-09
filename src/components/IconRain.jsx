@@ -186,7 +186,7 @@ export default function IconRain({
         }
 
         // movimiento
-        drop.y += speed*pixelScale;
+        drop.y += speed;
         if (drop.y > canvas.height + scaled_iconSize) {
           // reposicionar evitando solapamiento
           const pos = findNonOverlappingPosition(drops.current.filter(d => d !== drop));
