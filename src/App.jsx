@@ -3,6 +3,7 @@ import ThreeLogo from "./components/ThreePixelLogo";
 import PixelBlast from './components/PixelBlast';
 import IconRain from "./components/IconRain";
 import './App.css'
+import { dot } from 'three/tsl';
 
 const pxSize = 4;
 const skills_icons_url = "/icons/skills_icons";
@@ -25,10 +26,19 @@ const skills = [
   { name: "React", icon_url: skills_icons_url + "/react.png" },
 ]
 
+const dotFrames = [
+  skills_icons_url + "/dot1.png",
+  skills_icons_url + "/dot2.png",
+  skills_icons_url + "/dot3.png",
+  skills_icons_url + "/dot4.png",
+  skills_icons_url + "/dot5.png",
+  skills_icons_url + "/dot6.png",
+  skills_icons_url + "/dot7.png",
+  skills_icons_url + "/dot8.png",
+]
+
 // Function to get just the icon URLs from skills
 const getSkillsIconUrls = () => skills.map(skill => skill.icon_url);
-
-
 
 function App() {
   return (
@@ -40,7 +50,7 @@ function App() {
           height: '100%',
           position: 'fixed',
           inset: 0,
-          backgroundColor: '#251500ff', // <-- cambia el color aquí
+          backgroundColor: '#251500ff',
           zIndex: -2
         }}
       />
@@ -71,13 +81,18 @@ function App() {
         <div>
           <IconRain
             icons={getSkillsIconUrls()}
-            iconSize={32}
+            iconSize={34}
             pixelScale={pxSize}
-            speed={0.2}
-            density={getSkillsIconUrls().length/2}
+            speed={0.3}
+            density={getSkillsIconUrls().length*0.75}
             pixelSnap={false}
-            color1="#5F4A00"  // reemplaza el blanco
+            color1="#725900"  // reemplaza el blanco // OLD: 5F4A00
             color2="#251500"  // reemplaza el negro
+            dotFrames={dotFrames}
+            dotInterval={500}        // cada 500 ms
+            dotLifetime={3000}       // dura 3 segundos
+            dotAnimDuration={1000}  // duración de la animación del punto
+            dotSize={10*pxSize}             // tamaño del punto
           />
         </div>
 
