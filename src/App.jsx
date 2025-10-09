@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import ThreeLogo from "./components/ThreePixelLogo";
 import PixelBlast from './components/PixelBlast';
 import IconRain from "./components/IconRain";
@@ -48,121 +48,144 @@ const dotFrames = [
   skills_icons_url + "/dot8.png",
 ];
 
-// Utility to extract just icon URLs
 const getSkillsIconUrls = () => skills.map(skill => skill.icon_url);
 
 function App() {
-  const [pxSize, setPxSize] = useState(4); // initial estimate
+  const [pxSize, setPxSize] = useState(4);
+  const bannerRef = useRef(null);
 
-  // Dynamically adjust pixelSize based on window width
   useEffect(() => {
     const updatePixelSize = () => {
       const width = window.innerWidth;
-      // Reference: 1920px -> 4
       const scale = Math.max(1, Math.round((width / 1920) * 4));
       setPxSize(scale);
     };
 
-    updatePixelSize(); // run once initially
-
-    // Handle both resize and fullscreen changes
+    updatePixelSize();
     window.addEventListener('resize', updatePixelSize);
     document.addEventListener('fullscreenchange', updatePixelSize);
-    document.addEventListener('webkitfullscreenchange', updatePixelSize); // Safari
-    document.addEventListener('mozfullscreenchange', updatePixelSize);   // older Firefox
-    document.addEventListener('MSFullscreenChange', updatePixelSize);    // old Edge/IE
 
     return () => {
       window.removeEventListener('resize', updatePixelSize);
       document.removeEventListener('fullscreenchange', updatePixelSize);
-      document.removeEventListener('webkitfullscreenchange', updatePixelSize);
-      document.removeEventListener('mozfullscreenchange', updatePixelSize);
-      document.removeEventListener('MSFullscreenChange', updatePixelSize);
     };
   }, []);
 
   return (
-    <>
-      {/* Solid color background */}
-      <div
+    <div className="App" style={{ overflowX: "hidden" }}>
+      {/* HEADER BANNER */}
+      <header
+        ref={bannerRef}
         style={{
-          width: '100%',
-          height: '100%',
-          position: 'fixed',
-          inset: 0,
-          backgroundColor: '#251500ff',
-          zIndex: -2
-        }}
-      />
-
-      {/* PixelBlast background */}
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          position: 'fixed',
-          inset: 0,
-          zIndex: -1
+          position: "relative",
+          width: "100%",
+          height: "100vh",
+          overflow: "hidden",
         }}
       >
-        <PixelBlast
-          variant="square"
-          pixelSize={pxSize}
-          color="#443400"
-          patternScale={3}
-          patternDensity={1.2}
-          enableRipples
-          rippleSpeed={0.4}
-          rippleThickness={0.12}
-          rippleIntensityScale={1.5}
-          liquid
-          liquidRadius={1.2}
-          liquidWobbleSpeed={5}
-          speed={0.6}
-          edgeFade={0}
-          transparent
-          antialias={false}
-          shape="circle"
+        {/* Background */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundColor: "#251500ff",
+            zIndex: -2,
+          }}
         />
-      </div>
 
-      {/* Icon rain layer */}
-      <div>
-        <IconRain
-          icons={getSkillsIconUrls()}
-          iconSize={34}
-          pixelScale={pxSize}
-          speed={0.4 * (pxSize / 4)}
-          density={getSkillsIconUrls().length * 0.75}
-          pixelSnap={false}
-          color1="#725900"
-          color2="#251500"
-          dotFrames={dotFrames}
-          dotInterval={500}
-          dotLifetime={3000}
-          dotAnimDuration={1000}
-          dotSize={10 * pxSize}
-        />
-      </div>
+        {/* PixelBlast background */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: -1,
+          }}
+        >
+          <PixelBlast
+            variant="square"
+            pixelSize={pxSize}
+            color="#443400"
+            patternScale={3}
+            patternDensity={1.2}
+            enableRipples
+            rippleSpeed={0.4}
+            rippleThickness={0.12}
+            rippleIntensityScale={1.5}
+            liquid
+            liquidRadius={1.2}
+            liquidWobbleSpeed={5}
+            speed={0.6}
+            edgeFade={0}
+            transparent
+            antialias={false}
+            shape="circle"
+          />
+        </div>
 
-      {/* Centered logo */}
-      <div
+        {/* IconRain now positioned relative to banner, not viewport */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            overflow: "hidden",
+            zIndex: 0,
+          }}
+        >
+          <IconRain
+            icons={getSkillsIconUrls()}
+            iconSize={34}
+            pixelScale={pxSize}
+            speed={0.4 * (pxSize / 4)}
+            density={getSkillsIconUrls().length * 0.75}
+            pixelSnap={false}
+            color1="#725900"
+            color2="#251500"
+            dotFrames={dotFrames}
+            dotInterval={500}
+            dotLifetime={3000}
+            dotAnimDuration={1000}
+            dotSize={10 * pxSize}
+          />
+        </div>
+
+        {/* Centered logo */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1
+          }}
+        >
+          <ThreeLogo
+            url={"/3dmodels/albertdmo_pixel_logo_gold.glb"}
+            pixelSize={pxSize}
+            sparkFrames={sparkFrames}
+          />
+        </div>
+      </header>
+
+      {/* PAGE CONTENT */}
+      <main
         style={{
-          position: 'fixed',
-          inset: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1
+          backgroundColor: "#000000",
+          color: "#f7f4e7",
+          fontFamily: "sans-serif",
+          minHeight: "150vh",
+          padding: "4rem 2rem",
         }}
       >
-        <ThreeLogo
-          url={"/3dmodels/albertdmo_pixel_logo_gold.glb"}
-          pixelSize={pxSize}
-          sparkFrames={sparkFrames}
-        />
-      </div>
-    </>
+        <h1>Welcome to the next section</h1>
+        <p>
+          Test
+        </p>
+      </main>
+    </div>
   );
 }
 
