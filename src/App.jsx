@@ -138,7 +138,7 @@ function App() {
             icons={getSkillsIconUrls()}
             iconSize={34}
             pixelScale={pxSize}
-            speed={0.4 * (pxSize / 4)}
+            speed={0.3 * (pxSize / 4)}
             density={getSkillsIconUrls().length * 0.75}
             pixelSnap={false}
             color1="#725900"
