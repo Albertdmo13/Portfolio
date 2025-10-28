@@ -1,12 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from "react";
 import ThreeLogo from "./components/ThreePixelLogo";
-import PixelBlast from './components/PixelBlast';
+import PixelBlast from "./components/PixelBlast";
 import IconRain from "./components/IconRain";
-import TextType from './components/TextType';
-
-
-
-import './App.css';
+import TextType from "./components/TextType";
+import "./App.css";
 
 const skills_icons_url = "/icons/skills_icons";
 
@@ -41,9 +38,24 @@ const sparkFrames = [
   "/spark/spark10.png",
 ];
 
-const headerButtons = [
-  "/header_buttons/btn_github.png",
-];
+// Header buttons definition
+const headerButtons = {
+  github: {
+    normal: "/header_buttons/btn_github.png",
+    hover: "/header_buttons/btn_github_hovered.png",
+    link: "https://github.com/Albertdmo13",
+  },
+  linkedin: {
+    normal: "/header_buttons/btn_linkedin.png",
+    hover: "/header_buttons/btn_linkedin_hovered.png",
+    link: "https://www.linkedin.com/in/albertdmo/",
+  },
+  cv: {
+    normal: "/header_buttons/btn_curriculum.png",
+    hover: "/header_buttons/btn_curriculum_hovered.png",
+    link: "/curriculum.pdf",
+  },
+};
 
 const dotFrames = [
   skills_icons_url + "/dot1.png",
@@ -56,13 +68,47 @@ const dotFrames = [
   skills_icons_url + "/dot8.png",
 ];
 
-const getSkillsIconUrls = () => skills.map(skill => skill.icon_url);
+const getSkillsIconUrls = () => skills.map((skill) => skill.icon_url);
+
+/* 🔸 Reusable button component that swaps its image on hover */
+function HoverButton({ href, normalSrc, hoverSrc, alt, width, height }) {
+  const [hover, setHover] = useState(false);
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        width,
+        height,
+        display: "inline-block",
+        margin: "0 8px",
+      }}
+    >
+      <img
+        src={hover ? hoverSrc : normalSrc}
+        alt={alt}
+        draggable="false"
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+          imageRendering: "pixelated",
+          display: "block",
+        }}
+      />
+    </a>
+  );
+}
 
 function App() {
   const [pxSize, setPxSize] = useState(4);
-  // const pxSize = 4;
   const bannerRef = useRef(null);
 
+  // Dynamically scale pixel size based on screen width
   useEffect(() => {
     const updatePixelSize = () => {
       const width = window.innerWidth;
@@ -71,18 +117,18 @@ function App() {
     };
 
     updatePixelSize();
-    window.addEventListener('resize', updatePixelSize);
-    document.addEventListener('fullscreenchange', updatePixelSize);
+    window.addEventListener("resize", updatePixelSize);
+    document.addEventListener("fullscreenchange", updatePixelSize);
 
     return () => {
-      window.removeEventListener('resize', updatePixelSize);
-      document.removeEventListener('fullscreenchange', updatePixelSize);
+      window.removeEventListener("resize", updatePixelSize);
+      document.removeEventListener("fullscreenchange", updatePixelSize);
     };
   }, []);
 
   return (
     <div className="App" style={{ overflowX: "hidden" }}>
-      {/* HEADER BANNER */}
+      {/* === HEADER SECTION === */}
       <header
         ref={bannerRef}
         style={{
@@ -92,7 +138,7 @@ function App() {
           overflow: "hidden",
         }}
       >
-        {/* Backgrounds */}
+        {/* Background layers */}
         <div
           style={{
             position: "absolute",
@@ -101,13 +147,7 @@ function App() {
             zIndex: -2,
           }}
         />
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: -1,
-          }}
-        >
+        <div style={{ position: "absolute", inset: 0, zIndex: -1 }}>
           <PixelBlast
             variant="square"
             pixelSize={pxSize}
@@ -144,7 +184,7 @@ function App() {
             icons={getSkillsIconUrls()}
             iconSize={34}
             pixelScale={pxSize}
-            speed={0.3 * (pxSize / 4)}
+            speed={0.5 * (pxSize / 4)}
             density={getSkillsIconUrls().length * 0.75}
             pixelSnap={false}
             color1="#725900"
@@ -157,7 +197,7 @@ function App() {
           />
         </div>
 
-        {/* Centered logo + text + button */}
+        {/* Centered logo, text, and buttons */}
         <div
           style={{
             position: "absolute",
@@ -168,10 +208,10 @@ function App() {
             justifyContent: "center",
             textAlign: "center",
             zIndex: 1,
-            transform: "translateY(6%)", // smaller offset
+            transform: "translateY(5%)",
           }}
         >
-          {/* LOGO */}
+          {/* Logo */}
           <div>
             <ThreeLogo
               url={"/3dmodels/albertdmo_pixel_logo_gold.glb"}
@@ -180,10 +220,9 @@ function App() {
             />
           </div>
 
-          {/* TEXT BELOW LOGO */}
+          {/* Text below the logo */}
           <div
             style={{
-              marginTop: `${-pxSize * 10}px`,
               color: "#ffe282ff",
               fontFamily: "'Press Start 2P', monospace",
               fontSize: `${pxSize * 0.6}rem`,
@@ -197,41 +236,49 @@ function App() {
               typingSpeed={75}
               pauseDuration={1500}
               showCursor={true}
-              cursorCharacter="|"
+              cursorCharacter="_"
             />
           </div>
 
-          {/* PIXEL BUTTON BELOW TEXT */}
-          <a
-            href="https://github.com/Albertdmo13"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="pixel-button"
+          {/* Header buttons */}
+          <div
             style={{
-              marginTop: `${pxSize * 20}px`,   // closer to text
-              width: `${pxSize * 50}px`,
-              height: `${pxSize * 22}px`,
+              marginTop: `${pxSize * 20}px`,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: `${pxSize * 3}px`,
             }}
           >
-            <img
-              src={headerButtons[0]}
+            <HoverButton
+              href={headerButtons.github.link}
+              normalSrc={headerButtons.github.normal}
+              hoverSrc={headerButtons.github.hover}
               alt="GitHub"
-              draggable="false"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "contain",
-                imageRendering: "pixelated",
-                display: "block",
-              }}
+              width={`${pxSize * 51}px`}
+              height={`${pxSize * 23}px`}
             />
-          </a>
+            <HoverButton
+              href={headerButtons.linkedin.link}
+              normalSrc={headerButtons.linkedin.normal}
+              hoverSrc={headerButtons.linkedin.hover}
+              alt="LinkedIn"
+              width={`${pxSize * 49}px`}
+              height={`${pxSize * 23}px`}
+            />
+            <HoverButton
+              href={headerButtons.cv.link}
+              normalSrc={headerButtons.cv.normal}
+              hoverSrc={headerButtons.cv.hover}
+              alt="Curriculum"
+              width={`${pxSize * 57}px`}
+              height={`${pxSize * 24}px`}
+            />
+          </div>
         </div>
-
-
       </header>
 
-      {/* PAGE CONTENT */}
+      {/* === MAIN CONTENT === */}
       <main
         style={{
           backgroundColor: "#000000",
@@ -242,9 +289,7 @@ function App() {
         }}
       >
         <h1>Welcome to the next section</h1>
-        <p>
-          Test
-        </p>
+        <p>Test</p>
       </main>
     </div>
   );
