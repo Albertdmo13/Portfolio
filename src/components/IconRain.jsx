@@ -9,198 +9,209 @@ export default function IconRain({
   pixelSnap = true,
   color1 = "#ffffff",
   color2 = "#000000",
-  dotFrames = [],         // lista de frames: [frame0, frame1, ...]
+  dotFrames = [],
   dotInterval = 1000,
   dotLifetime = 3000,
-  dotAnimDuration = 1000, // duración de la animación final
+  dotAnimDuration = 1000,
   dotSize = 12,
-  minDistance = 2.0       // múltiplo de scaled_iconSize para evitar solapamiento
+  minDistance = 2.0
 }) {
-  const scaled_iconSize = iconSize * pixelScale;
   const canvasRef = useRef(null);
   const drops = useRef([]);
   const trails = useRef([]);
+  const animFrame = useRef(null);
+
+  const scaledIcon = iconSize * pixelScale;
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
 
+    // --- fast resize ---
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const { innerWidth: w, innerHeight: h } = window;
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+      }
     };
     resize();
     window.addEventListener("resize", resize);
 
     ctx.imageSmoothingEnabled = false;
 
-    // --- utilidades ---
+    // --- utilidades rápidas ---
     const hexToRgb = (hex) => {
-      const bigint = parseInt(hex.replace("#", ""), 16);
-      return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
+      const num = parseInt(hex.slice(1), 16);
+      return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
     };
     const c1 = hexToRgb(color1);
     const c2 = hexToRgb(color2);
 
-    const recolorImage = (img) => {
-      const offCanvas = document.createElement("canvas");
-      const offCtx = offCanvas.getContext("2d");
-      offCanvas.width = img.width;
-      offCanvas.height = img.height;
-      offCtx.drawImage(img, 0, 0);
-      const imageData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
-      const data = imageData.data;
-      for (let i = 0; i < data.length; i += 4) {
-        const [r, g, b, a] = [data[i], data[i + 1], data[i + 2], data[i + 3]];
-        if (a > 0) {
-          if (r === 255 && g === 255 && b === 255) {
-            data[i] = c1.r; data[i + 1] = c1.g; data[i + 2] = c1.b;
-          } else if (r === 0 && g === 0 && b === 0) {
-            data[i] = c2.r; data[i + 1] = c2.g; data[i + 2] = c2.b;
-          }
+    const recolor = (img) => {
+      const off = document.createElement("canvas");
+      const octx = off.getContext("2d", { willReadFrequently: true });
+      off.width = img.width;
+      off.height = img.height;
+      octx.drawImage(img, 0, 0);
+      const data = octx.getImageData(0, 0, off.width, off.height);
+      const d = data.data;
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i + 3] === 0) continue;
+        if (d[i] === 255 && d[i + 1] === 255 && d[i + 2] === 255) {
+          d[i] = c1.r; d[i + 1] = c1.g; d[i + 2] = c1.b;
+        } else if (d[i] === 0 && d[i + 1] === 0 && d[i + 2] === 0) {
+          d[i] = c2.r; d[i + 1] = c2.g; d[i + 2] = c2.b;
         }
       }
-      offCtx.putImageData(imageData, 0, 0);
-      const newImg = new Image();
-      newImg.src = offCanvas.toDataURL();
-      return newImg;
+      octx.putImageData(data, 0, 0);
+      const n = new Image();
+      n.src = off.toDataURL("image/png");
+      return n;
     };
 
-    // --- cargar íconos principales ---
-    const loadedIcons = icons.map((src) => {
-      const img = new Image();
-      img.src = src;
-      img.crossOrigin = "anonymous";
-      img.onload = () => { img.recolored = recolorImage(img); };
-      return img;
-    });
+    // --- carga de imágenes (promesas) ---
+    const loadImages = (sources) =>
+      Promise.all(
+        sources.map(
+          (src) =>
+            new Promise((res) => {
+              const img = new Image();
+              img.crossOrigin = "anonymous";
+              img.src = src;
+              img.onload = () => res(img);
+            })
+        )
+      );
 
-    // --- cargar y recolorear frames del dot ---
-    const loadedDotFrames = dotFrames.map((src) => {
-      const img = new Image();
-      img.src = src;
-      img.crossOrigin = "anonymous";
-      img.onload = () => { img.recolored = recolorImage(img); };
-      return img;
-    });
+    let running = true;
 
-    function shuffle(arr) {
-      return arr.map((a) => ({ sort: Math.random(), value: a }))
-                .sort((a, b) => a.sort - b.sort)
-                .map((a) => a.value);
-    }
+    (async () => {
+      const [baseIcons, baseDots] = await Promise.all([
+        loadImages(icons),
+        loadImages(dotFrames),
+      ]);
 
-    // --- helper para colocar icono sin solapamiento ---
-    function findNonOverlappingPosition(existing, maxTries = 50) {
-      for (let t = 0; t < maxTries; t++) {
-        const candidate = {
-          x: Math.floor(Math.random() * (canvas.width - scaled_iconSize) / pixelScale) * pixelScale,
-          y: pixelSnap
-            ? Math.random() * canvas.height
-            : Math.floor(Math.random() * canvas.height / pixelScale) * pixelScale
-        };
-        let tooClose = false;
-        for (let drop of existing) {
-          const dx = candidate.x - drop.x;
-          const dy = candidate.y - drop.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < scaled_iconSize * minDistance) {
-            tooClose = true;
-            break;
-          }
+      const recoloredIcons = baseIcons.map(recolor);
+      const recoloredDots = baseDots.map(recolor);
+
+      // --- inicialización ---
+      const rand = (max) => Math.random() * max;
+      const findPos = (arr, tries = 40) => {
+        for (let i = 0; i < tries; i++) {
+          const x = rand(canvas.width - scaledIcon);
+          const y = rand(canvas.height);
+          if (
+            arr.every(
+              (d) =>
+                Math.hypot(d.x - x, d.y - y) >= scaledIcon * minDistance
+            )
+          )
+            return { x, y };
         }
-        if (!tooClose) return candidate;
-      }
-      // fallback: si no encuentra sitio tras varios intentos
-      return {
-        x: Math.random() * (canvas.width - scaled_iconSize),
-        y: Math.random() * canvas.height
+        return { x: rand(canvas.width - scaledIcon), y: rand(canvas.height) };
       };
-    }
 
-    function initDrops() {
-      drops.current = [];
-      let iconPool = shuffle(loadedIcons);
-      for (let i = 0; i < density; i++) {
-        if (iconPool.length === 0) iconPool = shuffle(loadedIcons);
-        const pos = findNonOverlappingPosition(drops.current);
-        drops.current.push({
-          x: pos.x,
-          y: pos.y,
-          icon: iconPool.pop(),
-          lastDot: Date.now()
-        });
-      }
-    }
-    initDrops();
+      // inicializar drops
+      drops.current = Array.from({ length: density }, () => {
+        const pos = findPos(drops.current);
+        return {
+          ...pos,
+          icon: recoloredIcons[Math.floor(rand(recoloredIcons.length))],
+          lastDot: performance.now(),
+        };
+      });
 
-    function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.imageSmoothingEnabled = false;
-      const now = Date.now();
+      const animate = (time) => {
+        if (!running) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // --- dibujar trails detrás de los íconos ---
-      trails.current = trails.current.filter((trail) => !trail.finished);
-      trails.current.forEach((trail) => {
-        const age = now - trail.created;
-        if (!loadedDotFrames.length) return;
-
-        if (age < dotLifetime - dotAnimDuration) {
-          const img = loadedDotFrames[0].recolored || loadedDotFrames[0];
-          if (img.complete) ctx.drawImage(img, trail.x, trail.y, dotSize, dotSize);
-        } else {
-          const animAge = age - (dotLifetime - dotAnimDuration);
-          const progress = animAge / dotAnimDuration;
-          let frameIndex = 1 + Math.floor(progress * (loadedDotFrames.length - 2));
-          if (frameIndex >= loadedDotFrames.length) {
-            trail.finished = true;
-            return;
+        // --- trails ---
+        trails.current = trails.current.filter((t) => !t.done);
+        for (const t of trails.current) {
+          const age = time - t.birth;
+          const fcount = recoloredDots.length;
+          if (!fcount) continue;
+          if (age >= dotLifetime) {
+            t.done = true;
+            continue;
           }
-          const img = loadedDotFrames[frameIndex].recolored || loadedDotFrames[frameIndex];
-          if (img.complete) ctx.drawImage(img, trail.x, trail.y, dotSize, dotSize);
-        }
-      });
-
-      // --- dibujar íconos ---
-      drops.current.forEach((drop) => {
-        const iconToDraw = drop.icon.recolored || drop.icon;
-        if (iconToDraw.complete) {
-          ctx.drawImage(
-            iconToDraw,
-            pixelSnap ? Math.floor(drop.x / pixelScale) * pixelScale : Math.floor(drop.x),
-            pixelSnap ? Math.floor(drop.y / pixelScale) * pixelScale : Math.floor(drop.y),
-            scaled_iconSize,
-            scaled_iconSize
-          );
+          const idx =
+            age < dotLifetime - dotAnimDuration
+              ? 0
+              : 1 + Math.min(
+                Math.floor(
+                  ((age - (dotLifetime - dotAnimDuration)) /
+                    dotAnimDuration) *
+                  (fcount - 2)
+                ),
+                fcount - 1
+              );
+          const img = recoloredDots[idx];
+          ctx.drawImage(img, t.x, t.y, dotSize, dotSize);
         }
 
-        // generar dot
-        if (loadedDotFrames.length && now - drop.lastDot > dotInterval) {
-          trails.current.push({
-            x: Math.floor((drop.x + scaled_iconSize / 2 - dotSize / 2) / pixelScale) * pixelScale,
-            y: Math.floor((drop.y + scaled_iconSize / 2 - dotSize / 2) / pixelScale) * pixelScale,
-            created: now,
-            finished: false
-          });
-          drop.lastDot = now;
+        // --- drops ---
+        for (const d of drops.current) {
+          const img = d.icon;
+          const x = pixelSnap
+            ? Math.floor(d.x / pixelScale) * pixelScale
+            : d.x;
+          const y = pixelSnap
+            ? Math.floor(d.y / pixelScale) * pixelScale
+            : d.y;
+          ctx.drawImage(img, x, y, scaledIcon, scaledIcon);
+
+          // generar dot
+          if (time - d.lastDot >= dotInterval && recoloredDots.length) {
+            trails.current.push({
+              x: Math.floor(
+                (d.x + scaledIcon / 2 - dotSize / 2) / pixelScale
+              ) * pixelScale,
+              y: Math.floor(
+                (d.y + scaledIcon / 2 - dotSize / 2) / pixelScale
+              ) * pixelScale,
+              birth: time,
+            });
+            d.lastDot = time;
+          }
+
+          // movimiento
+          d.y += speed;
+          if (d.y > canvas.height + scaledIcon) {
+            const p = findPos(drops.current);
+            d.x = p.x;
+            d.y = -scaledIcon;
+          }
         }
 
-        // movimiento
-        drop.y += speed;
-        if (drop.y > canvas.height + scaled_iconSize) {
-          // reposicionar evitando solapamiento
-          const pos = findNonOverlappingPosition(drops.current.filter(d => d !== drop));
-          drop.y = -scaled_iconSize;
-          drop.x = pos.x;
-        }
-      });
+        animFrame.current = requestAnimationFrame(animate);
+      };
 
-      requestAnimationFrame(animate);
-    }
-    animate();
+      animFrame.current = requestAnimationFrame(animate);
+    })();
 
-    return () => { window.removeEventListener("resize", resize); };
-  }, [icons, scaled_iconSize, speed, density, pixelScale, pixelSnap, color1, color2, dotFrames, dotInterval, dotLifetime, dotAnimDuration, dotSize, minDistance]);
+    return () => {
+      running = false;
+      cancelAnimationFrame(animFrame.current);
+      window.removeEventListener("resize", resize);
+    };
+  }, [
+    icons,
+    dotFrames,
+    color1,
+    color2,
+    scaledIcon,
+    speed,
+    density,
+    pixelScale,
+    pixelSnap,
+    dotInterval,
+    dotLifetime,
+    dotAnimDuration,
+    dotSize,
+    minDistance,
+  ]);
 
   return (
     <canvas
@@ -213,7 +224,7 @@ export default function IconRain({
         height: "100%",
         zIndex: 0,
         pointerEvents: "none",
-        background: "transparent"
+        background: "transparent",
       }}
     />
   );

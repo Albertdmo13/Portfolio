@@ -2,6 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import ThreeLogo from "./components/ThreePixelLogo";
 import PixelBlast from './components/PixelBlast';
 import IconRain from "./components/IconRain";
+import TextType from './components/TextType';
+
+
+
 import './App.css';
 
 const skills_icons_url = "/icons/skills_icons";
@@ -37,6 +41,10 @@ const sparkFrames = [
   "/spark/spark10.png",
 ];
 
+const headerButtons = [
+  "/header_buttons/btn_github.png",
+];
+
 const dotFrames = [
   skills_icons_url + "/dot1.png",
   skills_icons_url + "/dot2.png",
@@ -52,6 +60,7 @@ const getSkillsIconUrls = () => skills.map(skill => skill.icon_url);
 
 function App() {
   const [pxSize, setPxSize] = useState(4);
+  // const pxSize = 4;
   const bannerRef = useRef(null);
 
   useEffect(() => {
@@ -83,7 +92,7 @@ function App() {
           overflow: "hidden",
         }}
       >
-        {/* Background */}
+        {/* Backgrounds */}
         <div
           style={{
             position: "absolute",
@@ -92,8 +101,6 @@ function App() {
             zIndex: -2,
           }}
         />
-
-        {/* PixelBlast background */}
         <div
           style={{
             position: "absolute",
@@ -122,7 +129,6 @@ function App() {
           />
         </div>
 
-        {/* IconRain now positioned relative to banner, not viewport */}
         <div
           style={{
             position: "absolute",
@@ -151,23 +157,78 @@ function App() {
           />
         </div>
 
-        {/* Centered logo */}
+        {/* Centered logo + text + button */}
         <div
           style={{
-            position: 'absolute',
+            position: "absolute",
             inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            textAlign: "center",
+            zIndex: 1,
+            transform: "translateY(6%)", // smaller offset
           }}
         >
-          <ThreeLogo
-            url={"/3dmodels/albertdmo_pixel_logo_gold.glb"}
-            pixelSize={pxSize}
-            sparkFrames={sparkFrames}
-          />
+          {/* LOGO */}
+          <div>
+            <ThreeLogo
+              url={"/3dmodels/albertdmo_pixel_logo_gold.glb"}
+              pixelSize={pxSize}
+              sparkFrames={sparkFrames}
+            />
+          </div>
+
+          {/* TEXT BELOW LOGO */}
+          <div
+            style={{
+              marginTop: `${-pxSize * 10}px`,
+              color: "#ffe282ff",
+              fontFamily: "'Press Start 2P', monospace",
+              fontSize: `${pxSize * 0.6}rem`,
+              letterSpacing: "2px",
+              textShadow: "4px 4px 0 #000",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <TextType
+              text={["Computer Scientist", "Game Developer", "Digital Artist"]}
+              typingSpeed={75}
+              pauseDuration={1500}
+              showCursor={true}
+              cursorCharacter="|"
+            />
+          </div>
+
+          {/* PIXEL BUTTON BELOW TEXT */}
+          <a
+            href="https://github.com/Albertdmo13"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pixel-button"
+            style={{
+              marginTop: `${pxSize * 20}px`,   // closer to text
+              width: `${pxSize * 50}px`,
+              height: `${pxSize * 22}px`,
+            }}
+          >
+            <img
+              src={headerButtons[0]}
+              alt="GitHub"
+              draggable="false"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                imageRendering: "pixelated",
+                display: "block",
+              }}
+            />
+          </a>
         </div>
+
+
       </header>
 
       {/* PAGE CONTENT */}
