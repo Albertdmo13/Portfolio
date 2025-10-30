@@ -1,0 +1,64 @@
+[
+    {
+        "title": "Development",
+        "skills": [
+            {
+                "id": 4,
+                "name": "ReactJS",
+                "description": "Component-based architecture and state management for dynamic UIs.",
+                "level": 75,
+                "icon": "skills_icons/reactjs.png",
+                "media": []
+            },
+            {
+                "id": 5,
+                "name": "Node.js",
+                "description": "Server-side development, REST APIs, and asynchronous operations.",
+                "level": 40,
+                "icon": "skills_icons/nodejs.png",
+                "media": []
+            }
+        ]
+    },
+    {
+        "title": "Game Development",
+        "skills": [
+            {
+                "id": 3,
+                "name": "GameMaker",
+                "description": "Worked for 10 years in different personal 2D pixel art projects.",
+                "level": 92,
+                "icon": "skills_icons/gamemaker.png",
+                "media": []
+            },
+            {
+                "id": 2,
+                "name": "OpenGL",
+                "description": "I gained experience developing 2D graphics pipelines for projects such as MicroDetT and FlowDiP, as well as writing GLSL shaders for my GameMaker projects.",
+                "level": 60,
+                "icon": "skills_icons/opengl.png",
+                "media": [
+                    "albertdmo_pixel_logo_gold_icon.png",
+                    "albertdmo_pixel_logo_gold_icon.png"
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Art",
+        "skills": [
+            {
+                "id": 1,
+                "name": "Pixel Shader",
+                "description": "Low-level GPU artistry for stunning visual effects and retro flair.",
+                "level": 85,
+                "icon": "skills_icons/pixelshader.png",
+                "media": []
+            }
+        ]
+    },
+    {
+        "title": "Others",
+        "skills": []
+    }
+]

@@ -114,7 +114,7 @@ function _App() {
   useEffect(() => {
     const updatePixelSize = () => {
       const width = window.innerWidth;
-      const scale = Math.max(1, Math.round((width / 1920) * 4));
+      const scale = Math.max(1, Math.round((width / 1920) * 3));
       setPxSize(scale);
     };
 
@@ -307,7 +307,7 @@ function App() {
         background: "#0d0d1a",
       }}
     >
-      <SkillsWindow pixelSize={4} />
+      <SkillsWindow pixelSize={3} />
     </div>
   );
 }

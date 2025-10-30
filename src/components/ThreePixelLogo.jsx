@@ -2,7 +2,6 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF, useTexture } from "@react-three/drei";
 import { useRef, useState, useEffect } from "react";
 import * as THREE from "three";
-import { EffectComposer, Pixelation } from "@react-three/postprocessing";
 
 function Model({ url, onBoxComputed, pixelSize }) {
   const { scene } = useGLTF(url);
@@ -40,7 +39,7 @@ function Model({ url, onBoxComputed, pixelSize }) {
 
   return (
     <group>
-      <primitive ref={ref} object={scene} scale={2.5 * pixelSize * 0.25} />
+      <primitive ref={ref} object={scene} scale={2.5 * pixelSize / 3} />
       <mesh
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
@@ -106,7 +105,7 @@ function Sparks({ sparkFrames, pixelSize }) {
           <sprite
             key={spark.id}
             position={[spark.x * 7 * pixelSize * 0.25, spark.y * 3 * pixelSize * 0.25, 0]}
-            scale={[pixelSize/45, pixelSize/45, pixelSize/45]} // exact scale factor
+            scale={[pixelSize / 45, pixelSize / 45, pixelSize / 45]} // exact scale factor
             renderOrder={999}
             layers={1}
           >
@@ -124,7 +123,8 @@ function Sparks({ sparkFrames, pixelSize }) {
   );
 }
 
-export default function ThreePixelLogo({ url, pixelSize = 6, sparkFrames = [] }) {
+// Default pixelSize set to 3 for a 3x scaling visual
+export default function ThreePixelLogo({ url, pixelSize = 3, sparkFrames = [] }) {
   const cameraRef = useRef();
 
   return (
@@ -150,13 +150,14 @@ export default function ThreePixelLogo({ url, pixelSize = 6, sparkFrames = [] })
         <group layers={0}>
           <ambientLight intensity={1.2} />
           <directionalLight position={[3, 3, 5]} intensity={1.5} />
-          <Model url={url} onBoxComputed={() => {}} pixelSize={pixelSize} />
+          <Model url={url} onBoxComputed={() => { }} pixelSize={pixelSize} />
         </group>
 
-        {/* Postprocessing */}
+        {/* Postprocessing (Removed due to unresolved dependency error) 
         <EffectComposer multisampling={0}>
-          <Pixelation granularity={pixelSize} />
+          <Pixelation granularity={pixelSize} /> 
         </EffectComposer>
+        */}
 
         {/* Overlay sparks layer */}
         {sparkFrames.length > 0 && (

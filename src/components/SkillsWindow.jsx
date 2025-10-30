@@ -1,7 +1,37 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import "./SkillsWindow.css";
 
-// Componente de barra de progreso (sin cambios)
+// ==========================================================
+// NEW COMPONENT: Progressive Text Typing Effect
+// ==========================================================
+const ProgressiveText = ({ text, delay = 50 }) => {
+  const [displayedText, setDisplayedText] = useState("");
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // When the 'text' prop changes (i.e., new skill is selected), reset and start typing
+  useEffect(() => {
+    setDisplayedText(""); // Clear text immediately
+    setCurrentIndex(0); // Reset index to start typing from the beginning
+  }, [text]);
+
+  // Typing logic
+  useEffect(() => {
+    if (!text || currentIndex >= text.length) {
+      return; // Stop if no text or fully typed
+    }
+
+    const timer = setTimeout(() => {
+      setDisplayedText(text.substring(0, currentIndex + 1));
+      setCurrentIndex(currentIndex + 1);
+    }, delay);
+
+    return () => clearTimeout(timer); // Cleanup timer on unmount or dependency change
+  }, [text, currentIndex, delay]);
+
+  return <>{displayedText}</>;
+};
+// ==========================================================
+
 const ProgressBar = ({ level, maxLevel = 100, pixelSize }) => {
   const progressPercent = Math.min(level, maxLevel) / maxLevel;
   const progressBarHeight = 2.5 * pixelSize;
@@ -26,83 +56,100 @@ const ProgressBar = ({ level, maxLevel = 100, pixelSize }) => {
   );
 };
 
-export default function SkillsWindow({ pixelSize = 4 }) {
+export default function SkillsWindow({ pixelSize = 3 }) {
+  // We need to keep track of the PREVIOUSLY selected item to display it during the fade-out
   const [selected, setSelected] = useState(null);
+  const [displayItem, setDisplayItem] = useState(null); // The item currently displayed to the user
+  const [groupedItems, setGroupedItems] = useState([]);
+  const [isAnimating, setIsAnimating] = useState(false);
 
-  const BASE_WIDTH = 160;
-  const BASE_HEIGHT = 95;
+  const BASE_WIDTH = 205;
+  const BASE_HEIGHT = 115;
 
   const WINDOW_WIDTH = BASE_WIDTH * pixelSize;
   const WINDOW_HEIGHT = BASE_HEIGHT * pixelSize;
-  const LIST_WIDTH = 61 * pixelSize;
+  const LIST_WIDTH = 35 * pixelSize;
+  const INFO_WIDTH = 70 * pixelSize;
+  const MEDIA_WIDTH = 100 * pixelSize;
   const HANDLE_HEIGHT = 0 * pixelSize;
+  const TEXT_DELAY = 20; // ms per character for progressive text
 
-  // --- NUEVA ESTRUCTURA DE DATOS AGRUPADA ---
-  const groupedItems = useMemo(
-    () => [
-      {
-        title: "Development",
-        skills: [
-          {
-            id: 4,
-            name: "ReactJS",
-            description:
-              "Component-based architecture and state management for dynamic UIs.",
-            level: 75,
-          },
-          {
-            id: 5,
-            name: "Node.js",
-            description:
-              "Server-side development, REST APIs, and asynchronous operations.",
-            level: 40,
-          },
-        ],
-      },
-      {
-        title: "Game Development",
-        skills: [
-          {
-            id: 3,
-            name: "GameMaker",
-            description:
-              "Retro 2D game engine wizardry for fast prototyping and deployment.",
-            level: 92,
-          },
-          {
-            id: 2,
-            name: "OpenGL",
-            description:
-              "Mastery of rendering pipelines, VBOs, and matrix transformations.",
-            level: 60,
-          },
-        ],
-      },
-      {
-        title: "Art",
-        skills: [
-          {
-            id: 1,
-            name: "Pixel Shader",
-            description:
-              "Low-level GPU artistry for stunning visual effects and retro flair.",
-            level: 85,
-          },
-        ],
-      },
-      {
-        title: "Others",
-        skills: [],
-      },
-    ],
-    []
-  );
+  // --- Load data from JSON ---
+  useEffect(() => {
+    fetch("/data/skills.json")
+      .then((res) => res.json())
+      .then((data) => setGroupedItems(data))
+      .catch((err) => console.error("Error loading skills.json:", err));
+  }, []);
 
-  // Función para manejar la selección con animación de transición
+  // Handle selection with transition
   const handleSelect = (item) => {
-    setSelected(null);
-    setTimeout(() => setSelected(item), 10);
+    if (selected?.id === item.id) return; // Prevent transition if clicking the same item
+
+    // 1. Start fade-out animation
+    setIsAnimating(true);
+
+    // 2. Wait for fade-out (250ms), then update the displayed item and start fade-in
+    setTimeout(() => {
+      setSelected(item); // Update the true selected item
+      setDisplayItem(item); // Update the item for display
+      setIsAnimating(false);
+    }, 250); // Match this duration to the fadeOutBox animation duration
   };
+
+  // Initial selection setup (for when the window first loads and no item is selected)
+  useEffect(() => {
+    if (selected) {
+      setDisplayItem(selected);
+    }
+  }, [selected]);
+
+  // The content itself only shows once the fade-out is complete (isAnimating is false)
+  const infoContent = (
+    // Use 'displayItem' for all content, ensuring the old content stays visible during the fade-out
+    <div className={`skills-info-container ${isAnimating ? 'fade-out' : ''}`}>
+
+      {/* SCALED ICON */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: `${3 * pixelSize}px`,
+        }}
+      >
+        <img
+          src={`/icons/${displayItem?.icon}`}
+          alt={`${displayItem?.name} icon`}
+          style={{
+            width: `${33 * pixelSize}px`,
+            height: `${33 * pixelSize}px`,
+            imageRendering: "pixelated",
+          }}
+        />
+      </div>
+
+      {/* NAME AND LEVEL */}
+      <div className="skills-info-box">
+        <span style={{ fontWeight: "bold" }}>{displayItem?.name}</span>
+        <span style={{ float: "right" }}>Level {displayItem?.level}</span>
+        <ProgressBar level={displayItem?.level || 0} pixelSize={pixelSize} />
+      </div>
+
+      {/* DESCRIPTION - NOW USING PROGRESSIVE TEXT */}
+      <div className="skills-info-box description-box">
+        {/* We only want to start typing when the item is done fading in (isAnimating is false) */}
+        {!isAnimating ? (
+          <ProgressiveText
+            text={displayItem?.description || ""}
+            delay={TEXT_DELAY} // Adjust this value (ms per character) for speed
+          />
+        ) : (
+          // During fade-out, show the static text to ensure a smooth transition
+          displayItem?.description
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div
@@ -110,82 +157,106 @@ export default function SkillsWindow({ pixelSize = 4 }) {
       style={{
         width: `${WINDOW_WIDTH}px`,
         height: `${WINDOW_HEIGHT}px`,
+        display: "flex",
+        flexDirection: "row",
       }}
     >
-      {/* === LEFT SECTION: SKILLS LIST === */}
+      {/* === LEFT SECTION === */}
       <div
         className="skills-list"
         style={{
           width: `${LIST_WIDTH}px`,
           padding: `${2 * pixelSize}px`,
           paddingTop: `${HANDLE_HEIGHT}px`,
+          overflowY: "auto",
         }}
       >
-        {/* Renderizado agrupado */}
-        {groupedItems.map((group) => (
-          <div key={group.title} className="skills-group">
-            {/* Título de la sección */}
-            <div className="skills-section-title">{group.title}</div>
-
-            {/* Lista de habilidades en la sección */}
-            {group.skills.length > 0 ? (
-              group.skills.map((item) => (
+        {groupedItems.length > 0 ? (
+          groupedItems.map((group) => (
+            <div key={group.title} className="skills-group">
+              <div className="skills-section-title">{group.title}</div>
+              {group.skills.length > 0 ? (
+                group.skills.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`skills-list-item ${selected?.id === item.id ? "selected" : ""
+                      }`}
+                    onClick={() => handleSelect(item)}
+                    style={{
+                      marginBottom: `${2 * pixelSize}px`,
+                      padding: `${1.5 * pixelSize}px ${2 * pixelSize}px`,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {item.name}
+                  </div>
+                ))
+              ) : (
                 <div
-                  key={item.id}
-                  className={`skills-list-item ${
-                    selected?.id === item.id ? "selected" : ""
-                  }`}
-                  onClick={() => handleSelect(item)}
+                  className="skills-list-item-empty"
                   style={{
-                    marginBottom: `${2 * pixelSize}px`,
                     padding: `${1.5 * pixelSize}px ${2 * pixelSize}px`,
                   }}
                 >
-                  {item.name}
+                  [EMPTY]
                 </div>
-              ))
-            ) : (
-              <div
-                className="skills-list-item-empty"
-                style={{
-                  padding: `${1.5 * pixelSize}px ${2 * pixelSize}px`,
-                }}
-              >
-                [EMPTY]
-              </div>
-            )}
-          </div>
-        ))}
+              )}
+            </div>
+          ))
+        ) : (
+          <div className="skills-loading">Loading skills...</div>
+        )}
       </div>
 
-      {/* === RIGHT SECTION: SKILLS INFO === */}
+      {/* === MIDDLE SECTION (INFO) === */}
       <div
         className="skills-info"
         style={{
-          flex: 1,
+          width: `${INFO_WIDTH}px`,
           padding: `${3 * pixelSize}px`,
           paddingTop: `${HANDLE_HEIGHT + 2 * pixelSize}px`,
         }}
       >
-        {selected ? (
-          <div className="skills-info-container">
-            {/* Box 1: Name and Level */}
-            <div className="skills-info-box">
-              <span style={{ fontWeight: "bold" }}>{selected.name}</span>
-              <span style={{ float: "right" }}>Level {selected.level}</span>
-              <ProgressBar level={selected.level} pixelSize={pixelSize} />
-            </div>
-
-            {/* Box 2: Description */}
-            <div className="skills-info-box description-box">
-              {selected.description}
-            </div>
-          </div>
+        {/* Render the info content if there is an item to display OR we are animating */}
+        {displayItem || isAnimating ? (
+          infoContent
         ) : (
           <div className="skills-placeholder animated-placeholder">
-            <br />
             Select a skill to view its detailed information and progress.
           </div>
+        )}
+      </div>
+
+      {/* === RIGHT SECTION (MEDIA) === */}
+      <div
+        className="skills-media"
+        style={{
+          width: `${MEDIA_WIDTH}px`,
+          padding: `${3 * pixelSize}px`,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          overflowY: "auto",
+          gap: `${2 * pixelSize}px`,
+        }}
+      >
+        {displayItem && displayItem.media && displayItem.media.length > 0 ? (
+          displayItem.media.map((file, index) => (
+            <img
+              key={index}
+              src={`/media/${file}`}
+              alt={`${displayItem.name} preview ${index + 1}`}
+              style={{
+                width: "100%",
+                height: "auto",
+                borderRadius: `${1.5 * pixelSize}px`,
+                imageRendering: "pixelated",
+              }}
+            />
+          ))
+        ) : (
+          <div className="skills-media-placeholder">[No Media]</div>
         )}
       </div>
     </div>
