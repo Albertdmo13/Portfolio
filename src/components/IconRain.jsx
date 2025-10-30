@@ -14,7 +14,7 @@ export default function IconRain({
   dotLifetime = 3000,
   dotAnimDuration = 1000,
   dotSize = 12,
-  minDistance = 2.0
+  minDistance = 2.0,
 }) {
   const canvasRef = useRef(null);
   const drops = useRef([]);
@@ -27,14 +27,19 @@ export default function IconRain({
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d", { alpha: true });
 
-    // --- fast resize ---
     const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
       const { innerWidth: w, innerHeight: h } = window;
-      if (canvas.width !== w || canvas.height !== h) {
-        canvas.width = w;
-        canvas.height = h;
-      }
+
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+
+      ctx.imageSmoothingEnabled = false;
     };
+
     resize();
     window.addEventListener("resize", resize);
 
@@ -59,9 +64,13 @@ export default function IconRain({
       for (let i = 0; i < d.length; i += 4) {
         if (d[i + 3] === 0) continue;
         if (d[i] === 255 && d[i + 1] === 255 && d[i + 2] === 255) {
-          d[i] = c1.r; d[i + 1] = c1.g; d[i + 2] = c1.b;
+          d[i] = c1.r;
+          d[i + 1] = c1.g;
+          d[i + 2] = c1.b;
         } else if (d[i] === 0 && d[i + 1] === 0 && d[i + 2] === 0) {
-          d[i] = c2.r; d[i + 1] = c2.g; d[i + 2] = c2.b;
+          d[i] = c2.r;
+          d[i + 1] = c2.g;
+          d[i + 2] = c2.b;
         }
       }
       octx.putImageData(data, 0, 0);
@@ -103,8 +112,7 @@ export default function IconRain({
           const y = rand(canvas.height);
           if (
             arr.every(
-              (d) =>
-                Math.hypot(d.x - x, d.y - y) >= scaledIcon * minDistance
+              (d) => Math.hypot(d.x - x, d.y - y) >= scaledIcon * minDistance
             )
           )
             return { x, y };
@@ -139,14 +147,15 @@ export default function IconRain({
           const idx =
             age < dotLifetime - dotAnimDuration
               ? 0
-              : 1 + Math.min(
-                Math.floor(
-                  ((age - (dotLifetime - dotAnimDuration)) /
-                    dotAnimDuration) *
-                  (fcount - 2)
-                ),
-                fcount - 1
-              );
+              : 1 +
+                Math.min(
+                  Math.floor(
+                    ((age - (dotLifetime - dotAnimDuration)) /
+                      dotAnimDuration) *
+                      (fcount - 2)
+                  ),
+                  fcount - 1
+                );
           const img = recoloredDots[idx];
           ctx.drawImage(img, t.x, t.y, dotSize, dotSize);
         }
@@ -154,23 +163,19 @@ export default function IconRain({
         // --- drops ---
         for (const d of drops.current) {
           const img = d.icon;
-          const x = pixelSnap
-            ? Math.floor(d.x / pixelScale) * pixelScale
-            : d.x;
-          const y = pixelSnap
-            ? Math.floor(d.y / pixelScale) * pixelScale
-            : d.y;
+          const x = pixelSnap ? Math.floor(d.x / pixelScale) * pixelScale : d.x;
+          const y = pixelSnap ? Math.floor(d.y / pixelScale) * pixelScale : d.y;
           ctx.drawImage(img, x, y, scaledIcon, scaledIcon);
 
           // generar dot
           if (time - d.lastDot >= dotInterval && recoloredDots.length) {
             trails.current.push({
-              x: Math.floor(
-                (d.x + scaledIcon / 2 - dotSize / 2) / pixelScale
-              ) * pixelScale,
-              y: Math.floor(
-                (d.y + scaledIcon / 2 - dotSize / 2) / pixelScale
-              ) * pixelScale,
+              x:
+                Math.floor((d.x + scaledIcon / 2 - dotSize / 2) / pixelScale) *
+                pixelScale,
+              y:
+                Math.floor((d.y + scaledIcon / 2 - dotSize / 2) / pixelScale) *
+                pixelScale,
               birth: time,
             });
             d.lastDot = time;

@@ -3,6 +3,8 @@ import ThreeLogo from "./components/ThreePixelLogo";
 import PixelBlast from "./components/PixelBlast";
 import IconRain from "./components/IconRain";
 import TextType from "./components/TextType";
+import SkillsWindow from "./components/SkillsWindow";
+
 import "./App.css";
 
 const skills_icons_url = "/icons/skills_icons";
@@ -104,7 +106,7 @@ function HoverButton({ href, normalSrc, hoverSrc, alt, width, height }) {
   );
 }
 
-function App() {
+function _App() {
   const [pxSize, setPxSize] = useState(4);
   const bannerRef = useRef(null);
 
@@ -208,7 +210,6 @@ function App() {
             justifyContent: "center",
             textAlign: "center",
             zIndex: 1,
-            transform: "translateY(5%)",
           }}
         >
           {/* Logo */}
@@ -291,6 +292,22 @@ function App() {
         <h1>Welcome to the next section</h1>
         <p>Test</p>
       </main>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "#0d0d1a",
+      }}
+    >
+      <SkillsWindow pixelSize={4} />
     </div>
   );
 }

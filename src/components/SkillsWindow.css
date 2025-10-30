@@ -1,0 +1,171 @@
+/* Importamos la fuente legible */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* --- CUSTOM VARIABLES --- */
+:root {
+    --accent-color: #bbbbbb;
+    /* Amarillo Dorado */
+    --accent-color-light: #ffffff;
+    /* Dorado más claro para títulos y contraste */
+    --accent-color-dark-transparent: #bbbbbb26;
+    --accent-color-medium-transparent: #bbbbbb66;
+    --dark-bg: #000000;
+    /* Fondo oscuro */
+    --border-width: 2px;
+}
+
+/* === Layout base (Window Frame Drawn by CSS) === */
+.skills-window {
+    position: relative;
+    display: flex;
+    image-rendering: pixelated;
+    font-family: 'Press Start 2P', cursive, monospace;
+    color: var(--accent-color);
+    overflow: hidden;
+    background-color: var(--dark-bg);
+    animation: fadeInWindow 0.4s ease-out forwards;
+
+    /* Marco simple con el color de acento */
+    border-style: solid;
+    border-width: var(--border-width);
+    border-color: var(--accent-color);
+}
+
+@keyframes fadeInWindow {
+    from {
+        opacity: 0;
+        transform: scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* --- Left section: SKILLS LIST --- */
+.skills-list {
+    overflow-y: auto;
+    font-size: 0.8em;
+    border-right: 1px solid var(--accent-color);
+}
+
+/* --- NUEVO ESTILO: Título de la Sección --- */
+.skills-section-title {
+    color: var(--accent-color-light);
+    font-size: 0.9em;
+    /* Ligeramente más pequeño que el texto de la lista */
+    margin-top: 1.5em;
+    /* Espacio superior para separarlo de la sección anterior */
+    margin-bottom: 0.5em;
+    padding-bottom: 0.2em;
+    border-bottom: 1px solid var(--accent-color);
+    /* Línea separadora */
+}
+
+/* Estilo para secciones vacías */
+.skills-list-item-empty {
+    opacity: 0.5;
+    font-style: italic;
+    color: var(--accent-color);
+    margin-bottom: 2px;
+    font-size: 0.8em;
+}
+
+
+.skills-list-item {
+    background: transparent;
+    color: var(--accent-color);
+    cursor: pointer;
+    transition: all 0.1s ease-in-out;
+    border-radius: 0;
+}
+
+.skills-list-item:hover {
+    background-color: var(--accent-color-dark-transparent);
+    color: var(--accent-color-light);
+}
+
+.skills-list-item.selected {
+    background-color: var(--accent-color-medium-transparent);
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color-light);
+}
+
+/* --- Right section: SKILLS INFO --- */
+.skills-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+/* Contenedor para aplicar el fade-in a toda la información */
+.skills-info-container {
+    animation: fadeInBox 0.25s ease-out;
+}
+
+.skills-info-box {
+    background-color: var(--dark-bg);
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 0.5em;
+    margin-bottom: 0.8em;
+}
+
+.description-box {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+
+@keyframes fadeInBox {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Progress Bar --- */
+.progress-bar-container {
+    background-color: var(--accent-color-dark-transparent);
+    border: 1px solid var(--accent-color);
+    overflow: hidden;
+    position: relative;
+    image-rendering: pixelated;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: var(--accent-color);
+    transition: width 0.4s ease-out;
+}
+
+
+/* --- Placeholder --- */
+.skills-placeholder {
+    opacity: 1;
+    background-color: var(--dark-bg);
+    border: 1px dashed var(--accent-color);
+    text-align: center;
+    font-style: italic;
+    padding: 0.6em;
+    animation: fadeInBox 0.4s ease-in-out;
+}
+
+/* --- Scrollbar --- */
+.skills-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.skills-list::-webkit-scrollbar-thumb {
+    background-color: var(--accent-color);
+}
+
+.skills-list::-webkit-scrollbar-track {
+    background: var(--accent-color-dark-transparent);
+}
