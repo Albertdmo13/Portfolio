@@ -191,7 +191,7 @@ function App() {
           density={getSkillsIconUrls().length * 0.75}
           pixelSnap={false}
           color1="#3b3379"
-          color2="#19061e"
+          color2="#0e0911"
           dotFrames={dotFrames}
           dotInterval={500}
           dotLifetime={3000}
@@ -220,7 +220,7 @@ function App() {
           style={{
             position: "absolute",
             inset: 0,
-            backgroundColor: "#170a19",
+            backgroundColor: "#0e0911",
             zIndex: -2,
           }}
         />
@@ -264,7 +264,7 @@ function App() {
           {/* Logo */}
           <div>
             <ThreeLogo
-              url={"/Portfolio/3dmodels/albertdmo_pixel_logo_gold.glb"}
+              url={"/Portfolio/3dmodels/albertdmo_pixel_logo_blue.glb"}
               pixelSize={pxSize}
               sparkFrames={sparkFrames}
             />
@@ -273,7 +273,7 @@ function App() {
           {/* Text below the logo */}
           <div
             style={{
-              color: "#c3d2d6",
+              color: "#c8c3d6",
               fontFamily: "'Press Start 2P', monospace",
               fontSize: `${pxSize * 0.6}rem`,
               letterSpacing: "2px",
