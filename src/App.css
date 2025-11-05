@@ -44,51 +44,121 @@
 .read-the-docs {
   color: #888;
 }
-
 .pixel-button {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
   overflow: hidden;
-  /* keeps shine inside */
   image-rendering: pixelated;
-  transition: transform 0.15s ease;
+  transition: transform 0.12s ease;
+  border: none;
+  /* No visible border when idle */
+  background: none;
+  /* Transparent by default */
+  vertical-align: middle;
 }
 
 .pixel-button:hover {
-  transform: scale(1.1);
+  transform: translateY(-2px) scale(1.05);
+  /* Subtle glow + inner purple hue only when hovered */
+  box-shadow:
+    0 0 6px rgba(138, 99, 255, 0.7),
+    0 0 14px rgba(138, 99, 255, 0.4),
+    0 0 20px rgba(138, 99, 255, 0.2);
 }
 
-/* Shine animation overlay */
+.pixel-button:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow:
+    0 0 6px rgba(62, 26, 255, 0.6),
+    0 0 12px rgba(62, 26, 255, 0.4);
+  filter: brightness(0.9);
+}
+
 .pixel-button::after {
   content: "";
   position: absolute;
   top: 0;
-  left: -70%;
-  width: 40%;
+  left: -80%;
+  width: 60%;
   height: 100%;
-  background: linear-gradient(120deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.4) 50%,
-      rgba(255, 255, 255, 0) 100%);
+  background: repeating-linear-gradient(120deg,
+      rgba(255, 255, 255, 0) 0px,
+      rgba(255, 255, 255, 0.35) 4px,
+      rgba(255, 255, 255, 0) 8px);
   transform: skewX(-20deg);
+  opacity: 0;
   pointer-events: none;
+  image-rendering: pixelated;
 }
 
 .pixel-button:hover::after {
-  animation: shine 0.8s forwards;
+  animation: pixel-shine 0.8s ease-out forwards;
 }
 
-@keyframes shine {
+@keyframes pixel-shine {
   0% {
-    left: -70%;
+    left: -80%;
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 0.8;
   }
 
   100% {
-    left: 120%;
+    left: 130%;
+    opacity: 0;
   }
 }
 
 .pixel-button img {
   display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+  transition: filter 0.1s ease;
+}
+
+.pixel-button:hover img {
+  filter: drop-shadow(0 0 3px #8a63ff);
+}
+
+/* === CUSTOM SCROLLBAR === */
+
+/* For WebKit browsers (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0512;
+  /* deep background */
+  border-left: 2px solid #12093a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #5a2bff 0%, #2b146b 100%);
+  border: 2px solid #0a0512;
+  border-radius: 2px;
+  box-shadow:
+    0 0 4px rgba(90, 43, 255, 0.5),
+    inset 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #8a63ff 0%, #3e1aff 100%);
+  box-shadow:
+    0 0 6px rgba(138, 99, 255, 0.7),
+    inset 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+/* Firefox scrollbar (modern spec) */
+* {
+  scrollbar-width: thick;
+  scrollbar-color: #5a2bff #0a0512;
 }

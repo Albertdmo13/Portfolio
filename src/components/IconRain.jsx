@@ -124,8 +124,7 @@ export default function IconRain({
           ...pos,
           icon: recoloredIcons[Math.floor(rand(recoloredIcons.length))],
           lastDot: performance.now(),
-          // 🔹 Random speed factor: 0.7–1.3 × base speed
-          vy: (0.7 + Math.random() * 0.6) * speed,
+          vy: (0.7 + Math.random() * 1.2) * speed,
         };
       });
 
@@ -149,7 +148,8 @@ export default function IconRain({
               : 1 +
                 Math.min(
                   Math.floor(
-                    ((age - (dotLifetime - dotAnimDuration)) / dotAnimDuration) *
+                    ((age - (dotLifetime - dotAnimDuration)) /
+                      dotAnimDuration) *
                       (fcount - 2)
                   ),
                   fcount - 1

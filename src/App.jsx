@@ -11,7 +11,7 @@ const skills_icons_url = "/Portfolio/icons/skills_icons";
 const BACKGROUND_IMAGE_URL = "/Portfolio/backgrounds/window_view_big.png"; // Constant for the image path
 
 // New constant: Set the original pixel height of the image (e.g., if the image is 192x80 pixels)
-const BACKGROUND_IMAGE_BASE_HEIGHT_PX = 270;
+const BACKGROUND_IMAGE_BASE_HEIGHT_PX = 300;
 
 const skills = [
   { name: "Angular", icon_url: skills_icons_url + "/angular.png" },
@@ -76,7 +76,6 @@ const dotFrames = [
 
 const getSkillsIconUrls = () => skills.map((skill) => skill.icon_url);
 
-/* 🔸 Reusable button component that swaps its image on hover */
 function HoverButton({ href, normalSrc, hoverSrc, alt, width, height }) {
   const [hover, setHover] = useState(false);
 
@@ -85,30 +84,20 @@ function HoverButton({ href, normalSrc, hoverSrc, alt, width, height }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      className="pixel-button"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
         width,
         height,
-        display: "inline-block",
-        margin: "0 8px",
+        // These dimensions come from pxSize (passed dynamically)
       }}
     >
-      <img
-        src={hover ? hoverSrc : normalSrc}
-        alt={alt}
-        draggable="false"
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "contain",
-          imageRendering: "pixelated",
-          display: "block",
-        }}
-      />
+      <img src={hover ? hoverSrc : normalSrc} alt={alt} draggable="false" />
     </a>
   );
 }
+
 function App() {
   const [pxSize, setPxSize] = useState(4);
   const [skillsVisible, setSkillsVisible] = useState(false);
@@ -168,7 +157,7 @@ function App() {
   const backgroundHeight = BACKGROUND_IMAGE_BASE_HEIGHT_PX * pxSize;
 
   // Calculate the scaled vertical offset using the dynamic pxSize
-  const verticalOffset = 17 * pxSize;
+  const verticalOffset = 20 * pxSize;
 
   const iconRainElement = useMemo(
     () => (
@@ -188,7 +177,7 @@ function App() {
           iconSize={34}
           pixelScale={pxSize}
           speed={0.5 * (pxSize / 4)}
-          density={getSkillsIconUrls().length * 0.75}
+          density={getSkillsIconUrls().length * 1.2}
           pixelSnap={false}
           color1="#3b3379"
           color2="#0e0911"
@@ -290,7 +279,6 @@ function App() {
             />
           </div>
 
-          {/* Header buttons */}
           <div
             style={{
               marginTop: `${pxSize * 20}px`,
@@ -327,15 +315,6 @@ function App() {
           </div>
         </div>
       </header>
-
-      {/* === SEPARATOR BETWEEN HEADER AND NEXT SECTION === */}
-      <div
-        style={{
-          width: "100%",
-          height: `${pxSize * 33}px`,
-          backgroundColor: "#000000",
-        }}
-      />
 
       {/* === BACKGROUND IMAGE AND SKILLS WINDOW CONTAINER === */}
       <div

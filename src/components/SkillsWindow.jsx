@@ -64,7 +64,7 @@ export default function SkillsWindow({ pixelSize = 3 }) {
   const [isAnimating, setIsAnimating] = useState(false);
 
   const BASE_WIDTH = 352;
-  const BASE_HEIGHT = 119;
+  const BASE_HEIGHT = 189;
 
   const WINDOW_WIDTH = BASE_WIDTH * pixelSize;
   const WINDOW_HEIGHT = BASE_HEIGHT * pixelSize;
