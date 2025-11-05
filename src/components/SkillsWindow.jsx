@@ -63,20 +63,20 @@ export default function SkillsWindow({ pixelSize = 3 }) {
   const [groupedItems, setGroupedItems] = useState([]);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const BASE_WIDTH = 205;
-  const BASE_HEIGHT = 115;
+  const BASE_WIDTH = 352;
+  const BASE_HEIGHT = 119;
 
   const WINDOW_WIDTH = BASE_WIDTH * pixelSize;
   const WINDOW_HEIGHT = BASE_HEIGHT * pixelSize;
   const LIST_WIDTH = 35 * pixelSize;
-  const INFO_WIDTH = 70 * pixelSize;
-  const MEDIA_WIDTH = 100 * pixelSize;
+  const INFO_WIDTH = 100 * pixelSize;
+  const MEDIA_WIDTH = WINDOW_WIDTH - LIST_WIDTH - INFO_WIDTH;
   const HANDLE_HEIGHT = 0 * pixelSize;
   const TEXT_DELAY = 20; // ms per character for progressive text
 
   // --- Load data from JSON ---
   useEffect(() => {
-    fetch("/data/skills.json")
+    fetch("/Portfolio/data/skills.json")
       .then((res) => res.json())
       .then((data) => setGroupedItems(data))
       .catch((err) => console.error("Error loading skills.json:", err));
@@ -107,8 +107,7 @@ export default function SkillsWindow({ pixelSize = 3 }) {
   // The content itself only shows once the fade-out is complete (isAnimating is false)
   const infoContent = (
     // Use 'displayItem' for all content, ensuring the old content stays visible during the fade-out
-    <div className={`skills-info-container ${isAnimating ? 'fade-out' : ''}`}>
-
+    <div className={`skills-info-container ${isAnimating ? "fade-out" : ""}`}>
       {/* SCALED ICON */}
       <div
         style={{
@@ -118,7 +117,7 @@ export default function SkillsWindow({ pixelSize = 3 }) {
         }}
       >
         <img
-          src={`/icons/${displayItem?.icon}`}
+          src={`/Portfolio/icons/${displayItem?.icon}`}
           alt={`${displayItem?.name} icon`}
           style={{
             width: `${33 * pixelSize}px`,
@@ -179,8 +178,9 @@ export default function SkillsWindow({ pixelSize = 3 }) {
                 group.skills.map((item) => (
                   <div
                     key={item.id}
-                    className={`skills-list-item ${selected?.id === item.id ? "selected" : ""
-                      }`}
+                    className={`skills-list-item ${
+                      selected?.id === item.id ? "selected" : ""
+                    }`}
                     onClick={() => handleSelect(item)}
                     style={{
                       marginBottom: `${2 * pixelSize}px`,
@@ -245,7 +245,7 @@ export default function SkillsWindow({ pixelSize = 3 }) {
           displayItem.media.map((file, index) => (
             <img
               key={index}
-              src={`/media/${file}`}
+              src={`/Portfolio/media/${file}`}
               alt={`${displayItem.name} preview ${index + 1}`}
               style={{
                 width: "100%",

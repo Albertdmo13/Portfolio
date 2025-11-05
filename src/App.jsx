@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import ThreeLogo from "./components/ThreePixelLogo";
 import PixelBlast from "./components/PixelBlast";
 import IconRain from "./components/IconRain";
@@ -7,7 +7,11 @@ import SkillsWindow from "./components/SkillsWindow";
 
 import "./App.css";
 
-const skills_icons_url = "/icons/skills_icons";
+const skills_icons_url = "/Portfolio/icons/skills_icons";
+const BACKGROUND_IMAGE_URL = "/Portfolio/backgrounds/window_view_big.png"; // Constant for the image path
+
+// New constant: Set the original pixel height of the image (e.g., if the image is 192x80 pixels)
+const BACKGROUND_IMAGE_BASE_HEIGHT_PX = 270;
 
 const skills = [
   { name: "Angular", icon_url: skills_icons_url + "/angular.png" },
@@ -28,34 +32,34 @@ const skills = [
 ];
 
 const sparkFrames = [
-  "/spark/spark1.png",
-  "/spark/spark2.png",
-  "/spark/spark3.png",
-  "/spark/spark4.png",
-  "/spark/spark5.png",
-  "/spark/spark6.png",
-  "/spark/spark7.png",
-  "/spark/spark8.png",
-  "/spark/spark9.png",
-  "/spark/spark10.png",
+  "/Portfolio/spark/spark1.png",
+  "/Portfolio/spark/spark2.png",
+  "/Portfolio/spark/spark3.png",
+  "/Portfolio/spark/spark4.png",
+  "/Portfolio/spark/spark5.png",
+  "/Portfolio/spark/spark6.png",
+  "/Portfolio/spark/spark7.png",
+  "/Portfolio/spark/spark8.png",
+  "/Portfolio/spark/spark9.png",
+  "/Portfolio/spark/spark10.png",
 ];
 
 // Header buttons definition
 const headerButtons = {
   github: {
-    normal: "/header_buttons/btn_github.png",
-    hover: "/header_buttons/btn_github_hovered.png",
+    normal: "/Portfolio/header_buttons/btn_github.png",
+    hover: "/Portfolio/header_buttons/btn_github_hovered.png",
     link: "https://github.com/Albertdmo13",
   },
   linkedin: {
-    normal: "/header_buttons/btn_linkedin.png",
-    hover: "/header_buttons/btn_linkedin_hovered.png",
+    normal: "/Portfolio/header_buttons/btn_linkedin.png",
+    hover: "/Portfolio/header_buttons/btn_linkedin_hovered.png",
     link: "https://www.linkedin.com/in/albertdmo/",
   },
   cv: {
-    normal: "/header_buttons/btn_curriculum.png",
-    hover: "/header_buttons/btn_curriculum_hovered.png",
-    link: "/curriculum.pdf",
+    normal: "/Portfolio/header_buttons/btn_curriculum.png",
+    hover: "/Portfolio/header_buttons/btn_curriculum_hovered.png",
+    link: "/Portfolio/curriculum.pdf",
   },
 };
 
@@ -105,10 +109,11 @@ function HoverButton({ href, normalSrc, hoverSrc, alt, width, height }) {
     </a>
   );
 }
-
-function _App() {
+function App() {
   const [pxSize, setPxSize] = useState(4);
+  const [skillsVisible, setSkillsVisible] = useState(false);
   const bannerRef = useRef(null);
+  const backgroundRef = useRef(null);
 
   // Dynamically scale pixel size based on screen width
   useEffect(() => {
@@ -127,6 +132,78 @@ function _App() {
       document.removeEventListener("fullscreenchange", updatePixelSize);
     };
   }, []);
+
+  // Intersection Observer for the background section
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // Set skillsVisible to true when the element enters the viewport
+          if (entry.isIntersecting) {
+            setSkillsVisible(true);
+          } else {
+            // Hide skills window when it leaves the viewport
+            setSkillsVisible(false);
+          }
+        });
+      },
+      {
+        root: null, // viewport as root
+        rootMargin: "0px",
+        threshold: 0.1, // 10% of the element visible to trigger
+      }
+    );
+
+    if (backgroundRef.current) {
+      observer.observe(backgroundRef.current);
+    }
+
+    return () => {
+      if (backgroundRef.current) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        observer.unobserve(backgroundRef.current);
+      }
+    };
+  }, [backgroundRef]);
+
+  // Calculate the actual height of the background image container based on pxSize
+  const backgroundHeight = BACKGROUND_IMAGE_BASE_HEIGHT_PX * pxSize;
+
+  // Calculate the scaled vertical offset using the dynamic pxSize
+  const verticalOffset = 17 * pxSize;
+
+  const iconRainElement = useMemo(
+    () => (
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          overflow: "hidden",
+          zIndex: 0,
+        }}
+      >
+        <IconRain
+          icons={getSkillsIconUrls()}
+          iconSize={34}
+          pixelScale={pxSize}
+          speed={0.5 * (pxSize / 4)}
+          density={getSkillsIconUrls().length * 0.75}
+          pixelSnap={false}
+          color1="#725900"
+          color2="#251500"
+          dotFrames={dotFrames}
+          dotInterval={500}
+          dotLifetime={3000}
+          dotAnimDuration={1000}
+          dotSize={10 * pxSize}
+        />
+      </div>
+    ),
+    [pxSize]
+  );
 
   return (
     <div className="App" style={{ overflowX: "hidden" }}>
@@ -171,33 +248,7 @@ function _App() {
           />
         </div>
 
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            overflow: "hidden",
-            zIndex: 0,
-          }}
-        >
-          <IconRain
-            icons={getSkillsIconUrls()}
-            iconSize={34}
-            pixelScale={pxSize}
-            speed={0.5 * (pxSize / 4)}
-            density={getSkillsIconUrls().length * 0.75}
-            pixelSnap={false}
-            color1="#725900"
-            color2="#251500"
-            dotFrames={dotFrames}
-            dotInterval={500}
-            dotLifetime={3000}
-            dotAnimDuration={1000}
-            dotSize={10 * pxSize}
-          />
-        </div>
+        {iconRainElement}
 
         {/* Centered logo, text, and buttons */}
         <div
@@ -215,7 +266,7 @@ function _App() {
           {/* Logo */}
           <div>
             <ThreeLogo
-              url={"/3dmodels/albertdmo_pixel_logo_gold.glb"}
+              url={"/Portfolio/3dmodels/albertdmo_pixel_logo_gold.glb"}
               pixelSize={pxSize}
               sparkFrames={sparkFrames}
             />
@@ -279,6 +330,46 @@ function _App() {
         </div>
       </header>
 
+      {/* === BACKGROUND IMAGE AND SKILLS WINDOW CONTAINER === */}
+      <div
+        ref={backgroundRef}
+        style={{
+          position: "relative",
+          width: "100%",
+          height: `${backgroundHeight}px`,
+          zIndex: 10,
+        }}
+      >
+        {/* Background Image Element */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: `url(${BACKGROUND_IMAGE_URL})`,
+            backgroundSize: "auto 100%",
+            backgroundPosition: "center",
+            imageRendering: "pixelated",
+            backgroundRepeat: "no-repeat",
+          }}
+        />
+
+        {/* SkillsWindow - Centered, scaled offset, and conditionally visible */}
+        {skillsVisible && (
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              // Correctly applies the dynamic, scaled offset
+              transform: `translate(-50%, calc(-50% - ${verticalOffset}px))`,
+              zIndex: 20,
+            }}
+          >
+            <SkillsWindow pixelSize={pxSize} />
+          </div>
+        )}
+      </div>
+
       {/* === MAIN CONTENT === */}
       <main
         style={{
@@ -292,22 +383,6 @@ function _App() {
         <h1>Welcome to the next section</h1>
         <p>Test</p>
       </main>
-    </div>
-  );
-}
-
-function App() {
-  return (
-    <div
-      style={{
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "#0d0d1a",
-      }}
-    >
-      <SkillsWindow pixelSize={3} />
     </div>
   );
 }
