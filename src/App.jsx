@@ -192,8 +192,8 @@ function App() {
           speed={0.5 * (pxSize / 4)}
           density={getSkillsIconUrls().length * 0.75}
           pixelSnap={false}
-          color1="#725900"
-          color2="#251500"
+          color1="#3b3379"
+          color2="#19061e"
           dotFrames={dotFrames}
           dotInterval={500}
           dotLifetime={3000}
@@ -222,7 +222,7 @@ function App() {
           style={{
             position: "absolute",
             inset: 0,
-            backgroundColor: "#251500ff",
+            backgroundColor: "#170a19",
             zIndex: -2,
           }}
         />
@@ -230,7 +230,7 @@ function App() {
           <PixelBlast
             variant="square"
             pixelSize={pxSize}
-            color="#443400"
+            color="#190044"
             patternScale={3}
             patternDensity={1.2}
             enableRipples
@@ -240,7 +240,7 @@ function App() {
             liquid
             liquidRadius={1.2}
             liquidWobbleSpeed={5}
-            speed={0.6}
+            speed={5.0}
             edgeFade={0}
             transparent
             antialias={false}
@@ -275,7 +275,7 @@ function App() {
           {/* Text below the logo */}
           <div
             style={{
-              color: "#ffe282ff",
+              color: "#c3d2d6",
               fontFamily: "'Press Start 2P', monospace",
               fontSize: `${pxSize * 0.6}rem`,
               letterSpacing: "2px",

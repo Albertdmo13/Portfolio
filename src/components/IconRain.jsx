@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 export default function IconRain({
   icons,
   iconSize = 32,
-  speed = 0.5,
+  speed = 0.5, // global base speed multiplier
   density = 20,
   pixelScale = 5,
   pixelSnap = true,
@@ -45,7 +45,6 @@ export default function IconRain({
 
     ctx.imageSmoothingEnabled = false;
 
-    // --- utilidades rápidas ---
     const hexToRgb = (hex) => {
       const num = parseInt(hex.slice(1), 16);
       return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
@@ -79,7 +78,6 @@ export default function IconRain({
       return n;
     };
 
-    // --- carga de imágenes (promesas) ---
     const loadImages = (sources) =>
       Promise.all(
         sources.map(
@@ -104,7 +102,6 @@ export default function IconRain({
       const recoloredIcons = baseIcons.map(recolor);
       const recoloredDots = baseDots.map(recolor);
 
-      // --- inicialización ---
       const rand = (max) => Math.random() * max;
       const findPos = (arr, tries = 40) => {
         for (let i = 0; i < tries; i++) {
@@ -120,13 +117,15 @@ export default function IconRain({
         return { x: rand(canvas.width - scaledIcon), y: rand(canvas.height) };
       };
 
-      // inicializar drops
+      // --- inicializar drops con velocidad única ---
       drops.current = Array.from({ length: density }, () => {
         const pos = findPos(drops.current);
         return {
           ...pos,
           icon: recoloredIcons[Math.floor(rand(recoloredIcons.length))],
           lastDot: performance.now(),
+          // 🔹 Random speed factor: 0.7–1.3 × base speed
+          vy: (0.7 + Math.random() * 0.6) * speed,
         };
       });
 
@@ -150,8 +149,7 @@ export default function IconRain({
               : 1 +
                 Math.min(
                   Math.floor(
-                    ((age - (dotLifetime - dotAnimDuration)) /
-                      dotAnimDuration) *
+                    ((age - (dotLifetime - dotAnimDuration)) / dotAnimDuration) *
                       (fcount - 2)
                   ),
                   fcount - 1
@@ -167,7 +165,6 @@ export default function IconRain({
           const y = pixelSnap ? Math.floor(d.y / pixelScale) * pixelScale : d.y;
           ctx.drawImage(img, x, y, scaledIcon, scaledIcon);
 
-          // generar dot
           if (time - d.lastDot >= dotInterval && recoloredDots.length) {
             trails.current.push({
               x:
@@ -181,12 +178,14 @@ export default function IconRain({
             d.lastDot = time;
           }
 
-          // movimiento
-          d.y += speed;
+          // 🔹 Movimiento con velocidad individual
+          d.y += d.vy;
+
           if (d.y > canvas.height + scaledIcon) {
             const p = findPos(drops.current);
             d.x = p.x;
             d.y = -scaledIcon;
+            d.vy = (0.7 + Math.random() * 0.6) * speed; // reset new random speed
           }
         }
 

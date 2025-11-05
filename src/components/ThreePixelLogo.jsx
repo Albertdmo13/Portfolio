@@ -153,9 +153,9 @@ export default function ThreePixelLogo({ url, pixelSize = 3, sparkFrames = [] })
           <Model url={url} onBoxComputed={() => { }} pixelSize={pixelSize} />
         </group>
 
-        {/* Postprocessing (Removed due to unresolved dependency error) 
+        {/* Postprocessing (Removed due to unresolved dependency error)
         <EffectComposer multisampling={0}>
-          <Pixelation granularity={pixelSize} /> 
+          <Pixelation granularity={pixelSize} />
         </EffectComposer>
         */}
 

@@ -1,205 +1,267 @@
-/* Importamos la fuente legible */
-/* @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); */
+/* === RETRO PIXEL STYLE SKILLS WINDOW === */
 
-/* --- CUSTOM VARIABLES --- */
+/* Import classic pixel-art font */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 :root {
-    --accent-color: #bbbbbb;
-    /* Amarillo Dorado */
-    --accent-color-light: #ffffff;
-    /* Dorado más claro para títulos y contraste */
-    --accent-color-dark-transparent: #bbbbbb26;
-    --accent-color-medium-transparent: #bbbbbb66;
-    --dark-bg: #000000;
-    /* Fondo oscuro */
+    /* === BLUEISH RETRO COLOR PALETTE === */
+
+    --accent-color: #66b2ff;
+    /* Bright sky blue for borders and text */
+    --accent-color-light: #cce7ff;
+    /* Soft light blue for highlights */
+    --accent-color-dark-transparent: #1a3a6026;
+    /* Transparent navy tone */
+    --accent-color-medium-transparent: #3380cc66;
+    /* Semi-transparent mid blue */
+    --dark-bg: #001022;
+    /* Deep navy background */
     --border-width: 2px;
     --final-window-height: 400px;
-    /* NEW: Define a final height for the window */
+
+    /* Optional: glow tones for neon CRT-like lighting */
+    --glow-color: #66ccff;
+    --glow-color-strong: #99ddff;
 }
 
-/* === Layout base (Window Frame Drawn by CSS) === */
+/* === MAIN WINDOW === */
 .skills-window {
     position: relative;
     display: flex;
-    image-rendering: pixelated;
-    /* font-family: 'Press Start 2P', cursive, monospace; */
+    font-family: 'Press Start 2P', monospace;
     color: var(--accent-color);
     overflow: hidden;
     background-color: var(--dark-bg);
+    image-rendering: pixelated;
 
-    /* MODIFIED: New animation for slide-open (unfurl) */
-    animation: slideOpenAndFadeFromWhite 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    /* Border + flickering CRT light edge */
+    border: var(--border-width) solid var(--accent-color);
+    box-shadow: 0 0 12px #ffffff22, inset 0 0 5px #ffffff11;
 
-    /* NEW: Setting initial and final height properties for the animation */
-    max-height: 0;
-    /* Important: Start compressed */
-    opacity: 1;
-    /* Keep opacity at 1 so only height is animated for the "slide" */
-
-    /* Marco simple con el color de acento */
-    border-style: solid;
-    border-width: var(--border-width);
-    border-color: var(--accent-color);
+    /* Pixelated pop-in animation */
+    animation: pixelWindowIntro 0.8s steps(4, end) forwards;
 }
 
-
-/* NEW ANIMATION: Slide Open (Unfurl) and Fade-in from white overlay */
-@keyframes slideOpenAndFadeFromWhite {
-    from {
-        max-height: 0;
-        /* Start compressed */
+/* === WINDOW OPEN ANIMATION === */
+@keyframes pixelWindowIntro {
+    0% {
+        opacity: 0;
+        transform: scaleY(0) translateY(-10px);
+        filter: brightness(3) contrast(0.2);
     }
 
-    to {
-        max-height: var(--final-window-height);
-        /* Expand to final height */
-        /* NOTE: You may need to set a specific height/max-height on the element
-           itself or use a larger value if the content pushes it. */
+    50% {
+        opacity: 1;
+        transform: scaleY(1.05);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scaleY(1);
+        filter: brightness(1) contrast(1);
     }
 }
 
-
-/* NEW: Pseudo-element for the white color overlay */
+/* === WHITE FLASH ON OPEN === */
 .skills-window::before {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background-color: var(--accent-color-light);
-    /* Fully white color (or the light accent color) */
-    z-index: 10;
-    /* Make sure it's on top of the content */
-
-    /* Animation to fade the white overlay out */
-    animation: fadeWhiteOverlay 0.5s ease-out forwards;
-    animation-delay: 0.2s;
-    /* Start fading out slightly after the slide begins */
+    z-index: 5;
+    animation: fadeWhiteOverlay 0.45s ease-out forwards;
 }
 
 @keyframes fadeWhiteOverlay {
-    to {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
         opacity: 0;
-        /* HACK: Make sure the overlay is truly gone for interactions by setting visibility */
         visibility: hidden;
     }
 }
 
-/* --- Left section: SKILLS LIST --- */
+/* === RETRO CRT SCANLINES & FLICKER === */
+.skills-window::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(to bottom,
+            rgba(255, 255, 255, 0.04) 0px,
+            rgba(0, 0, 0, 0.1) 2px);
+    background-size: 100% 2px;
+    mix-blend-mode: overlay;
+    animation: crtFlicker 2s infinite steps(6, end);
+    opacity: 0.4;
+    z-index: 4;
+}
+
+@keyframes crtFlicker {
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    80% {
+        opacity: 0.35;
+    }
+}
+
+/* === LEFT LIST SECTION === */
 .skills-list {
     overflow-y: auto;
     font-size: 0.8em;
     border-right: 1px solid var(--accent-color);
 }
 
-/* --- NUEVO ESTILO: Título de la Sección --- */
 .skills-section-title {
     color: var(--accent-color-light);
-    font-size: 0.9em;
-    /* Ligeramente más pequeño que el texto de la lista */
+    font-size: 0.85em;
     margin-top: 1.5em;
-    /* Espacio superior para separarlo de la sección anterior */
     margin-bottom: 0.5em;
-    padding-bottom: 0.2em;
+    padding-bottom: 0.3em;
     border-bottom: 1px solid var(--accent-color);
-    /* Línea separadora */
+    text-shadow: 0 0 4px #ffffff33;
 }
-
-/* Estilo para secciones vacías */
-.skills-list-item-empty {
-    opacity: 0.5;
-    font-style: italic;
-    color: var(--accent-color);
-    margin-bottom: 2px;
-    font-size: 0.8em;
-}
-
 
 .skills-list-item {
     background: transparent;
     color: var(--accent-color);
     cursor: pointer;
-    transition: all 0.1s ease-in-out;
-    border-radius: 0;
+    padding: 0.4em 0.6em;
+    transition: all 0.1s steps(2, end);
 }
 
 .skills-list-item:hover {
     background-color: var(--accent-color-dark-transparent);
     color: var(--accent-color-light);
+    transform: translateY(-1px);
 }
 
 .skills-list-item.selected {
     background-color: var(--accent-color-medium-transparent);
     border: 1px solid var(--accent-color);
     color: var(--accent-color-light);
+    text-shadow: 0 0 3px #ffffff55;
 }
 
-/* --- Right section: SKILLS INFO --- */
+/* === INFO PANEL === */
 .skills-info {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    padding: 1em;
+    overflow: hidden;
 }
 
-/* Contenedor para aplicar el fade-in a toda la información */
-.skills-info-container {
-    animation: fadeInBox 0.25s ease-out;
+/* Fade-in for info box */
+.skills-info-container:not(.fade-out) {
+    animation: fadeInBox 0.25s steps(3, end) forwards;
 }
 
-.skills-info-box {
-    background-color: var(--dark-bg);
-    border: 1px solid var(--accent-color);
-    color: var(--accent-color);
-    padding: 0.5em;
-    margin-bottom: 0.8em;
+.skills-info-container.fade-out {
+    animation: fadeOutBox 0.25s steps(2, end) forwards;
 }
-
-.description-box {
-    flex-grow: 1;
-    overflow-y: auto;
-}
-
 
 @keyframes fadeInBox {
     from {
         opacity: 0;
         transform: translateY(4px);
+        filter: brightness(1.5);
     }
 
     to {
         opacity: 1;
         transform: translateY(0);
+        filter: brightness(1);
     }
 }
 
-/* --- Progress Bar --- */
+@keyframes fadeOutBox {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(3px);
+    }
+}
+
+/* === INFO BOX STYLE === */
+.skills-info-box {
+    background-color: var(--dark-bg);
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 0.6em;
+    margin-bottom: 1em;
+    box-shadow: inset 0 0 5px #ffffff11;
+}
+
+/* === PROGRESS BAR === */
 .progress-bar-container {
     background-color: var(--accent-color-dark-transparent);
     border: 1px solid var(--accent-color);
-    overflow: hidden;
-    position: relative;
     image-rendering: pixelated;
+    position: relative;
+    overflow: hidden;
 }
 
 .progress-bar-fill {
     height: 100%;
-    background-color: var(--accent-color);
-    transition: width 0.4s ease-out;
+    background: repeating-linear-gradient(45deg,
+            var(--accent-color-light),
+            var(--accent-color-light) 2px,
+            var(--accent-color) 2px,
+            var(--accent-color) 4px);
+    animation: progressGlitch 0.6s steps(3, end) infinite alternate;
 }
 
+@keyframes progressGlitch {
+    0% {
+        filter: brightness(0.8);
+    }
 
-/* --- Placeholder --- */
+    50% {
+        filter: brightness(1.2);
+    }
+
+    100% {
+        filter: brightness(1);
+    }
+}
+
+/* === PLACEHOLDER === */
 .skills-placeholder {
-    opacity: 1;
-    background-color: var(--dark-bg);
     border: 1px dashed var(--accent-color);
     text-align: center;
     font-style: italic;
     padding: 0.6em;
-    animation: fadeInBox 0.4s ease-in-out;
+    animation: pixelFadeIn 0.4s steps(3, end);
 }
 
-/* --- Scrollbar --- */
+@keyframes pixelFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* === SCROLLBAR === */
 .skills-list::-webkit-scrollbar {
     width: 6px;
 }
@@ -211,55 +273,3 @@
 .skills-list::-webkit-scrollbar-track {
     background: var(--accent-color-dark-transparent);
 }
-
-/* ... (Your existing CSS code above the @keyframes fadeInBox) ... */
-
-/* Contenedor para aplicar el fade-in a toda la información */
-/* NOTE: The existing CSS class name will now be used for the fade-in when not animating */
-.skills-info-container {
-    /* No default animation here, it will be applied via JS */
-}
-
-/* This is the default state after the content has been updated */
-.skills-info-container:not(.fade-out) {
-    animation: fadeInBox 0.25s ease-out forwards;
-}
-
-.skills-info-box {
-    /* ... (rest of skills-info-box styles) ... */
-}
-
-/* ... (rest of skills-info-box styles) ... */
-
-@keyframes fadeInBox {
-    from {
-        opacity: 0;
-        transform: translateY(4px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* NEW: Keyframes for the fade-out effect */
-@keyframes fadeOutBox {
-    from {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    to {
-        opacity: 0;
-        transform: translateY(4px);
-        /* Slide down slightly on exit */
-    }
-}
-
-/* NEW: Class for fade-out state */
-.skills-info-container.fade-out {
-    animation: fadeOutBox 0.25s ease-in forwards;
-}
-
-/* ... (rest of your existing CSS) ... */

@@ -68,8 +68,8 @@ export default function SkillsWindow({ pixelSize = 3 }) {
 
   const WINDOW_WIDTH = BASE_WIDTH * pixelSize;
   const WINDOW_HEIGHT = BASE_HEIGHT * pixelSize;
-  const LIST_WIDTH = 35 * pixelSize;
-  const INFO_WIDTH = 100 * pixelSize;
+  const LIST_WIDTH = 60 * pixelSize;
+  const INFO_WIDTH = 120 * pixelSize;
   const MEDIA_WIDTH = WINDOW_WIDTH - LIST_WIDTH - INFO_WIDTH;
   const HANDLE_HEIGHT = 0 * pixelSize;
   const TEXT_DELAY = 20; // ms per character for progressive text
@@ -108,30 +108,42 @@ export default function SkillsWindow({ pixelSize = 3 }) {
   const infoContent = (
     // Use 'displayItem' for all content, ensuring the old content stays visible during the fade-out
     <div className={`skills-info-container ${isAnimating ? "fade-out" : ""}`}>
-      {/* SCALED ICON */}
+      {/* ICON + NAME + PROGRESS BAR (SIDE BY SIDE) */}
       <div
         style={{
           display: "flex",
-          justifyContent: "center",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: `${3 * pixelSize}px`,
           marginBottom: `${3 * pixelSize}px`,
         }}
       >
+        {/* ICON */}
         <img
           src={`/Portfolio/icons/${displayItem?.icon}`}
           alt={`${displayItem?.name} icon`}
           style={{
-            width: `${33 * pixelSize}px`,
-            height: `${33 * pixelSize}px`,
+            width: `${30 * pixelSize}px`,
+            height: `${30 * pixelSize}px`,
             imageRendering: "pixelated",
+            flexShrink: 0,
           }}
         />
-      </div>
 
-      {/* NAME AND LEVEL */}
-      <div className="skills-info-box">
-        <span style={{ fontWeight: "bold" }}>{displayItem?.name}</span>
-        <span style={{ float: "right" }}>Level {displayItem?.level}</span>
-        <ProgressBar level={displayItem?.level || 0} pixelSize={pixelSize} />
+        {/* NAME + PROGRESS BAR */}
+        <div style={{ flex: 1 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: `${0.6 * pixelSize}px`,
+            }}
+          >
+            <span style={{ fontWeight: "bold" }}>{displayItem?.name}</span>
+            <span>Lv. {displayItem?.level}</span>
+          </div>
+          <ProgressBar level={displayItem?.level || 0} pixelSize={pixelSize} />
+        </div>
       </div>
 
       {/* DESCRIPTION - NOW USING PROGRESSIVE TEXT */}
