@@ -1,11 +1,10 @@
 /* === RETRO PIXEL STYLE SKILLS WINDOW === */
 
-/* Import classic pixel-art font */
+/* Import pixel-art font */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 :root {
     /* === BLUEISH RETRO COLOR PALETTE === */
-
     --accent-color: #66b2ff;
     /* Bright sky blue for borders and text */
     --accent-color-light: #cce7ff;
@@ -19,7 +18,7 @@
     --border-width: 2px;
     --final-window-height: 400px;
 
-    /* Optional: glow tones for neon CRT-like lighting */
+    /* Glow tones for neon CRT-like lighting */
     --glow-color: #66ccff;
     --glow-color-strong: #99ddff;
 }
@@ -33,32 +32,30 @@
     overflow: hidden;
     background-color: var(--dark-bg);
     image-rendering: pixelated;
-
-    /* Border + flickering CRT light edge */
     border: var(--border-width) solid var(--accent-color);
-    box-shadow: 0 0 12px #ffffff22, inset 0 0 5px #ffffff11;
+    box-shadow: 0 0 12px #66ccff33, inset 0 0 5px #66ccff22;
 
-    /* Pixelated pop-in animation */
-    animation: pixelWindowIntro 0.8s steps(4, end) forwards;
+    /* Smooth pop-in animation (no slow FPS steps) */
+    animation: pixelWindowIntro 0.6s ease-out forwards;
 }
 
 /* === WINDOW OPEN ANIMATION === */
 @keyframes pixelWindowIntro {
     0% {
         opacity: 0;
-        transform: scaleY(0) translateY(-10px);
-        filter: brightness(3) contrast(0.2);
+        transform: scaleY(0.9) translateY(-10px);
+        filter: brightness(2);
     }
 
     50% {
         opacity: 1;
-        transform: scaleY(1.05);
+        transform: scaleY(1.03);
     }
 
     100% {
         opacity: 1;
         transform: scaleY(1);
-        filter: brightness(1) contrast(1);
+        filter: brightness(1);
     }
 }
 
@@ -69,32 +66,32 @@
     inset: 0;
     background-color: var(--accent-color-light);
     z-index: 5;
-    animation: fadeWhiteOverlay 0.45s ease-out forwards;
+    animation: fadeWhiteOverlay 0.4s ease-out forwards;
 }
 
 @keyframes fadeWhiteOverlay {
-    0% {
+    from {
         opacity: 1;
     }
 
-    100% {
+    to {
         opacity: 0;
         visibility: hidden;
     }
 }
 
-/* === RETRO CRT SCANLINES & FLICKER === */
+/* === RETRO CRT SCANLINES === */
 .skills-window::after {
     content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
     background-image: repeating-linear-gradient(to bottom,
-            rgba(255, 255, 255, 0.04) 0px,
-            rgba(0, 0, 0, 0.1) 2px);
+            rgba(102, 178, 255, 0.05) 0px,
+            rgba(0, 0, 30, 0.2) 2px);
     background-size: 100% 2px;
-    mix-blend-mode: overlay;
-    animation: crtFlicker 2s infinite steps(6, end);
+    mix-blend-mode: screen;
+    animation: crtFlicker 2s infinite ease-in-out;
     opacity: 0.4;
     z-index: 4;
 }
@@ -122,6 +119,7 @@
     border-right: 1px solid var(--accent-color);
 }
 
+/* Section title styling */
 .skills-section-title {
     color: var(--accent-color-light);
     font-size: 0.85em;
@@ -129,7 +127,7 @@
     margin-bottom: 0.5em;
     padding-bottom: 0.3em;
     border-bottom: 1px solid var(--accent-color);
-    text-shadow: 0 0 4px #ffffff33;
+    text-shadow: 0 0 4px var(--glow-color);
 }
 
 .skills-list-item {
@@ -137,20 +135,21 @@
     color: var(--accent-color);
     cursor: pointer;
     padding: 0.4em 0.6em;
-    transition: all 0.1s steps(2, end);
+    transition: all 0.12s ease-in-out;
 }
 
 .skills-list-item:hover {
     background-color: var(--accent-color-dark-transparent);
     color: var(--accent-color-light);
     transform: translateY(-1px);
+    text-shadow: 0 0 4px var(--glow-color);
 }
 
 .skills-list-item.selected {
     background-color: var(--accent-color-medium-transparent);
     border: 1px solid var(--accent-color);
     color: var(--accent-color-light);
-    text-shadow: 0 0 3px #ffffff55;
+    text-shadow: 0 0 6px var(--glow-color-strong);
 }
 
 /* === INFO PANEL === */
@@ -162,20 +161,20 @@
     overflow: hidden;
 }
 
-/* Fade-in for info box */
+/* Fade animations (now smooth) */
 .skills-info-container:not(.fade-out) {
-    animation: fadeInBox 0.25s steps(3, end) forwards;
+    animation: fadeInBox 0.25s ease-out forwards;
 }
 
 .skills-info-container.fade-out {
-    animation: fadeOutBox 0.25s steps(2, end) forwards;
+    animation: fadeOutBox 0.25s ease-in forwards;
 }
 
 @keyframes fadeInBox {
     from {
         opacity: 0;
         transform: translateY(4px);
-        filter: brightness(1.5);
+        filter: brightness(1.4);
     }
 
     to {
@@ -204,7 +203,7 @@
     color: var(--accent-color);
     padding: 0.6em;
     margin-bottom: 1em;
-    box-shadow: inset 0 0 5px #ffffff11;
+    box-shadow: inset 0 0 5px #66ccff22;
 }
 
 /* === PROGRESS BAR === */
@@ -212,8 +211,8 @@
     background-color: var(--accent-color-dark-transparent);
     border: 1px solid var(--accent-color);
     image-rendering: pixelated;
-    position: relative;
     overflow: hidden;
+    position: relative;
 }
 
 .progress-bar-fill {
@@ -223,16 +222,17 @@
             var(--accent-color-light) 2px,
             var(--accent-color) 2px,
             var(--accent-color) 4px);
-    animation: progressGlitch 0.6s steps(3, end) infinite alternate;
+    animation: progressPulse 1s ease-in-out infinite alternate;
+    box-shadow: 0 0 6px var(--glow-color);
 }
 
-@keyframes progressGlitch {
+@keyframes progressPulse {
     0% {
-        filter: brightness(0.8);
+        filter: brightness(0.9);
     }
 
     50% {
-        filter: brightness(1.2);
+        filter: brightness(1.3);
     }
 
     100% {
@@ -246,7 +246,7 @@
     text-align: center;
     font-style: italic;
     padding: 0.6em;
-    animation: pixelFadeIn 0.4s steps(3, end);
+    animation: pixelFadeIn 0.4s ease-in-out;
 }
 
 @keyframes pixelFadeIn {
@@ -261,15 +261,18 @@
     }
 }
 
-/* === SCROLLBAR === */
-.skills-list::-webkit-scrollbar {
+/* === SCROLLBARS (Shared for list + media) === */
+.skills-list::-webkit-scrollbar,
+.skills-media::-webkit-scrollbar {
     width: 6px;
 }
 
-.skills-list::-webkit-scrollbar-thumb {
+.skills-list::-webkit-scrollbar-thumb,
+.skills-media::-webkit-scrollbar-thumb {
     background-color: var(--accent-color);
 }
 
-.skills-list::-webkit-scrollbar-track {
+.skills-list::-webkit-scrollbar-track,
+.skills-media::-webkit-scrollbar-track {
     background: var(--accent-color-dark-transparent);
 }

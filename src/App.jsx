@@ -138,19 +138,17 @@ function App() {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // Set skillsVisible to true when the element enters the viewport
-          if (entry.isIntersecting) {
+          if (entry.intersectionRatio > 0.6) {
             setSkillsVisible(true);
           } else {
-            // Hide skills window when it leaves the viewport
             setSkillsVisible(false);
           }
         });
       },
       {
-        root: null, // viewport as root
-        rootMargin: "0px",
-        threshold: 0.1, // 10% of the element visible to trigger
+        root: null,
+        rootMargin: "0px 0px -20% 0px", // waits until user scrolls deeper
+        threshold: [0, 0.25, 0.5, 0.6, 0.75, 1],
       }
     );
 
@@ -330,6 +328,15 @@ function App() {
         </div>
       </header>
 
+      {/* === SEPARATOR BETWEEN HEADER AND NEXT SECTION === */}
+      <div
+        style={{
+          width: "100%",
+          height: `${pxSize * 33}px`,
+          backgroundColor: "#000000",
+        }}
+      />
+
       {/* === BACKGROUND IMAGE AND SKILLS WINDOW CONTAINER === */}
       <div
         ref={backgroundRef}
@@ -360,9 +367,10 @@ function App() {
               position: "absolute",
               top: "50%",
               left: "50%",
-              // Correctly applies the dynamic, scaled offset
               transform: `translate(-50%, calc(-50% - ${verticalOffset}px))`,
               zIndex: 20,
+              opacity: skillsVisible ? 1 : 0,
+              transition: "opacity 0.8s ease-in-out",
             }}
           >
             <SkillsWindow pixelSize={pxSize} />
