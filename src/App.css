@@ -84,10 +84,8 @@
   left: -80%;
   width: 60%;
   height: 100%;
-  background: repeating-linear-gradient(120deg,
-      rgba(255, 255, 255, 0) 0px,
-      rgba(255, 255, 255, 0.35) 4px,
-      rgba(255, 255, 255, 0) 8px);
+  background: linear-gradient(120deg,
+      rgba(255, 255, 255, 0.35) 8px);
   transform: skewX(-20deg);
   opacity: 0;
   pointer-events: none;
@@ -95,7 +93,7 @@
 }
 
 .pixel-button:hover::after {
-  animation: pixel-shine 0.8s ease-out forwards;
+  animation: pixel-shine 0.35s ease-out forwards;
 }
 
 @keyframes pixel-shine {

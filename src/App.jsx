@@ -293,24 +293,24 @@ function App() {
               normalSrc={headerButtons.github.normal}
               hoverSrc={headerButtons.github.hover}
               alt="GitHub"
-              width={`${pxSize * 51}px`}
-              height={`${pxSize * 23}px`}
+              width={`${pxSize * 50}px`}
+              height={`${pxSize * 22}px`}
             />
             <HoverButton
               href={headerButtons.linkedin.link}
               normalSrc={headerButtons.linkedin.normal}
               hoverSrc={headerButtons.linkedin.hover}
               alt="LinkedIn"
-              width={`${pxSize * 49}px`}
-              height={`${pxSize * 23}px`}
+              width={`${pxSize * 48}px`}
+              height={`${pxSize * 22}px`}
             />
             <HoverButton
               href={headerButtons.cv.link}
               normalSrc={headerButtons.cv.normal}
               hoverSrc={headerButtons.cv.hover}
               alt="Curriculum"
-              width={`${pxSize * 57}px`}
-              height={`${pxSize * 24}px`}
+              width={`${pxSize * 56}px`}
+              height={`${pxSize * 22}px`}
             />
           </div>
         </div>
