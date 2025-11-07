@@ -4,16 +4,20 @@ import PixelBlast from "./components/PixelBlast";
 import IconRain from "./components/IconRain";
 import TextType from "./components/TextType";
 import SkillsWindow from "./components/SkillsWindow";
+import SpotlightCard from "./components/SpotlightCard";
+
 
 import "./App.css";
 
-const skills_icons_url = "/Portfolio/icons/skills_icons";
-const BACKGROUND_IMAGE_URL = "/Portfolio/backgrounds/window_view_big.png"; // Constant for the image path
+// ... (Constants and helper components remain the same) ...
 
-// New constant: Set the original pixel height of the image (e.g., if the image is 192x80 pixels)
+const skills_icons_url = "/Portfolio/icons/skills_icons";
+import nine_slice_texture from '/Portfolio/misc/9_slice.png';
+const BACKGROUND_IMAGE_URL = "/Portfolio/backgrounds/window_view_big.png";
 const BACKGROUND_IMAGE_BASE_HEIGHT_PX = 300;
 
 const skills = [
+  // ... (skills array remains the same) ...
   { name: "Angular", icon_url: skills_icons_url + "/angular.png" },
   { name: "Arduino", icon_url: skills_icons_url + "/arduino.png" },
   { name: "Aseprite", icon_url: skills_icons_url + "/aseprite.png" },
@@ -31,7 +35,17 @@ const skills = [
   { name: "React", icon_url: skills_icons_url + "/react.png" },
 ];
 
+const cardItems = [
+  { title: 'Card 1', text: 'This is the first card.' },
+  { title: 'Card 2', text: 'This is the second card.' },
+  { title: 'Card 3', text: 'This is the third card.' },
+  { title: 'Card 4', text: 'This is the fourth card.' },
+  { title: 'Card 5', text: 'This is the fifth card.' },
+  { title: 'Card 6', text: 'This is the sixth card.' },
+];
+
 const sparkFrames = [
+  // ... (sparkFrames array remains the same) ...
   "/Portfolio/spark/spark1.png",
   "/Portfolio/spark/spark2.png",
   "/Portfolio/spark/spark3.png",
@@ -44,8 +58,8 @@ const sparkFrames = [
   "/Portfolio/spark/spark10.png",
 ];
 
-// Header buttons definition
 const headerButtons = {
+  // ... (headerButtons object remains the same) ...
   github: {
     normal: "/Portfolio/header_buttons/btn_github.png",
     hover: "/Portfolio/header_buttons/btn_github_hovered.png",
@@ -64,6 +78,7 @@ const headerButtons = {
 };
 
 const dotFrames = [
+  // ... (dotFrames array remains the same) ...
   skills_icons_url + "/dot1.png",
   skills_icons_url + "/dot2.png",
   skills_icons_url + "/dot3.png",
@@ -90,7 +105,6 @@ function HoverButton({ href, normalSrc, hoverSrc, alt, width, height }) {
       style={{
         width,
         height,
-        // These dimensions come from pxSize (passed dynamically)
       }}
     >
       <img src={hover ? hoverSrc : normalSrc} alt={alt} draggable="false" />
@@ -100,9 +114,11 @@ function HoverButton({ href, normalSrc, hoverSrc, alt, width, height }) {
 
 function App() {
   const [pxSize, setPxSize] = useState(4);
-  const [skillsVisible, setSkillsVisible] = useState(false);
+  // Renamed to contentVisible for clarity, since it controls more than just skills
+  const [contentVisible, setContentVisible] = useState(false);
   const bannerRef = useRef(null);
-  const backgroundRef = useRef(null);
+  // Re-purposing backgroundRef to observe the main content area
+  const mainContentRef = useRef(null);
 
   // Dynamically scale pixel size based on screen width
   useEffect(() => {
@@ -122,54 +138,47 @@ function App() {
     };
   }, []);
 
-  // Intersection Observer for the background section
+  // Intersection Observer for the main content section
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.intersectionRatio > 0.6) {
-            setSkillsVisible(true);
+          if (entry.isIntersecting) {
+            // Show main content when scrolled enough
+            setContentVisible(true);
           } else {
-            setSkillsVisible(false);
+            // Hide when user scrolls back up
+            setContentVisible(false);
           }
         });
       },
       {
         root: null,
-        rootMargin: "0px 0px -20% 0px", // waits until user scrolls deeper
-        threshold: [0, 0.25, 0.5, 0.6, 0.75, 1],
+        threshold: 0.1,
       }
     );
 
-    if (backgroundRef.current) {
-      observer.observe(backgroundRef.current);
-    }
+    if (mainContentRef.current) observer.observe(mainContentRef.current);
 
     return () => {
-      if (backgroundRef.current) {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        observer.unobserve(backgroundRef.current);
-      }
+      if (mainContentRef.current) observer.unobserve(mainContentRef.current);
     };
-  }, [backgroundRef]);
+  }, [mainContentRef]);
 
-  // Calculate the actual height of the background image container based on pxSize
-  const backgroundHeight = BACKGROUND_IMAGE_BASE_HEIGHT_PX * pxSize;
-
-  // Calculate the scaled vertical offset using the dynamic pxSize
-  const verticalOffset = 20 * pxSize;
+  // Removed unused backgroundHeight and verticalOffset
 
   const iconRainElement = useMemo(
+    // ... (IconRain definition remains the same) ...
     () => (
       <div
         style={{
-          position: "absolute",
+          position: "fixed",
           top: 0,
           left: 0,
           width: "100%",
           height: "100%",
           overflow: "hidden",
-          zIndex: 0,
+          zIndex: -1,
         }}
       >
         <IconRain
@@ -195,25 +204,26 @@ function App() {
   return (
     <div className="App" style={{ overflowX: "hidden" }}>
       {/* === HEADER SECTION === */}
+      {/* ... (Header code remains the same) ... */}
       <header
         ref={bannerRef}
         style={{
           position: "relative",
           width: "100%",
-          height: "100vh",
+          height: "100vh",   // o 85vh para subir el main más
           overflow: "hidden",
         }}
       >
         {/* Background layers */}
         <div
           style={{
-            position: "absolute",
+            position: "fixed",
             inset: 0,
             backgroundColor: "#0e0911",
             zIndex: -2,
           }}
         />
-        <div style={{ position: "absolute", inset: 0, zIndex: -1 }}>
+        <div style={{ position: "fixed", inset: 0, zIndex: -1 }}>
           <PixelBlast
             variant="square"
             pixelSize={pxSize}
@@ -316,59 +326,39 @@ function App() {
         </div>
       </header>
 
-      {/* === BACKGROUND IMAGE AND SKILLS WINDOW CONTAINER === */}
-      <div
-        ref={backgroundRef}
-        style={{
-          position: "relative",
-          width: "100%",
-          height: `${backgroundHeight}px`,
-          zIndex: 10,
-        }}
-      >
-        {/* Background Image Element */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage: `url(${BACKGROUND_IMAGE_URL})`,
-            backgroundSize: "auto 100%",
-            backgroundPosition: "center",
-            imageRendering: "pixelated",
-            backgroundRepeat: "no-repeat",
-          }}
-        />
-
-        {/* SkillsWindow - Centered, scaled offset, and conditionally visible */}
-        {skillsVisible && (
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: `translate(-50%, calc(-50% - ${verticalOffset}px))`,
-              zIndex: 20,
-              opacity: skillsVisible ? 1 : 0,
-              transition: "opacity 0.8s ease-in-out",
-            }}
-          >
-            <SkillsWindow pixelSize={pxSize} />
-          </div>
-        )}
-      </div>
-
       {/* === MAIN CONTENT === */}
+      {/* 1. Set position: relative/absolute to enable 'top' manipulation.
+        2. Apply a class (fade-in-scroll) that uses contentVisible state to trigger the animation.
+        3. Attach the ref for the Intersection Observer.
+      */}
       <main
-        style={{
-          backgroundColor: "#000000",
-          color: "#f7f4e7",
-          fontFamily: "sans-serif",
-          minHeight: "150vh",
-          padding: "4rem 2rem",
-        }}
+        ref={mainContentRef}
+        className={`main-content ${contentVisible ? 'visible' : ''}`}
       >
-        <h1>Welcome to the next section</h1>
-        <p>Test</p>
+        <div style={{
+          position: 'relative',
+          display: 'grid',
+          fontFamily: "'Press Start 2P', monospace",
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '1rem',
+          maxWidth: '1000px',
+          width: '90%',
+          margin: '0 auto',
+          top: "-15vh", // ajusta según se necesite
+        }}>
+          {cardItems.map((item, index) => (
+            <SpotlightCard
+              key={index}
+              texture={nine_slice_texture}
+              pixelSize={pxSize}
+              slice={4}
+              maxRotation={15}
+            >
+              <h3 style={{ color: 'white' }}>{item.title}</h3>
+              <p style={{ color: 'gray' }}>{item.text}</p>
+            </SpotlightCard>
+          ))}
+        </div>
       </main>
     </div>
   );
