@@ -12,7 +12,7 @@ import "./App.css";
 // ... (Constants and helper components remain the same) ...
 
 const skills_icons_url = "/Portfolio/icons/skills_icons";
-import nine_slice_texture from '/Portfolio/misc/9_slice.png';
+const nine_slice_texture = '/Portfolio/misc/9_slice.png';
 const BACKGROUND_IMAGE_URL = "/Portfolio/backgrounds/window_view_big.png";
 const BACKGROUND_IMAGE_BASE_HEIGHT_PX = 300;
 
