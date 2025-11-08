@@ -21,19 +21,26 @@
     --rotate-x: 0deg;
     --rotate-y: 0deg;
 
-    /* Apply perspective and rotations */
     transform-style: preserve-3d;
-    transform: perspective(1000px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y));
+    transform: perspective(800px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale(1);
 
-    /* Smooth transition for mouse leave */
-    transition: transform 0.4s ease-out;
+    /* Snappy transitions */
+    transition: transform 0.06s cubic-bezier(0.33, 1, 0.68, 1),
+        filter 0.05s linear;
+
+    cursor: pointer;
+    filter: brightness(1);
+}
+
+.card-spotlight:hover {
+    transform: perspective(800px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale(1.05);
+    filter: brightness(1.25);
+    /* just brighten on hover */
 }
 
 /* Content on top */
 .card-spotlight>* {
     position: relative;
     z-index: 2;
-
-    /* Increased this value to enhance the 3D effect */
     transform: translateZ(65px);
 }

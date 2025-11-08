@@ -3,7 +3,6 @@ import ThreeLogo from "./components/ThreePixelLogo";
 import PixelBlast from "./components/PixelBlast";
 import IconRain from "./components/IconRain";
 import TextType from "./components/TextType";
-import SkillsWindow from "./components/SkillsWindow";
 import SpotlightCard from "./components/SpotlightCard";
 
 
@@ -17,31 +16,76 @@ const BACKGROUND_IMAGE_URL = "/Portfolio/backgrounds/window_view_big.png";
 const BACKGROUND_IMAGE_BASE_HEIGHT_PX = 300;
 
 const skills = [
-  // ... (skills array remains the same) ...
-  { name: "Angular", icon_url: skills_icons_url + "/angular.png" },
-  { name: "Arduino", icon_url: skills_icons_url + "/arduino.png" },
-  { name: "Aseprite", icon_url: skills_icons_url + "/aseprite.png" },
-  { name: "Blender", icon_url: skills_icons_url + "/blender.png" },
-  { name: "CSS", icon_url: skills_icons_url + "/css.png" },
-  { name: "GameMaker", icon_url: skills_icons_url + "/gamemaker.png" },
-  { name: "Git", icon_url: skills_icons_url + "/git.png" },
-  { name: "GitHub", icon_url: skills_icons_url + "/github.png" },
-  { name: "Java", icon_url: skills_icons_url + "/java.png" },
-  { name: "JavaScript", icon_url: skills_icons_url + "/js.png" },
-  { name: "Linux", icon_url: skills_icons_url + "/linux.png" },
-  { name: "OpenGL", icon_url: skills_icons_url + "/opengl.png" },
-  { name: "Photoshop", icon_url: skills_icons_url + "/photoshop.png" },
-  { name: "Python", icon_url: skills_icons_url + "/python.png" },
-  { name: "React", icon_url: skills_icons_url + "/react.png" },
+  { name: "Angular",
+    icon_url: skills_icons_url + "/angular.png",
+    color_icon_url: skills_icons_url + "/angular_color.png"
+  },
+  { name: "Arduino",
+    icon_url: skills_icons_url + "/arduino.png",
+    color_icon_url: skills_icons_url + "/arduino_color.png"
+  },
+  { name: "Aseprite",
+    icon_url: skills_icons_url + "/aseprite.png",
+    color_icon_url: skills_icons_url + "/aseprite_color.png"
+  },
+  { name: "Blender",
+    icon_url: skills_icons_url + "/blender.png",
+    color_icon_url: skills_icons_url + "/blender_color.png"
+  },
+  { name: "CSS",
+    icon_url: skills_icons_url + "/css.png",
+    color_icon_url: skills_icons_url + "/css_color.png"
+  },
+  { name: "GameMaker",
+    icon_url: skills_icons_url + "/gamemaker.png",
+    color_icon_url: skills_icons_url + "/gamemaker_color.png"
+  },
+  { name: "Git",
+    icon_url: skills_icons_url + "/git.png",
+    color_icon_url: skills_icons_url + "/git_color.png"
+  },
+  { name: "GitHub",
+    icon_url: skills_icons_url + "/github.png",
+    color_icon_url: skills_icons_url + "/github_color.png"
+  },
+  { name: "Java",
+    icon_url: skills_icons_url + "/java.png",
+    color_icon_url: skills_icons_url + "/java_color.png"
+  },
+  { name: "JavaScript",
+    icon_url: skills_icons_url + "/js.png",
+    color_icon_url: skills_icons_url + "/js_color.png"
+  },
+  { name: "Linux",
+    icon_url: skills_icons_url + "/linux.png",
+    color_icon_url: skills_icons_url + "/linux_color.png"
+  },
+  { name: "OpenGL",
+    icon_url: skills_icons_url + "/opengl.png",
+    color_icon_url: skills_icons_url + "/opengl_color.png"
+  },
+  { name: "Photoshop",
+    icon_url: skills_icons_url + "/photoshop.png",
+    color_icon_url: skills_icons_url + "/photoshop_color.png"
+  },
+  { name: "Python",
+    icon_url: skills_icons_url + "/python.png",
+    color_icon_url: skills_icons_url + "/python_color.png"
+  },
+  { name: "React",
+    icon_url: skills_icons_url + "/react.png",
+    color_icon_url: skills_icons_url + "/react_color.png"
+  },
 ];
 
+
 const cardItems = [
-  { title: 'Card 1', text: 'This is the first card.' },
-  { title: 'Card 2', text: 'This is the second card.' },
-  { title: 'Card 3', text: 'This is the third card.' },
-  { title: 'Card 4', text: 'This is the fourth card.' },
-  { title: 'Card 5', text: 'This is the fifth card.' },
-  { title: 'Card 6', text: 'This is the sixth card.' },
+  { title: 'Card 1', text: 'T' },
+  { title: 'Card 2', text: 'T' },
+  { title: 'Card 3', text: 'T' },
+  { title: 'Card 4', text: 'T' },
+  { title: 'Card 5', text: 'T' },
+  { title: 'Card 6', text: 'T' },
 ];
 
 const sparkFrames = [
@@ -326,40 +370,69 @@ function App() {
         </div>
       </header>
 
-      {/* === MAIN CONTENT === */}
-      {/* 1. Set position: relative/absolute to enable 'top' manipulation.
-        2. Apply a class (fade-in-scroll) that uses contentVisible state to trigger the animation.
-        3. Attach the ref for the Intersection Observer.
-      */}
-      <main
-        ref={mainContentRef}
-        className={`main-content ${contentVisible ? 'visible' : ''}`}
+{/* === MAIN CONTENT === */}
+<main
+  ref={mainContentRef}
+  className={`main-content ${contentVisible ? 'visible' : ''}`}
+  style={{
+    position: 'relative', // This is needed for z-index to work
+    zIndex: 2             // This puts it on top of the header's content (which is zIndex: 1)
+  }}
+>
+  <div
+    style={{
+      position: 'relative',
+      display: 'grid',
+      fontFamily: "'Press Start 2P', monospace",
+      gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+      gap: '1rem',
+      maxWidth: '1000px',
+      width: '90%',
+      margin: '0 auto',
+      top: "-15vh",
+    }}
+  >
+    {skills.map((skill, index) => (
+      <SpotlightCard
+        key={index}
+        texture={nine_slice_texture}
+        pixelSize={pxSize}
+        slice={4}
+        maxRotation={15}
       >
-        <div style={{
-          position: 'relative',
-          display: 'grid',
-          fontFamily: "'Press Start 2P', monospace",
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '1rem',
-          maxWidth: '1000px',
-          width: '90%',
-          margin: '0 auto',
-          top: "-15vh", // ajusta según se necesite
-        }}>
-          {cardItems.map((item, index) => (
-            <SpotlightCard
-              key={index}
-              texture={nine_slice_texture}
-              pixelSize={pxSize}
-              slice={4}
-              maxRotation={15}
-            >
-              <h3 style={{ color: 'white' }}>{item.title}</h3>
-              <p style={{ color: 'gray' }}>{item.text}</p>
-            </SpotlightCard>
-          ))}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src={skill.color_icon_url}
+            alt={skill.name}
+            style={{
+              width: `${pxSize * 26}px`,
+              height: `${pxSize * 26}px`,
+              imageRendering: "pixelated",
+              marginBottom: `${pxSize * 3}px`,
+            }}
+          />
+          <span
+            style={{
+              color: "white",
+              textAlign: "center",
+              textShadow: "3px 3px 0 #000",
+            }}
+          >
+            {skill.name}
+          </span>
         </div>
-      </main>
+      </SpotlightCard>
+    ))}
+  </div>
+</main>
+
     </div>
   );
 }
