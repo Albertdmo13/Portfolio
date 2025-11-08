@@ -1,0 +1,93 @@
+/* --- NEW STYLES FOR LAYOUT --- */
+
+/*
+ * 1. The Container (the <Tag> or <h2>)
+ * This acts as a flex container.
+ */
+.title-wrapper {
+    /* CSS variables (inherited by children) */
+    --pixel-size: 4px;
+    --text-color: #fff;
+    --shadow-color: #000;
+    --step: calc(var(--pixel-size) / 4);
+    /* Base unit for simple shadows */
+
+    /* Flex Layout */
+    display: flex;
+    align-items: center;
+    /* Vertically centers the text and lines */
+    width: 100%;
+    margin: calc(var(--pixel-size) * 4) 0;
+
+    /* * Font anti-aliasing disabled for a crisp, pixelated look.
+   * font-family is removed as requested (applied by parent component).
+   */
+    font-smooth: never;
+    -webkit-font-smoothing: none;
+}
+
+/*
+ * 2. The Lines (left and right)
+ */
+.title-line {
+    flex-grow: 1;
+    /* GROWS to fill available space */
+    overflow: hidden;
+    /* HIDES the extra dashes */
+    white-space: nowrap;
+    /* Keeps the dashes on a single line */
+
+    /* Line styles (slightly smaller than the title text) */
+    color: var(--text-color);
+    font-size: calc(var(--pixel-size) * 4);
+
+    /* Simplified shadow for the lines */
+    text-shadow: var(--step) var(--step) 0 var(--shadow-color);
+}
+
+/*
+ * We use ::before to generate the long string of dashes.
+ * The string is identical for both lines.
+ */
+.title-line::before {
+    /* * A very long string. overflow:hidden clips it.
+   * The spaces and asterisks provide padding.
+   */
+    content: " ---------------------------------------------------------------------------------------------------- ";
+}
+
+/* Aligns the text content of the lines */
+.title-line-left {
+    text-align: right;
+}
+
+.title-line-right {
+    text-align: left;
+}
+
+
+/* --- TITLE TEXT STYLES --- */
+
+/*
+ * 3. The Center Text
+ */
+.title-text {
+    flex-shrink: 0;
+    /* NEVER shrinks, preserving its width */
+    padding: 0 calc(var(--pixel-size) * 4);
+    /* Space between text and lines */
+
+    /* Font styles */
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-color);
+    font-size: calc(var(--pixel-size) * 6);
+    /* Title text is larger */
+
+    /* Simplified text-shadow (no contour or block) */
+    text-shadow:
+        calc(var(--pixel-size) * 0.75) calc(var(--pixel-size) * 0.75) 0 var(--shadow-color);
+}
+
+/* All :hover, :active, and @keyframe animations have been removed for simplicity. */

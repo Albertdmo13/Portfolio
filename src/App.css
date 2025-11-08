@@ -163,23 +163,31 @@
 }
 
 /* --- MAIN CONTENT SCROLL REVEAL --- */
-
 .main-content {
   opacity: 0;
-  transform: scale(0.85) translateY(30px);
-  filter: brightness(0.6);
-  transition:
-    opacity 0.6s ease-out,
-    transform 0.6s cubic-bezier(0.22, 1.25, 0.36, 1),
-    filter 0.6s ease-out;
-  will-change: opacity, transform, filter;
+  filter: brightness(3);
+  transition: opacity 0.3s ease-out;
+  will-change: opacity, filter;
 }
 
 .main-content.visible {
   opacity: 1;
-  transform: scale(1) translateY(0);
-  filter: brightness(1.2);
-  animation: popFlash 0.3s ease-out,
+  animation: popFlash2 0.4s ease-out forwards;
+}
+
+/* Keyframes for quick white flash fade */
+@keyframes popFlash2 {
+  0% {
+    filter: brightness(10);
+  }
+
+  40% {
+    filter: brightness(2);
+  }
+
+  100% {
+    filter: brightness(1.2);
+  }
 }
 
 /* Quick flash pulse when appearing */
@@ -200,21 +208,3 @@
   }
 }
 
-/*
- * This controls the fade-in/out animation for the marquee section.
- * It's hidden by default.
-*/
-.marquee-wrapper {
-  opacity: 0;
-  visibility: hidden;
-  /* This tells CSS to animate both properties over 0.25s */
-  transition: opacity 0.25s ease-in-out, visibility 0.25s ease-in-out;
-}
-
-/* * When the 'visible' class is added, CSS fades it in.
- * When removed, it fades out.
-*/
-.marquee-wrapper.visible {
-  opacity: 1;
-  visibility: visible;
-}

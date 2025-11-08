@@ -5,7 +5,8 @@ import IconRain from "./components/IconRain";
 import TextType from "./components/TextType";
 import SpotlightCard from "./components/SpotlightCard";
 import Marquee from "react-fast-marquee";
-
+import SectionTitle from "./components/SectionTitle";
+import SectionBg from "./components/SectionBg";
 import "./App.css";
 
 // ... (Constants and helper components remain the same) ...
@@ -224,8 +225,6 @@ function App() {
     };
   }, [mainContentRef]); // Ensure this dependency is correct
 
-  // Removed unused backgroundHeight and verticalOffset
-
   const iconRainElement = useMemo(
     // ... (IconRain definition remains the same) ...
     () => (
@@ -392,7 +391,6 @@ function App() {
           }}
         />
       </header>
-
       {/* ALWAYS RENDER <main>, and add the ref back */}
       <main
         ref={mainContentRef}
@@ -400,72 +398,79 @@ function App() {
         style={{
           position: "relative",
           zIndex: 2,
-          // THIS IS THE FIX:
-          // Give the <main> block a minimum height
-          // This makes the *total page height* (100svh + 50vh)
-          // taller than the viewport, FORCING a scrollbar.
-          minHeight: "50vh",
+          minHeight: "50vh", // Ensures total page height forces a scrollbar
+          display: "flex",
+          justifyContent: "center", // centers the content horizontally
         }}
       >
-        {/* This wrapper div now controls all visibility */}
+        {/* Content wrapper that limits total width */}
         <div
-        className={`marquee-wrapper ${contentVisible ? "visible" : ""}`}
           style={{
-            position: "relative",
-            fontFamily: "'Press Start 2P', monospace",
-            // maxWidth: "1000px",
-            // width: "90%",
-            margin: "0 auto",
-            top: "-15vh",
-            overflow: "hidden",
+            width: "65%",
+            padding: "0 2rem", // keeps nice spacing on smaller screens
           }}
         >
-          <Marquee
-            play={contentVisible} // This is still critical!
-            pauseOnHover={false}
-            speed={40}
-          >
-            {skills.map((skill, index) => (
-              <div style={{ margin: "1rem 0.5rem" }} key={index}>
-                <SpotlightCard
-                  texture={nine_slice_texture}
-                  pixelSize={pxSize}
-                  slice={4}
-                  maxRotation={15}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
+          <section style={{ position: "relative" }}>
+            <div
+              className={`marquee-wrapper ${contentVisible ? "visible" : ""}`}
+              style={{
+                position: "relative",
+                fontFamily: "'Press Start 2P', monospace",
+                margin: "0 auto",
+                top: "-15vh",
+                overflow: "hidden",
+                textAlign: "center",
+                padding: `${pxSize * 4}px 0`,
+              }}
+            >
+              <SectionBg
+                texture={nine_slice_texture}
+                pixelSize={pxSize}
+                slice={4}
+                className="skills-section-bg"
+              >
+                {/* Título más pequeño con sombra roja */}
+      <SectionTitle
+        text="SKILLS"
+        pixelSize={pxSize * 2}
+        color="#ffffffff"
+        shadowColor="#5A2BFF"
+      />
+                {/* Marquee Content */}
+                <div style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
+                  <Marquee
+                    pauseOnHover={false}
+                    speed={40}
+                    gradient={true}
+                    gradientWidth={pxSize * 20}
+                    gradientColor="#150B27"
                   >
-                    <img
-                      src={skill.color_icon_url}
-                      alt={skill.name}
-                      style={{
-                        width: `${pxSize * 26}px`,
-                        height: `${pxSize * 26}px`,
-                        imageRendering: "pixelated",
-                        marginBottom: `${pxSize * 3}px`,
-                      }}
-                    />
-
-                    <span
-                      style={{
-                        color: "white",
-                        textAlign: "center",
-                        textShadow: "3px 3px 0 #000",
-                      }}
-                    >
-                      {skill.name}
-                    </span>
-                  </div>
-                </SpotlightCard>
-              </div>
-            ))}
-          </Marquee>
+                    {skills.map((skill, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          margin: `0 ${pxSize * 8}px`,
+                        }}
+                      >
+                        <img
+                          src={skill.color_icon_url}
+                          alt={skill.name}
+                          style={{
+                            width: `${pxSize * 26}px`,
+                            height: `${pxSize * 26}px`,
+                            imageRendering: "pixelated",
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </Marquee>
+                </div>
+              </SectionBg>
+            </div>
+          </section>
         </div>
       </main>
     </div>
