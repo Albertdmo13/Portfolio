@@ -1,14 +1,31 @@
 .text-type {
-    display: inline-block;
-    white-space: pre-wrap;
+  display: inline-block;
+  white-space: pre-wrap;
+}
+
+@keyframes text-type-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 .text-type__cursor {
-    margin-left: 0.25rem;
-    display: inline-block;
-    opacity: 1;
+  margin-left: 0.25rem;
+  display: inline-block;
+
+  /* Use CSS animation for the blink */
+  animation-name: text-type-blink;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
 
 .text-type__cursor--hidden {
-    display: none;
+  /* Hide cursor by making it transparent */
+  opacity: 0;
+  /* Stop the animation when hidden */
+  animation: none;
 }

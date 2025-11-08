@@ -199,3 +199,22 @@
     transform: scale(1) translateY(0);
   }
 }
+
+/*
+ * This controls the fade-in/out animation for the marquee section.
+ * It's hidden by default.
+*/
+.marquee-wrapper {
+  opacity: 0;
+  visibility: hidden;
+  /* This tells CSS to animate both properties over 0.25s */
+  transition: opacity 0.25s ease-in-out, visibility 0.25s ease-in-out;
+}
+
+/* * When the 'visible' class is added, CSS fades it in.
+ * When removed, it fades out.
+*/
+.marquee-wrapper.visible {
+  opacity: 1;
+  visibility: visible;
+}

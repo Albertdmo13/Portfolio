@@ -4,88 +4,102 @@ import PixelBlast from "./components/PixelBlast";
 import IconRain from "./components/IconRain";
 import TextType from "./components/TextType";
 import SpotlightCard from "./components/SpotlightCard";
-
+import Marquee from "react-fast-marquee";
 
 import "./App.css";
 
 // ... (Constants and helper components remain the same) ...
 
 const skills_icons_url = "/Portfolio/icons/skills_icons";
-const nine_slice_texture = '/Portfolio/misc/9_slice.png';
+const nine_slice_texture = "/Portfolio/misc/9_slice.png";
 const BACKGROUND_IMAGE_URL = "/Portfolio/backgrounds/window_view_big.png";
 const BACKGROUND_IMAGE_BASE_HEIGHT_PX = 300;
 
 const skills = [
-  { name: "Angular",
+  {
+    name: "Angular",
     icon_url: skills_icons_url + "/angular.png",
-    color_icon_url: skills_icons_url + "/angular_color.png"
+    color_icon_url: skills_icons_url + "/angular_color.png",
   },
-  { name: "Arduino",
+  {
+    name: "Arduino",
     icon_url: skills_icons_url + "/arduino.png",
-    color_icon_url: skills_icons_url + "/arduino_color.png"
+    color_icon_url: skills_icons_url + "/arduino_color.png",
   },
-  { name: "Aseprite",
+  {
+    name: "Aseprite",
     icon_url: skills_icons_url + "/aseprite.png",
-    color_icon_url: skills_icons_url + "/aseprite_color.png"
+    color_icon_url: skills_icons_url + "/aseprite_color.png",
   },
-  { name: "Blender",
+  {
+    name: "Blender",
     icon_url: skills_icons_url + "/blender.png",
-    color_icon_url: skills_icons_url + "/blender_color.png"
+    color_icon_url: skills_icons_url + "/blender_color.png",
   },
-  { name: "CSS",
+  {
+    name: "CSS",
     icon_url: skills_icons_url + "/css.png",
-    color_icon_url: skills_icons_url + "/css_color.png"
+    color_icon_url: skills_icons_url + "/css_color.png",
   },
-  { name: "GameMaker",
+  {
+    name: "GameMaker",
     icon_url: skills_icons_url + "/gamemaker.png",
-    color_icon_url: skills_icons_url + "/gamemaker_color.png"
+    color_icon_url: skills_icons_url + "/gamemaker_color.png",
   },
-  { name: "Git",
+  {
+    name: "Git",
     icon_url: skills_icons_url + "/git.png",
-    color_icon_url: skills_icons_url + "/git_color.png"
+    color_icon_url: skills_icons_url + "/git_color.png",
   },
-  { name: "GitHub",
+  {
+    name: "GitHub",
     icon_url: skills_icons_url + "/github.png",
-    color_icon_url: skills_icons_url + "/github_color.png"
+    color_icon_url: skills_icons_url + "/github_color.png",
   },
-  { name: "Java",
+  {
+    name: "Java",
     icon_url: skills_icons_url + "/java.png",
-    color_icon_url: skills_icons_url + "/java_color.png"
+    color_icon_url: skills_icons_url + "/java_color.png",
   },
-  { name: "JavaScript",
+  {
+    name: "JavaScript",
     icon_url: skills_icons_url + "/js.png",
-    color_icon_url: skills_icons_url + "/js_color.png"
+    color_icon_url: skills_icons_url + "/js_color.png",
   },
-  { name: "Linux",
+  {
+    name: "Linux",
     icon_url: skills_icons_url + "/linux.png",
-    color_icon_url: skills_icons_url + "/linux_color.png"
+    color_icon_url: skills_icons_url + "/linux_color.png",
   },
-  { name: "OpenGL",
+  {
+    name: "OpenGL",
     icon_url: skills_icons_url + "/opengl.png",
-    color_icon_url: skills_icons_url + "/opengl_color.png"
+    color_icon_url: skills_icons_url + "/opengl_color.png",
   },
-  { name: "Photoshop",
+  {
+    name: "Photoshop",
     icon_url: skills_icons_url + "/photoshop.png",
-    color_icon_url: skills_icons_url + "/photoshop_color.png"
+    color_icon_url: skills_icons_url + "/photoshop_color.png",
   },
-  { name: "Python",
+  {
+    name: "Python",
     icon_url: skills_icons_url + "/python.png",
-    color_icon_url: skills_icons_url + "/python_color.png"
+    color_icon_url: skills_icons_url + "/python_color.png",
   },
-  { name: "React",
+  {
+    name: "React",
     icon_url: skills_icons_url + "/react.png",
-    color_icon_url: skills_icons_url + "/react_color.png"
+    color_icon_url: skills_icons_url + "/react_color.png",
   },
 ];
 
-
 const cardItems = [
-  { title: 'Card 1', text: 'T' },
-  { title: 'Card 2', text: 'T' },
-  { title: 'Card 3', text: 'T' },
-  { title: 'Card 4', text: 'T' },
-  { title: 'Card 5', text: 'T' },
-  { title: 'Card 6', text: 'T' },
+  { title: "Card 1", text: "T" },
+  { title: "Card 2", text: "T" },
+  { title: "Card 3", text: "T" },
+  { title: "Card 4", text: "T" },
+  { title: "Card 5", text: "T" },
+  { title: "Card 6", text: "T" },
 ];
 
 const sparkFrames = [
@@ -162,6 +176,7 @@ function App() {
   const [contentVisible, setContentVisible] = useState(false);
   const bannerRef = useRef(null);
   // Re-purposing backgroundRef to observe the main content area
+  const headerTriggerRef = useRef(null);
   const mainContentRef = useRef(null);
 
   // Dynamically scale pixel size based on screen width
@@ -188,17 +203,17 @@ function App() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            // Show main content when scrolled enough
+            // Show main content when it scrolls INTO view
             setContentVisible(true);
           } else {
-            // Hide when user scrolls back up
+            // This will hide it again when you scroll back to top
             setContentVisible(false);
           }
         });
       },
       {
         root: null,
-        threshold: 0.1,
+        threshold: 0.1, // Trigger when 10% of the main element is visible
       }
     );
 
@@ -207,7 +222,7 @@ function App() {
     return () => {
       if (mainContentRef.current) observer.unobserve(mainContentRef.current);
     };
-  }, [mainContentRef]);
+  }, [mainContentRef]); // Ensure this dependency is correct
 
   // Removed unused backgroundHeight and verticalOffset
 
@@ -247,14 +262,12 @@ function App() {
 
   return (
     <div className="App" style={{ overflowX: "hidden" }}>
-      {/* === HEADER SECTION === */}
-      {/* ... (Header code remains the same) ... */}
       <header
         ref={bannerRef}
         style={{
           position: "relative",
           width: "100%",
-          height: "100vh",   // o 85vh para subir el main más
+          height: "100svh", // 'svh' is good for mobile
           overflow: "hidden",
         }}
       >
@@ -368,71 +381,93 @@ function App() {
             />
           </div>
         </div>
+        <div
+          ref={headerTriggerRef}
+          style={{
+            position: "absolute",
+            bottom: "10vh", // Sits 10% from the bottom of the header
+            width: "10px",
+            height: "10px",
+            pointerEvents: "none", // Makes it invisible to the mouse
+          }}
+        />
       </header>
 
-{/* === MAIN CONTENT === */}
-<main
-  ref={mainContentRef}
-  className={`main-content ${contentVisible ? 'visible' : ''}`}
-  style={{
-    position: 'relative', // This is needed for z-index to work
-    zIndex: 2             // This puts it on top of the header's content (which is zIndex: 1)
-  }}
->
-  <div
-    style={{
-      position: 'relative',
-      display: 'grid',
-      fontFamily: "'Press Start 2P', monospace",
-      gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-      gap: '1rem',
-      maxWidth: '1000px',
-      width: '90%',
-      margin: '0 auto',
-      top: "-15vh",
-    }}
-  >
-    {skills.map((skill, index) => (
-      <SpotlightCard
-        key={index}
-        texture={nine_slice_texture}
-        pixelSize={pxSize}
-        slice={4}
-        maxRotation={15}
+      {/* ALWAYS RENDER <main>, and add the ref back */}
+      <main
+        ref={mainContentRef}
+        className={`main-content ${contentVisible ? "visible" : ""}`}
+        style={{
+          position: "relative",
+          zIndex: 2,
+          // THIS IS THE FIX:
+          // Give the <main> block a minimum height
+          // This makes the *total page height* (100svh + 50vh)
+          // taller than the viewport, FORCING a scrollbar.
+          minHeight: "50vh",
+        }}
       >
+        {/* This wrapper div now controls all visibility */}
         <div
+        className={`marquee-wrapper ${contentVisible ? "visible" : ""}`}
           style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
+            position: "relative",
+            fontFamily: "'Press Start 2P', monospace",
+            // maxWidth: "1000px",
+            // width: "90%",
+            margin: "0 auto",
+            top: "-15vh",
+            overflow: "hidden",
           }}
         >
-          <img
-            src={skill.color_icon_url}
-            alt={skill.name}
-            style={{
-              width: `${pxSize * 26}px`,
-              height: `${pxSize * 26}px`,
-              imageRendering: "pixelated",
-              marginBottom: `${pxSize * 3}px`,
-            }}
-          />
-          <span
-            style={{
-              color: "white",
-              textAlign: "center",
-              textShadow: "3px 3px 0 #000",
-            }}
+          <Marquee
+            play={contentVisible} // This is still critical!
+            pauseOnHover={false}
+            speed={40}
           >
-            {skill.name}
-          </span>
-        </div>
-      </SpotlightCard>
-    ))}
-  </div>
-</main>
+            {skills.map((skill, index) => (
+              <div style={{ margin: "1rem 0.5rem" }} key={index}>
+                <SpotlightCard
+                  texture={nine_slice_texture}
+                  pixelSize={pxSize}
+                  slice={4}
+                  maxRotation={15}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <img
+                      src={skill.color_icon_url}
+                      alt={skill.name}
+                      style={{
+                        width: `${pxSize * 26}px`,
+                        height: `${pxSize * 26}px`,
+                        imageRendering: "pixelated",
+                        marginBottom: `${pxSize * 3}px`,
+                      }}
+                    />
 
+                    <span
+                      style={{
+                        color: "white",
+                        textAlign: "center",
+                        textShadow: "3px 3px 0 #000",
+                      }}
+                    >
+                      {skill.name}
+                    </span>
+                  </div>
+                </SpotlightCard>
+              </div>
+            ))}
+          </Marquee>
+        </div>
+      </main>
     </div>
   );
 }
