@@ -13,6 +13,7 @@ import "./App.css";
 
 const skills_icons_url = "/Portfolio/icons/skills_icons";
 const nine_slice_texture = "/Portfolio/misc/9_slice.png";
+const nine_slice_texture2 = "/Portfolio/misc/9_slice_2.png";
 const BACKGROUND_IMAGE_URL = "/Portfolio/backgrounds/window_view_big.png";
 const BACKGROUND_IMAGE_BASE_HEIGHT_PX = 300;
 
@@ -406,7 +407,7 @@ function App() {
         {/* Content wrapper that limits total width */}
         <div
           style={{
-            width: "65%",
+            width: "60%",
             padding: "0 2rem", // keeps nice spacing on smaller screens
           }}
         >
@@ -417,7 +418,7 @@ function App() {
                 position: "relative",
                 fontFamily: "'Press Start 2P', monospace",
                 margin: "0 auto",
-                top: "-15vh",
+                top: "-10vh",
                 overflow: "hidden",
                 textAlign: "center",
                 padding: `${pxSize * 4}px 0`,
@@ -430,12 +431,12 @@ function App() {
                 className="skills-section-bg"
               >
                 {/* Título más pequeño con sombra roja */}
-      <SectionTitle
-        text="SKILLS"
-        pixelSize={pxSize * 2}
-        color="#ffffffff"
-        shadowColor="#5A2BFF"
-      />
+                <SectionTitle
+                  text="SKILLS"
+                  pixelSize={pxSize * 2}
+                  color="#ffffffff"
+                  shadowColor="#5A2BFF"
+                />
                 {/* Marquee Content */}
                 <div style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
                   <Marquee
@@ -467,6 +468,60 @@ function App() {
                       </div>
                     ))}
                   </Marquee>
+                </div>
+
+                <div
+                  style={{
+                    position: "relative",
+                    display: "grid",
+                    fontFamily: "'Press Start 2P', monospace",
+                    gridTemplateColumns:
+                      "repeat(auto-fill, minmax(180px, 1fr))",
+                    gap: "1rem",
+                    margin: "0 auto",
+                    marginTop: `${pxSize * 8}px`,
+                    alignContent: "start",
+                  }}
+                >
+                  {skills.map((skill, index) => (
+                    <SpotlightCard
+                      key={index}
+                      texture={nine_slice_texture2}
+                      pixelSize={pxSize}
+                      slice={4}
+                      maxRotation={15}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: `0px`,
+                        }}
+                      >
+                        <img
+                          src={skill.color_icon_url}
+                          alt={skill.name}
+                          style={{
+                            width: `${pxSize * 26}px`,
+                            height: `${pxSize * 26}px`,
+                            imageRendering: "pixelated",
+                            marginBottom: `${pxSize * 3}px`,
+                          }}
+                        />
+                        <span
+                          style={{
+                            color: "white",
+                            textAlign: "center",
+                            textShadow: "3px 3px 0 #000",
+                          }}
+                        >
+                          {skill.name}
+                        </span>
+                      </div>
+                    </SpotlightCard>
+                  ))}
                 </div>
               </SectionBg>
             </div>

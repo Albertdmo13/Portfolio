@@ -14,7 +14,7 @@
     border-width: var(--border-width-visual);
     border-image-source: var(--texture-url);
     border-image-slice: var(--slice-amount) fill;
-    border-image-repeat: stretch;
+    border-image-repeat: repeat;
     image-rendering: pixelated;
 
     /* --- 3D Tilt Effect --- */
@@ -26,7 +26,7 @@
 
     /* Snappy transitions */
     transition: transform 0.06s cubic-bezier(0.33, 1, 0.68, 1),
-        filter 0.05s linear;
+        filter 0.01s linear;
 
     cursor: pointer;
     filter: brightness(1);
@@ -34,7 +34,7 @@
 
 .card-spotlight:hover {
     transform: perspective(800px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale(1.05);
-    filter: brightness(1.25);
+    filter: brightness(1.5);
     /* just brighten on hover */
 }
 
