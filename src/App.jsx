@@ -93,6 +93,11 @@ const skills = [
     icon_url: skills_icons_url + "/react.png",
     color_icon_url: skills_icons_url + "/react_color.png",
   },
+  {
+    name: "SQL",
+    icon_url: skills_icons_url + "/sql.png",
+    color_icon_url: skills_icons_url + "/sql_color.png",
+  },
 ];
 
 const cardItems = [
