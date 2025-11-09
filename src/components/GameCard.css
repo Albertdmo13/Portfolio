@@ -1,0 +1,84 @@
+.game-card-wrapper {
+    position: relative;
+    touch-action: none;
+
+    image-rendering: pixelated;
+    font-family: 'Press Start 2P', 'Courier New', Courier, monospace;
+    user-select: none;
+
+    width: var(--card-width);
+    height: var(--card-height);
+}
+
+/* The actual sprite image acting as a frame */
+.game-card-sprite-frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: var(--sprite-url);
+    background-size: 100% 100%;
+    z-index: 3;
+    /* Increased z-index */
+    pointer-events: none;
+
+    box-shadow:
+        0 0 0 calc(1px * var(--pixel-size)) rgba(255, 255, 255, 0.4),
+        0 0 calc(5px * var(--pixel-size)) calc(1px * var(--pixel-size)) rgba(255, 255, 255, 0.3);
+}
+
+/* Area for the main illustration */
+.game-card-image-area {
+    position: absolute;
+    z-index: 1;
+    /* Sits at the back */
+    overflow: hidden;
+}
+
+/* New class for the item icon */
+.game-card-item-icon {
+    position: absolute;
+    z-index: 2;
+    /* Sits on top of the illustration, but behind the frame */
+    image-rendering: pixelated;
+    /* Keeps the item sprite crisp */
+    pointer-events: none;
+}
+
+.game-card-title-box,
+.game-card-description-box {
+    position: absolute;
+    box-sizing: border-box;
+    color: #ffffff;
+    text-align: center;
+
+    padding: calc(1px * var(--pixel-size));
+    line-height: 1.2;
+    word-wrap: break-word;
+    overflow: hidden;
+    z-index: 4;
+    /* Text is on top of everything */
+}
+
+.game-card-title-box h3 {
+    font-size: calc(8px * var(--pixel-size));
+    margin: 0;
+    font-weight: normal;
+    text-shadow:
+        calc(1px * var(--pixel-size)) calc(1px * var(--pixel-size)) 0px black,
+        calc(-1px * var(--pixel-size)) calc(-1px * var(--pixel-size)) 0px black,
+        calc(1px * var(--pixel-size)) calc(-1px * var(--pixel-size)) 0px black,
+        calc(-1px * var(--pixel-size)) calc(1px * var(--pixel-size)) 0px black;
+}
+
+.game-card-description-box p {
+    font-size: calc(5px * var(--pixel-size));
+    margin: 0;
+    font-weight: normal;
+    text-shadow:
+        calc(1px * var(--pixel-size)) calc(1px * var(--pixel-size)) 0px black,
+        calc(-1px * var(--pixel-size)) calc(-1px * var(--pixel-size)) 0px black,
+        calc(1px * var(--pixel-size)) calc(-1px * var(--pixel-size)) 0px black,
+        calc(-1px * var(--pixel-size)) calc(1px * var(--pixel-size)) 0px black;
+}

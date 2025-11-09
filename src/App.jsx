@@ -7,6 +7,7 @@ import SpotlightCard from "./components/SpotlightCard";
 import Marquee from "react-fast-marquee";
 import SectionTitle from "./components/SectionTitle";
 import SectionBg from "./components/SectionBg";
+import GameCard from "./components/GameCard";
 import "./App.css";
 
 // ... (Constants and helper components remain the same) ...
@@ -404,7 +405,6 @@ function App() {
         style={{
           position: "relative",
           zIndex: 2,
-          minHeight: "50vh", // Ensures total page height forces a scrollbar
           display: "flex",
           justifyContent: "center", // centers the content horizontally
         }}
@@ -481,7 +481,7 @@ function App() {
                     display: "grid",
                     fontFamily: "'Press Start 2P', monospace",
                     gridTemplateColumns:
-                      "repeat(auto-fill, minmax(180px, 1fr))",
+                      "repeat(auto-fill, minmax(110px, 1fr))",
                     gap: "1rem",
                     margin: "0 auto",
                     marginTop: `${pxSize * 8}px`,
@@ -520,6 +520,7 @@ function App() {
                             color: "white",
                             textAlign: "center",
                             textShadow: "3px 3px 0 #000",
+                            fontFamily: "alice, sans-serif",
                           }}
                         >
                           {skill.name}
@@ -528,6 +529,18 @@ function App() {
                     </SpotlightCard>
                   ))}
                 </div>
+                {/* GAME CARD TEST */}
+
+                <div style={{ padding: '20px' }}>
+      <GameCard
+        pixelSize={pxSize}
+        image={"/Portfolio/backgrounds/window_view_big.png"}
+        title="Pixel "
+        description="A brave knight who fights 8-bit dragons. Strong against bugs."
+        item={"/Portfolio/icons/skills_icons/angular_color.png"}
+      />
+
+    </div>
               </SectionBg>
             </div>
           </section>
