@@ -21,7 +21,6 @@
     background-image: var(--sprite-url);
     background-size: 100% 100%;
     z-index: 3;
-    /* Increased z-index */
     pointer-events: none;
 
     box-shadow:
@@ -33,7 +32,6 @@
 .game-card-image-area {
     position: absolute;
     z-index: 1;
-    /* Sits at the back */
     overflow: hidden;
 }
 
@@ -41,27 +39,26 @@
 .game-card-item-icon {
     position: absolute;
     z-index: 2;
-    /* Sits on top of the illustration, but behind the frame */
     image-rendering: pixelated;
-    /* Keeps the item sprite crisp */
     pointer-events: none;
 }
 
+/* Shared box styles for text regions */
 .game-card-title-box,
+.game-card-category-box,
 .game-card-description-box {
     position: absolute;
     box-sizing: border-box;
     color: #ffffff;
     text-align: center;
-
     padding: calc(1px * var(--pixel-size));
     line-height: 1.2;
     word-wrap: break-word;
     overflow: hidden;
     z-index: 4;
-    /* Text is on top of everything */
 }
 
+/* Title styling */
 .game-card-title-box h3 {
     font-size: calc(8px * var(--pixel-size));
     margin: 0;
@@ -73,8 +70,23 @@
         calc(-1px * var(--pixel-size)) calc(1px * var(--pixel-size)) 0px black;
 }
 
+/* Category styling (NEW) */
+.game-card-category-box p {
+    font-size: calc(6px * var(--pixel-size));
+    margin: 0;
+    font-weight: bold;
+    color: #7cb673;
+    /* Gold color */
+    text-shadow:
+        calc(1px * var(--pixel-size)) calc(1px * var(--pixel-size)) 0px black,
+        calc(-1px * var(--pixel-size)) calc(-1px * var(--pixel-size)) 0px black,
+        calc(1px * var(--pixel-size)) calc(-1px * var(--pixel-size)) 0px black,
+        calc(-1px * var(--pixel-size)) calc(1px * var(--pixel-size)) 0px black;
+}
+
+/* Description styling */
 .game-card-description-box p {
-    font-size: calc(5px * var(--pixel-size));
+    font-size: calc(4.5px * var(--pixel-size));
     margin: 0;
     font-weight: normal;
     text-shadow:

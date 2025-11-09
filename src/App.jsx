@@ -10,6 +10,7 @@ import SectionTitle from "./components/SectionTitle";
 import SectionBg from "./components/SectionBg";
 import GameCard from "./components/GameCard";
 import "./App.css";
+import { mask } from "framer-motion/client";
 
 const skills_icons_url = "/Portfolio/icons/skills_icons";
 const nine_slice_texture = "/Portfolio/misc/9_slice.png";
@@ -19,106 +20,161 @@ const BACKGROUND_IMAGE_BASE_HEIGHT_PX = 300;
 const cardBackgrounds = [
   "/Portfolio/misc/GameCardBackground1.png",
   "/Portfolio/misc/GameCardBackground2.png",
+  "/Portfolio/misc/GameCardBackground3.png",
+  "/Portfolio/misc/GameCardBackground4.png",
+];
+
+const gameCards = [
+  "/Portfolio/misc/GameCard1.png",
+  "/Portfolio/misc/GameCard2.png",
+  "/Portfolio/misc/GameCard3.png",
 ];
 const skills = [
   {
     name: "Angular",
     icon_url: skills_icons_url + "/angular.png",
     color_icon_url: skills_icons_url + "/angular_color.png",
-    cardBackground: cardBackgrounds[0],
+    cardBackground: cardBackgrounds[2],
+    category: "Web",
+    mastery: 0,
+    description: "Framework for building dynamic web applications.",
   },
   {
     name: "Arduino",
     icon_url: skills_icons_url + "/arduino.png",
     color_icon_url: skills_icons_url + "/arduino_color.png",
-    cardBackground: cardBackgrounds[1],
+    cardBackground: cardBackgrounds[0],
+    category: "Embedded",
+    mastery: 1,
+    description: "Open-source hardware platform for electronics projects.",
   },
   {
     name: "Aseprite",
     icon_url: skills_icons_url + "/aseprite.png",
     color_icon_url: skills_icons_url + "/aseprite_color.png",
-    cardBackground: cardBackgrounds[0],
+    cardBackground: cardBackgrounds[3],
+    category: "Art",
+    mastery: 2,
+    description: "Pixel art and 2D animation editor.",
   },
   {
     name: "Blender",
     icon_url: skills_icons_url + "/blender.png",
     color_icon_url: skills_icons_url + "/blender_color.png",
     cardBackground: cardBackgrounds[1],
+    category: "Art",
+    mastery: 1,
+    description: "3D creation suite for modeling, animation, and rendering.",
   },
   {
     name: "CSS",
     icon_url: skills_icons_url + "/css.png",
     color_icon_url: skills_icons_url + "/css_color.png",
-    cardBackground: cardBackgrounds[0],
+    cardBackground: cardBackgrounds[2],
+    category: "Web",
+    mastery: 1,
+    description: "Language for styling and designing web pages.",
   },
   {
     name: "GameMaker",
     icon_url: skills_icons_url + "/gamemaker.png",
     color_icon_url: skills_icons_url + "/gamemaker_color.png",
     cardBackground: cardBackgrounds[1],
+    category: "Game Dev",
+    mastery: 2,
+    description: "Game engine for creating 2D games easily.",
   },
   {
     name: "Git",
     icon_url: skills_icons_url + "/git.png",
     color_icon_url: skills_icons_url + "/git_color.png",
     cardBackground: cardBackgrounds[0],
+    category: "SW Dev",
+    mastery: 1,
+    description: "Distributed version control system for source code.",
   },
   {
     name: "GitHub",
     icon_url: skills_icons_url + "/github.png",
     color_icon_url: skills_icons_url + "/github_color.png",
     cardBackground: cardBackgrounds[1],
+    category: "SW Dev",
+    mastery: 1,
+    description: "Platform for hosting and collaborating on Git projects.",
   },
   {
     name: "Java",
     icon_url: skills_icons_url + "/java.png",
     color_icon_url: skills_icons_url + "/java_color.png",
-    cardBackground: cardBackgrounds[0],
+    cardBackground: cardBackgrounds[3],
+    category: "SW Dev",
+    mastery: 0,
+    description: "Object-oriented programming language for multiple platforms.",
   },
   {
     name: "JavaScript",
     icon_url: skills_icons_url + "/js.png",
     color_icon_url: skills_icons_url + "/js_color.png",
     cardBackground: cardBackgrounds[1],
+    category: "Web",
+    mastery: 0,
+    description: "Essential language for web interactivity and logic.",
   },
   {
     name: "Linux",
     icon_url: skills_icons_url + "/linux.png",
     color_icon_url: skills_icons_url + "/linux_color.png",
-    cardBackground: cardBackgrounds[0],
+    cardBackground: cardBackgrounds[2],
+    category: "SW Dev",
+    mastery: 1,
+    description: "Open-source operating system known for stability and power.",
   },
   {
     name: "OpenGL",
     icon_url: skills_icons_url + "/opengl.png",
     color_icon_url: skills_icons_url + "/opengl_color.png",
-    cardBackground: cardBackgrounds[1],
+    cardBackground: cardBackgrounds[3],
+    category: "SW Dev",
+    mastery: 1,
+    description: "API for rendering real-time 2D and 3D graphics.",
   },
   {
     name: "Photoshop",
     icon_url: skills_icons_url + "/photoshop.png",
     color_icon_url: skills_icons_url + "/photoshop_color.png",
-    cardBackground: cardBackgrounds[0],
+    cardBackground: cardBackgrounds[1],
+    category: "Art",
+    mastery: 1,
+    description: "Professional tool for image editing and design.",
   },
   {
     name: "Python",
     icon_url: skills_icons_url + "/python.png",
     color_icon_url: skills_icons_url + "/python_color.png",
-    cardBackground: cardBackgrounds[1],
+    cardBackground: cardBackgrounds[0],
+    category: "SW Dev",
+    mastery: 2,
+    description: "Versatile language for development, AI, and automation.",
   },
   {
     name: "React",
     icon_url: skills_icons_url + "/react.png",
     color_icon_url: skills_icons_url + "/react_color.png",
-    cardBackground: cardBackgrounds[0],
+    cardBackground: cardBackgrounds[3],
+    category: "Web",
+    mastery: 0,
+    description: "Library for building dynamic user interfaces.",
   },
   {
     name: "SQL",
     icon_url: skills_icons_url + "/sql.png",
     color_icon_url: skills_icons_url + "/sql_color.png",
-    cardBackground: cardBackgrounds[1],
+    cardBackground: cardBackgrounds[2],
+    category: "SW Dev",
+    mastery: 1,
+    description: "Language for managing and querying databases.",
   },
 ];
-
 
 const sparkFrames = [
   "/Portfolio/spark/spark1.png",
@@ -525,69 +581,69 @@ function App() {
           </section>
         </div>
       </main>
-{/* Tooltip GameCard animado (fuera del main para evitar clipping) */}
-<AnimatePresence>
-  {hoveredSkill && (
-    (() => {
-      // card dimensions in pixels
-      const cardWidth = 100 * pxSize;
-      const cardHeight = 140 * pxSize;
-      const offset = 5 * pxSize;
+      {/* Tooltip GameCard animado (fuera del main para evitar clipping) */}
+      <AnimatePresence>
+        {hoveredSkill &&
+          (() => {
+            // card dimensions in pixels
+            const cardWidth = 100 * pxSize;
+            const cardHeight = 140 * pxSize;
+            const offset = 5 * pxSize;
 
-      // default position (below mouse)
-      let left = mousePos.x + offset;
-      let top = mousePos.y + offset;
+            // default position (below mouse)
+            let left = mousePos.x + offset;
+            let top = mousePos.y + offset;
 
-      // if tooltip would overflow bottom of screen, flip upward
-      if (top + cardHeight > window.innerHeight) {
-        top = mousePos.y - cardHeight - offset;
-      }
+            // if tooltip would overflow bottom of screen, flip upward
+            if (top + cardHeight > window.innerHeight) {
+              top = mousePos.y - cardHeight - offset;
+            }
 
-      // also prevent right-side overflow
-      if (left + cardWidth > window.innerWidth) {
-        left = window.innerWidth - cardWidth - offset;
-      }
+            // also prevent right-side overflow
+            if (left + cardWidth > window.innerWidth) {
+              left = window.innerWidth - cardWidth - offset;
+            }
 
-      return (
-        <motion.div
-          key="tooltip-card"
-          initial={{ opacity: 0, scale: 0.9, filter: "brightness(3)" }}
-          animate={{
-            opacity: 1,
-            scale: 1,
-            filter: [
-              "brightness(2)", // very bright at start
-              "brightness(1.2)", // quick fade down
-              "brightness(1)" // normal brightness
-            ],
-          }}
-          exit={{ opacity: 0, scale: 0.9, filter: "brightness(1)" }}
-          transition={{
-            duration: 0.15,
-            ease: "easeOut",
-            filter: { duration: 0.35, ease: "easeOut" },
-          }}
-          style={{
-            position: "fixed",
-            left: `${left}px`,
-            top: `${top}px`,
-            pointerEvents: "none",
-            zIndex: 999999,
-          }}
-        >
-          <GameCard
-            pixelSize={pxSize}
-            image={hoveredSkill.cardBackground}
-            title={hoveredSkill.name}
-            description={`This is a ${hoveredSkill.name} skill card.`}
-            item={hoveredSkill.color_icon_url}
-          />
-        </motion.div>
-      );
-    })()
-  )}
-</AnimatePresence>
-
+            return (
+              <motion.div
+                key="tooltip-card"
+                initial={{ opacity: 0, scale: 0.9, filter: "brightness(3)" }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  filter: [
+                    "brightness(2)", // very bright at start
+                    "brightness(1.2)", // quick fade down
+                    "brightness(1)", // normal brightness
+                  ],
+                }}
+                exit={{ opacity: 0, scale: 0.9, filter: "brightness(1)" }}
+                transition={{
+                  duration: 0.15,
+                  ease: "easeOut",
+                  filter: { duration: 0.35, ease: "easeOut" },
+                }}
+                style={{
+                  position: "fixed",
+                  left: `${left}px`,
+                  top: `${top}px`,
+                  pointerEvents: "none",
+                  zIndex: 999999,
+                }}
+              >
+                <GameCard
+                  pixelSize={pxSize}
+                  image={hoveredSkill.cardBackground}
+                  title={hoveredSkill.name}
+                  item={hoveredSkill.color_icon_url}
+                  category={hoveredSkill.category}
+                  cardSprite={gameCards[hoveredSkill.mastery]}
+                  description={hoveredSkill.description}
+                />
+              </motion.div>
+            );
+          })()}
+      </AnimatePresence>
     </div>
   );
 }
