@@ -9,7 +9,7 @@ const BASE_HEIGHT = 140;
 
 // Pixel coordinates for the content boxes from your sprite (adjusted for new layout)
 const TITLE_BOX = { top: 5, left: 4, width: 92, height: 12 }; // Title sits at the very top
-const IMAGE_AREA = { top: 21, left: 7, width: 86, height: 57 }; // Illustration area
+const IMAGE_AREA = { top: 22, left: 7, width: 86, height: 56 }; // Illustration area
 const DESCRIPTION_BOX = { top: 87, left: 9, width: 82, height: 41 }; // Description sits below illustration
 
 const ITEM_BOX = { top: 37, left: 37, width: 26, height: 26 };

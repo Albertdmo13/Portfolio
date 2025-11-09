@@ -7,10 +7,12 @@ const SpotlightCard = ({
   texture,
   pixelSize = 1,
   slice = 4,
-  maxRotation = 15, // base tilt, smaller base for smoother scaling
+  maxRotation = 15,
+  onMouseEnter,
+  onMouseLeave,
 }) => {
   const divRef = useRef(null);
-  let hoverBoost = 2.5; // how much stronger tilt becomes on hover
+  let hoverBoost = 2.5;
 
   const handleMouseMove = e => {
     if (!divRef.current) return;
@@ -23,7 +25,6 @@ const SpotlightCard = ({
     const percentX = x / width - 0.5;
     const percentY = y / height - 0.5;
 
-    // stronger tilt on hover
     const rotateX = percentY * maxRotation * -hoverBoost;
     const rotateY = percentX * maxRotation * hoverBoost;
 
@@ -49,7 +50,13 @@ const SpotlightCard = ({
     <div
       ref={divRef}
       onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      onMouseLeave={(e) => {
+        handleMouseLeave(e);
+        if (typeof onMouseLeave === "function") onMouseLeave(e);
+      }}
+      onMouseEnter={(e) => {
+        if (typeof onMouseEnter === "function") onMouseEnter(e);
+      }}
       className={`card-spotlight ${className}`}
       style={style}
     >

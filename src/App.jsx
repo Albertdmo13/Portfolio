@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import ThreeLogo from "./components/ThreePixelLogo";
 import PixelBlast from "./components/PixelBlast";
 import IconRain from "./components/IconRain";
@@ -10,108 +11,116 @@ import SectionBg from "./components/SectionBg";
 import GameCard from "./components/GameCard";
 import "./App.css";
 
-// ... (Constants and helper components remain the same) ...
-
 const skills_icons_url = "/Portfolio/icons/skills_icons";
 const nine_slice_texture = "/Portfolio/misc/9_slice.png";
 const nine_slice_texture2 = "/Portfolio/misc/9_slice_2.png";
-const BACKGROUND_IMAGE_URL = "/Portfolio/backgrounds/window_view_big.png";
 const BACKGROUND_IMAGE_BASE_HEIGHT_PX = 300;
 
+const cardBackgrounds = [
+  "/Portfolio/misc/GameCardBackground1.png",
+  "/Portfolio/misc/GameCardBackground2.png",
+];
 const skills = [
   {
     name: "Angular",
     icon_url: skills_icons_url + "/angular.png",
     color_icon_url: skills_icons_url + "/angular_color.png",
+    cardBackground: cardBackgrounds[0],
   },
   {
     name: "Arduino",
     icon_url: skills_icons_url + "/arduino.png",
     color_icon_url: skills_icons_url + "/arduino_color.png",
+    cardBackground: cardBackgrounds[1],
   },
   {
     name: "Aseprite",
     icon_url: skills_icons_url + "/aseprite.png",
     color_icon_url: skills_icons_url + "/aseprite_color.png",
+    cardBackground: cardBackgrounds[0],
   },
   {
     name: "Blender",
     icon_url: skills_icons_url + "/blender.png",
     color_icon_url: skills_icons_url + "/blender_color.png",
+    cardBackground: cardBackgrounds[1],
   },
   {
     name: "CSS",
     icon_url: skills_icons_url + "/css.png",
     color_icon_url: skills_icons_url + "/css_color.png",
+    cardBackground: cardBackgrounds[0],
   },
   {
     name: "GameMaker",
     icon_url: skills_icons_url + "/gamemaker.png",
     color_icon_url: skills_icons_url + "/gamemaker_color.png",
+    cardBackground: cardBackgrounds[1],
   },
   {
     name: "Git",
     icon_url: skills_icons_url + "/git.png",
     color_icon_url: skills_icons_url + "/git_color.png",
+    cardBackground: cardBackgrounds[0],
   },
   {
     name: "GitHub",
     icon_url: skills_icons_url + "/github.png",
     color_icon_url: skills_icons_url + "/github_color.png",
+    cardBackground: cardBackgrounds[1],
   },
   {
     name: "Java",
     icon_url: skills_icons_url + "/java.png",
     color_icon_url: skills_icons_url + "/java_color.png",
+    cardBackground: cardBackgrounds[0],
   },
   {
     name: "JavaScript",
     icon_url: skills_icons_url + "/js.png",
     color_icon_url: skills_icons_url + "/js_color.png",
+    cardBackground: cardBackgrounds[1],
   },
   {
     name: "Linux",
     icon_url: skills_icons_url + "/linux.png",
     color_icon_url: skills_icons_url + "/linux_color.png",
+    cardBackground: cardBackgrounds[0],
   },
   {
     name: "OpenGL",
     icon_url: skills_icons_url + "/opengl.png",
     color_icon_url: skills_icons_url + "/opengl_color.png",
+    cardBackground: cardBackgrounds[1],
   },
   {
     name: "Photoshop",
     icon_url: skills_icons_url + "/photoshop.png",
     color_icon_url: skills_icons_url + "/photoshop_color.png",
+    cardBackground: cardBackgrounds[0],
   },
   {
     name: "Python",
     icon_url: skills_icons_url + "/python.png",
     color_icon_url: skills_icons_url + "/python_color.png",
+    cardBackground: cardBackgrounds[1],
   },
   {
     name: "React",
     icon_url: skills_icons_url + "/react.png",
     color_icon_url: skills_icons_url + "/react_color.png",
+    cardBackground: cardBackgrounds[0],
   },
   {
     name: "SQL",
     icon_url: skills_icons_url + "/sql.png",
     color_icon_url: skills_icons_url + "/sql_color.png",
+    cardBackground: cardBackgrounds[1],
   },
 ];
 
-const cardItems = [
-  { title: "Card 1", text: "T" },
-  { title: "Card 2", text: "T" },
-  { title: "Card 3", text: "T" },
-  { title: "Card 4", text: "T" },
-  { title: "Card 5", text: "T" },
-  { title: "Card 6", text: "T" },
-];
 
 const sparkFrames = [
-  // ... (sparkFrames array remains the same) ...
   "/Portfolio/spark/spark1.png",
   "/Portfolio/spark/spark2.png",
   "/Portfolio/spark/spark3.png",
@@ -125,7 +134,6 @@ const sparkFrames = [
 ];
 
 const headerButtons = {
-  // ... (headerButtons object remains the same) ...
   github: {
     normal: "/Portfolio/header_buttons/btn_github.png",
     hover: "/Portfolio/header_buttons/btn_github_hovered.png",
@@ -144,7 +152,6 @@ const headerButtons = {
 };
 
 const dotFrames = [
-  // ... (dotFrames array remains the same) ...
   skills_icons_url + "/dot1.png",
   skills_icons_url + "/dot2.png",
   skills_icons_url + "/dot3.png",
@@ -168,10 +175,7 @@ function HoverButton({ href, normalSrc, hoverSrc, alt, width, height }) {
       className="pixel-button"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      style={{
-        width,
-        height,
-      }}
+      style={{ width, height }}
     >
       <img src={hover ? hoverSrc : normalSrc} alt={alt} draggable="false" />
     </a>
@@ -180,60 +184,56 @@ function HoverButton({ href, normalSrc, hoverSrc, alt, width, height }) {
 
 function App() {
   const [pxSize, setPxSize] = useState(4);
-  // Renamed to contentVisible for clarity, since it controls more than just skills
   const [contentVisible, setContentVisible] = useState(false);
+  const [hoveredSkill, setHoveredSkill] = useState(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
   const bannerRef = useRef(null);
-  // Re-purposing backgroundRef to observe the main content area
   const headerTriggerRef = useRef(null);
   const mainContentRef = useRef(null);
 
-  // Dynamically scale pixel size based on screen width
+  // Actualiza posición del ratón
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  // Escala dinámica de píxel
   useEffect(() => {
     const updatePixelSize = () => {
       const width = window.innerWidth;
       const scale = Math.max(1, Math.round((width / 1920) * 3));
       setPxSize(scale);
     };
-
     updatePixelSize();
     window.addEventListener("resize", updatePixelSize);
     document.addEventListener("fullscreenchange", updatePixelSize);
-
     return () => {
       window.removeEventListener("resize", updatePixelSize);
       document.removeEventListener("fullscreenchange", updatePixelSize);
     };
   }, []);
 
-  // Intersection Observer for the main content section
+  // Intersection Observer para mostrar el contenido principal
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            // Show main content when it scrolls INTO view
-            setContentVisible(true);
-          } else {
-            // This will hide it again when you scroll back to top
-            setContentVisible(false);
-          }
+          setContentVisible(entry.isIntersecting);
         });
       },
-      {
-        root: null,
-        threshold: 0.1, // Trigger when 10% of the main element is visible
-      }
+      { root: null, threshold: 0.1 }
     );
-
     if (mainContentRef.current) observer.observe(mainContentRef.current);
-
     return () => {
       if (mainContentRef.current) observer.unobserve(mainContentRef.current);
     };
-  }, [mainContentRef]); // Ensure this dependency is correct
+  }, [mainContentRef]);
 
   const iconRainElement = useMemo(
-    // ... (IconRain definition remains the same) ...
     () => (
       <div
         style={{
@@ -273,11 +273,10 @@ function App() {
         style={{
           position: "relative",
           width: "100%",
-          height: "100svh", // 'svh' is good for mobile
+          height: "100svh",
           overflow: "hidden",
         }}
       >
-        {/* Background layers */}
         <div
           style={{
             position: "fixed",
@@ -310,7 +309,7 @@ function App() {
 
         {iconRainElement}
 
-        {/* Centered logo, text, and buttons */}
+        {/* Centro del header */}
         <div
           style={{
             position: "absolute",
@@ -323,16 +322,12 @@ function App() {
             zIndex: 1,
           }}
         >
-          {/* Logo */}
-          <div>
-            <ThreeLogo
-              url={"/Portfolio/3dmodels/albertdmo_pixel_logo_blue.glb"}
-              pixelSize={pxSize}
-              sparkFrames={sparkFrames}
-            />
-          </div>
+          <ThreeLogo
+            url={"/Portfolio/3dmodels/albertdmo_pixel_logo_blue.glb"}
+            pixelSize={pxSize}
+            sparkFrames={sparkFrames}
+          />
 
-          {/* Text below the logo */}
           <div
             style={{
               color: "#c8c3d6",
@@ -369,6 +364,7 @@ function App() {
               width={`${pxSize * 50}px`}
               height={`${pxSize * 22}px`}
             />
+
             <HoverButton
               href={headerButtons.linkedin.link}
               normalSrc={headerButtons.linkedin.normal}
@@ -377,6 +373,7 @@ function App() {
               width={`${pxSize * 48}px`}
               height={`${pxSize * 22}px`}
             />
+
             <HoverButton
               href={headerButtons.cv.link}
               normalSrc={headerButtons.cv.normal}
@@ -391,14 +388,13 @@ function App() {
           ref={headerTriggerRef}
           style={{
             position: "absolute",
-            bottom: "10vh", // Sits 10% from the bottom of the header
+            bottom: "10vh",
             width: "10px",
             height: "10px",
-            pointerEvents: "none", // Makes it invisible to the mouse
           }}
         />
       </header>
-      {/* ALWAYS RENDER <main>, and add the ref back */}
+
       <main
         ref={mainContentRef}
         className={`main-content ${contentVisible ? "visible" : ""}`}
@@ -406,16 +402,10 @@ function App() {
           position: "relative",
           zIndex: 2,
           display: "flex",
-          justifyContent: "center", // centers the content horizontally
+          justifyContent: "center",
         }}
       >
-        {/* Content wrapper that limits total width */}
-        <div
-          style={{
-            width: "60%",
-            padding: "0 2rem", // keeps nice spacing on smaller screens
-          }}
-        >
+        <div style={{ width: "60%", padding: "0 2rem" }}>
           <section style={{ position: "relative" }}>
             <div
               className={`marquee-wrapper ${contentVisible ? "visible" : ""}`}
@@ -435,14 +425,13 @@ function App() {
                 slice={4}
                 className="skills-section-bg"
               >
-                {/* Título más pequeño con sombra roja */}
                 <SectionTitle
                   text="SKILLS"
                   pixelSize={pxSize * 2}
                   color="#ffffffff"
                   shadowColor="#5A2BFF"
                 />
-                {/* Marquee Content */}
+
                 <div style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
                   <Marquee
                     pauseOnHover={false}
@@ -495,6 +484,8 @@ function App() {
                       pixelSize={pxSize}
                       slice={4}
                       maxRotation={15}
+                      onMouseEnter={() => setHoveredSkill(skill)}
+                      onMouseLeave={() => setHoveredSkill(null)}
                     >
                       <div
                         style={{
@@ -529,23 +520,74 @@ function App() {
                     </SpotlightCard>
                   ))}
                 </div>
-                {/* GAME CARD TEST */}
-
-                <div style={{ padding: '20px' }}>
-      <GameCard
-        pixelSize={pxSize}
-        image={"/Portfolio/backgrounds/window_view_big.png"}
-        title="Pixel "
-        description="A brave knight who fights 8-bit dragons. Strong against bugs."
-        item={"/Portfolio/icons/skills_icons/angular_color.png"}
-      />
-
-    </div>
               </SectionBg>
             </div>
           </section>
         </div>
       </main>
+{/* Tooltip GameCard animado (fuera del main para evitar clipping) */}
+<AnimatePresence>
+  {hoveredSkill && (
+    (() => {
+      // card dimensions in pixels
+      const cardWidth = 100 * pxSize;
+      const cardHeight = 140 * pxSize;
+      const offset = 5 * pxSize;
+
+      // default position (below mouse)
+      let left = mousePos.x + offset;
+      let top = mousePos.y + offset;
+
+      // if tooltip would overflow bottom of screen, flip upward
+      if (top + cardHeight > window.innerHeight) {
+        top = mousePos.y - cardHeight - offset;
+      }
+
+      // also prevent right-side overflow
+      if (left + cardWidth > window.innerWidth) {
+        left = window.innerWidth - cardWidth - offset;
+      }
+
+      return (
+        <motion.div
+          key="tooltip-card"
+          initial={{ opacity: 0, scale: 0.9, filter: "brightness(3)" }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+            filter: [
+              "brightness(2)", // very bright at start
+              "brightness(1.2)", // quick fade down
+              "brightness(1)" // normal brightness
+            ],
+          }}
+          exit={{ opacity: 0, scale: 0.9, filter: "brightness(1)" }}
+          transition={{
+            duration: 0.15,
+            ease: "easeOut",
+            filter: { duration: 0.35, ease: "easeOut" },
+          }}
+          style={{
+            position: "fixed",
+            left: `${left}px`,
+            top: `${top}px`,
+            pointerEvents: "none",
+            zIndex: 999999,
+          }}
+        >
+          <GameCard
+            pixelSize={pxSize}
+            image={hoveredSkill.cardBackground}
+            title={hoveredSkill.name}
+            description={`This is a ${hoveredSkill.name} skill card.`}
+            item={hoveredSkill.color_icon_url}
+          />
+        </motion.div>
+      );
+    })()
+  )}
+</AnimatePresence>
+
     </div>
   );
 }
