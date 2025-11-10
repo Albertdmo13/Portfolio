@@ -29,6 +29,13 @@ const gameCards = [
   "/Portfolio/misc/GameCard2.png",
   "/Portfolio/misc/GameCard3.png",
 ];
+
+const gameCards_small = [
+  "/Portfolio/misc/GameCard1_small.png",
+  "/Portfolio/misc/GameCard2_small.png",
+  "/Portfolio/misc/GameCard3_small.png",
+];
+
 const skills = [
   {
     name: "Angular",
@@ -476,7 +483,7 @@ function App() {
               }}
             >
               <SectionBg
-                texture={nine_slice_texture}
+                texture={nine_slice_texture2}
                 pixelSize={pxSize}
                 slice={4}
                 className="skills-section-bg"
@@ -536,9 +543,9 @@ function App() {
                   {skills.map((skill, index) => (
                     <SpotlightCard
                       key={index}
-                      texture={nine_slice_texture2}
+                      texture={gameCards_small[skill.mastery]}
                       pixelSize={pxSize}
-                      slice={4}
+                      slice={8}
                       maxRotation={15}
                       onMouseEnter={() => setHoveredSkill(skill)}
                       onMouseLeave={() => setHoveredSkill(null)}
@@ -560,6 +567,13 @@ function App() {
                             height: `${pxSize * 26}px`,
                             imageRendering: "pixelated",
                             marginBottom: `${pxSize * 3}px`,
+                                filter: `
+      drop-shadow(0 0 0 black)
+      drop-shadow(${pxSize}px 0 0 black)
+      drop-shadow(-${pxSize}px 0 0 black)
+      drop-shadow(0 ${pxSize}px 0 black)
+      drop-shadow(0 -${pxSize}px 0 black)
+    `,
                           }}
                         />
                         <span
