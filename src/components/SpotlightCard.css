@@ -2,7 +2,6 @@
     position: relative;
     padding: 1rem;
     border-radius: 0;
-    overflow: hidden;
     border-style: solid;
     border-width: var(--border-width-visual);
     border-image-source: var(--texture-url);
