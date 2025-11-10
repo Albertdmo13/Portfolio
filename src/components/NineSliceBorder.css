@@ -1,0 +1,26 @@
+.nine-slice-border {
+    position: relative;
+    border-radius: 0;
+
+    /* 9-slice defaults */
+    --slice-amount: 4;
+    --border-width-visual: 4px;
+    --texture-url: none;
+
+    /* 9-slice as the background */
+    border-style: solid;
+    border-width: var(--border-width-visual);
+    border-image-source: var(--texture-url);
+    border-image-slice: var(--slice-amount) fill;
+    border-image-repeat: stretch;
+    image-rendering: pixelated;
+
+    /* Static (no tilt or animation) */
+    filter: brightness(1);
+}
+
+/* Content stays above the background */
+.nine-slice-border>* {
+    position: relative;
+    z-index: 2;
+}

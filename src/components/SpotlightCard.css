@@ -1,6 +1,5 @@
 .card-spotlight {
     position: relative;
-    padding: 1rem;
     border-radius: 0;
     border-style: solid;
     border-width: var(--border-width-visual);

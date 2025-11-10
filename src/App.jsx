@@ -11,6 +11,7 @@ import SectionBg from "./components/SectionBg";
 import GameCard from "./components/GameCard";
 import "./App.css";
 import { mask } from "framer-motion/client";
+import NineSliceBorder from "./components/NineSliceBorder";
 
 const skills_icons_url = "/Portfolio/icons/skills_icons";
 const nine_slice_texture = "/Portfolio/misc/9_slice.png";
@@ -560,12 +561,13 @@ function App() {
                           padding: 0,
                         }}
                       >
-                        {/* Contenedor que ocupa el 35% superior */}
+                        {/* Contenedor que ocupa el 50% superior */}
                         <div
                           style={{
-                            height: "35%",
+                            height: "50%",
                             width: "100%",
                             display: "flex",
+                            flexDirection: "column",
                             alignItems: "center",
                             justifyContent: "center",
                           }}
@@ -581,26 +583,44 @@ function App() {
                           />
                         </div>
 
-                        {/* Contenedor que ocupa el 65% inferior y centra verticalmente el texto */}
+                        {/* Contenedor que ocupa el 50% inferior y centra verticalmente el texto */}
                         <div
                           style={{
-                            height: "65%",
+                            height: "50%",
                             width: "100%",
                             display: "flex",
-                            alignItems: "center", // centra verticalmente
-                            justifyContent: "center", // centra horizontalmente
+                            alignItems: "center",
+                            flexDirection: "column",
+                            justifyContent: "center",
                           }}
                         >
-                          <span
+                          <NineSliceBorder
+                            texture={nine_slice_texture2}
+                            pixelSize={pxSize}
+                            slice={4}
+                            className="skills-section-bg"
                             style={{
-                              color: "white",
-                              textAlign: "center",
-                              textShadow: "3px 3px 0 #000",
-                              fontFamily: "alice, sans-serif",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              overflow: "visible", // evita ocultar contenido
+                              width: "auto",
+                              height: "auto",
                             }}
                           >
-                            {skill.name}
-                          </span>
+                            <span
+                              style={{
+                                color: "white",
+                                textAlign: "center",
+                                textShadow: "3px 3px 0 #000",
+                                fontSize: `${pxSize * 0.3}rem`,
+                                lineHeight: 1,
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {skill.name}
+                            </span>
+                          </NineSliceBorder>
                         </div>
                       </div>
                     </SpotlightCard>
