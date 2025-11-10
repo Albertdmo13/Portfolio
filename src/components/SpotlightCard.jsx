@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import './SpotlightCard.css';
 
 const SpotlightCard = ({
@@ -12,6 +12,7 @@ const SpotlightCard = ({
   onMouseLeave,
 }) => {
   const divRef = useRef(null);
+  const [hovered, setHovered] = useState(false); // 👈 Variable para detectar si está en hover
   let hoverBoost = 2.5;
 
   const handleMouseMove = e => {
@@ -32,10 +33,17 @@ const SpotlightCard = ({
     divRef.current.style.setProperty('--rotate-y', `${rotateY}deg`);
   };
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = e => {
     if (!divRef.current) return;
     divRef.current.style.setProperty('--rotate-x', '0deg');
     divRef.current.style.setProperty('--rotate-y', '0deg');
+    setHovered(false);
+    if (typeof onMouseLeave === 'function') onMouseLeave(e);
+  };
+
+  const handleMouseEnter = e => {
+    setHovered(true);
+    if (typeof onMouseEnter === 'function') onMouseEnter(e);
   };
 
   const visualBorderWidth = slice * pixelSize;
@@ -44,20 +52,16 @@ const SpotlightCard = ({
     '--texture-url': texture ? `url(${texture})` : 'none',
     '--slice-amount': slice,
     '--border-width-visual': `${visualBorderWidth}px`,
+    '--pixel-size': pixelSize,
   };
 
   return (
     <div
       ref={divRef}
       onMouseMove={handleMouseMove}
-      onMouseLeave={(e) => {
-        handleMouseLeave(e);
-        if (typeof onMouseLeave === "function") onMouseLeave(e);
-      }}
-      onMouseEnter={(e) => {
-        if (typeof onMouseEnter === "function") onMouseEnter(e);
-      }}
-      className={`card-spotlight ${className}`}
+      onMouseLeave={handleMouseLeave}
+      onMouseEnter={handleMouseEnter}
+      className={`card-spotlight ${className} ${hovered ? 'hovered' : ''}`}
       style={style}
     >
       {children}

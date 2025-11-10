@@ -545,7 +545,7 @@ function App() {
                       key={index}
                       texture={gameCards_small[skill.mastery]}
                       pixelSize={pxSize}
-                      slice={8}
+                      slice={7}
                       maxRotation={15}
                       onMouseEnter={() => setHoveredSkill(skill)}
                       onMouseLeave={() => setHoveredSkill(null)}
@@ -555,37 +555,53 @@ function App() {
                           display: "flex",
                           flexDirection: "column",
                           alignItems: "center",
-                          justifyContent: "center",
-                          padding: `0px`,
+                          justifyContent: "flex-start",
+                          height: "100%",
+                          padding: 0,
                         }}
                       >
-                        <img
-                          src={skill.color_icon_url}
-                          alt={skill.name}
+                        {/* Contenedor que ocupa el 35% superior */}
+                        <div
                           style={{
-                            width: `${pxSize * 26}px`,
-                            height: `${pxSize * 26}px`,
-                            imageRendering: "pixelated",
-                            marginBottom: `${pxSize * 3}px`,
-                                filter: `
-      drop-shadow(0 0 0 black)
-      drop-shadow(${pxSize}px 0 0 black)
-      drop-shadow(-${pxSize}px 0 0 black)
-      drop-shadow(0 ${pxSize}px 0 black)
-      drop-shadow(0 -${pxSize}px 0 black)
-    `,
-                          }}
-                        />
-                        <span
-                          style={{
-                            color: "white",
-                            textAlign: "center",
-                            textShadow: "3px 3px 0 #000",
-                            fontFamily: "alice, sans-serif",
+                            height: "35%",
+                            width: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
-                          {skill.name}
-                        </span>
+                          <img
+                            src={skill.color_icon_url}
+                            alt={skill.name}
+                            style={{
+                              width: `${pxSize * 26}px`,
+                              height: `${pxSize * 26}px`,
+                              imageRendering: "pixelated",
+                            }}
+                          />
+                        </div>
+
+                        {/* Contenedor que ocupa el 65% inferior y centra verticalmente el texto */}
+                        <div
+                          style={{
+                            height: "65%",
+                            width: "100%",
+                            display: "flex",
+                            alignItems: "center", // centra verticalmente
+                            justifyContent: "center", // centra horizontalmente
+                          }}
+                        >
+                          <span
+                            style={{
+                              color: "white",
+                              textAlign: "center",
+                              textShadow: "3px 3px 0 #000",
+                              fontFamily: "alice, sans-serif",
+                            }}
+                          >
+                            {skill.name}
+                          </span>
+                        </div>
                       </div>
                     </SpotlightCard>
                   ))}
