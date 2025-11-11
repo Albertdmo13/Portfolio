@@ -583,10 +583,22 @@ function App() {
                           />
                         </div>
 
+                                                {/* Contenedor que ocupa el 50% superior */}
+                        <div
+                          style={{
+                            height: "15%",
+                            width: "100%",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        ></div>
+
                         {/* Contenedor que ocupa el 50% inferior y centra verticalmente el texto */}
                         <div
                           style={{
-                            height: "50%",
+                            height: "35%",
                             width: "100%",
                             display: "flex",
                             alignItems: "center",
