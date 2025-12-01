@@ -1,22 +1,26 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Marquee from "react-fast-marquee";
+import "./App.css";
+
+// Components
 import ThreeLogo from "./components/ThreePixelLogo";
 import PixelBlast from "./components/PixelBlast";
 import IconRain from "./components/IconRain";
 import TextType from "./components/TextType";
 import SpotlightCard from "./components/SpotlightCard";
-import Marquee from "react-fast-marquee";
 import SectionTitle from "./components/SectionTitle";
 import SectionBg from "./components/SectionBg";
 import GameCard from "./components/GameCard";
-import "./App.css";
-import { mask } from "framer-motion/client";
 import NineSliceBorder from "./components/NineSliceBorder";
 
+// URLs, textures, and constants
 const skills_icons_url = "/Portfolio/icons/skills_icons";
 const nine_slice_texture = "/Portfolio/misc/9_slice.png";
 const nine_slice_texture2 = "/Portfolio/misc/9_slice_2.png";
+const carpet_nine_slice_texture = "/Portfolio/misc/carpet_9_slice.png";
 const BACKGROUND_IMAGE_BASE_HEIGHT_PX = 300;
+const SKILLS_TITLE_IMG = "/Portfolio/misc/skills.png";
 
 const cardBackgrounds = [
   "/Portfolio/misc/GameCardBackground1.png",
@@ -206,7 +210,7 @@ const headerButtons = {
   linkedin: {
     normal: "/Portfolio/header_buttons/btn_linkedin.png",
     hover: "/Portfolio/header_buttons/btn_linkedin_hovered.png",
-    link: "https://www.linkedin.com/in/albertdmo/",
+    link: "https://www.linkedin.com/in/alberto-d%C3%ADaz-maroto-ortiz-348766398/",
   },
   cv: {
     normal: "/Portfolio/header_buttons/btn_curriculum.png",
@@ -226,8 +230,10 @@ const dotFrames = [
   skills_icons_url + "/dot8.png",
 ];
 
+// Helpers
 const getSkillsIconUrls = () => skills.map((skill) => skill.icon_url);
 
+// Reusable UI
 function HoverButton({ href, normalSrc, hoverSrc, alt, width, height }) {
   const [hover, setHover] = useState(false);
 
@@ -243,6 +249,376 @@ function HoverButton({ href, normalSrc, hoverSrc, alt, width, height }) {
     >
       <img src={hover ? hoverSrc : normalSrc} alt={alt} draggable="false" />
     </a>
+  );
+}
+
+function IconRainBackground({ pxSize }) {
+  const icons = useMemo(() => getSkillsIconUrls(), []);
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        overflow: "hidden",
+        zIndex: -1,
+      }}
+    >
+      <IconRain
+        icons={icons}
+        iconSize={34}
+        pixelScale={pxSize}
+        speed={0.5 * (pxSize / 4)}
+        density={icons.length * 1.2}
+        pixelSnap={false}
+        color1="#3b3379"
+        color2="#0e0911"
+        dotFrames={dotFrames}
+        dotInterval={500}
+        dotLifetime={3000}
+        dotAnimDuration={1000}
+        dotSize={10 * pxSize}
+      />
+    </div>
+  );
+}
+
+function Header({ pxSize, sparkFrames, headerButtons }) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center", // Horizontally centers the stack
+        justifyContent: "center", // Vertically centers the whole group (Model + Text + Buttons)
+        textAlign: "center",
+        zIndex: 1,
+      }}
+    >
+      {/* Wrap ThreeLogo in a full-width container with explicit centering.
+        This guarantees horizontal centering regardless of the model's internal canvas size,
+        without affecting the vertical flow.
+      */}
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          position: "relative",
+        }}
+      >
+        <ThreeLogo
+          url={"/Portfolio/3dmodels/albertdmo_pixel_logo_blue.glb"}
+          pixelSize={pxSize}
+          sparkFrames={sparkFrames}
+        />
+      </div>
+
+      <div
+        style={{
+          color: "#c8c3d6",
+          fontFamily: "'Press Start 2P', monospace",
+          fontSize: `${pxSize * 0.6}rem`,
+          letterSpacing: "2px",
+          textShadow: "4px 4px 0 #000",
+          whiteSpace: "nowrap",
+          // Add a small margin top if you need to push the text away from the model
+          // marginTop: `${pxSize * 2}px`
+        }}
+      >
+        <TextType
+          text={["Computer Scientist", "Game Developer", "Digital Artist"]}
+          typingSpeed={75}
+          pauseDuration={1500}
+          showCursor={true}
+          cursorCharacter="_"
+        />
+      </div>
+
+      <div
+        style={{
+          marginTop: `${pxSize * 20}px`,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: `${pxSize * 3}px`,
+        }}
+      >
+        <HoverButton
+          href={headerButtons.github.link}
+          normalSrc={headerButtons.github.normal}
+          hoverSrc={headerButtons.github.hover}
+          alt="GitHub"
+          width={`${pxSize * 50}px`}
+          height={`${pxSize * 22}px`}
+        />
+
+        <HoverButton
+          href={headerButtons.linkedin.link}
+          normalSrc={headerButtons.linkedin.normal}
+          hoverSrc={headerButtons.linkedin.hover}
+          alt="LinkedIn"
+          width={`${pxSize * 48}px`}
+          height={`${pxSize * 22}px`}
+        />
+
+        <HoverButton
+          href={headerButtons.cv.link}
+          normalSrc={headerButtons.cv.normal}
+          hoverSrc={headerButtons.cv.hover}
+          alt="Curriculum"
+          width={`${pxSize * 56}px`}
+          height={`${pxSize * 22}px`}
+        />
+      </div>
+    </div>
+  );
+}
+function SkillsSection({ pxSize, contentVisible, setHoveredSkill }) {
+  const contentRef = useRef(null);
+  const [bgDimensions, setBgDimensions] = useState({
+    width: "100%",
+    height: "auto",
+  });
+
+  useLayoutEffect(() => {
+    if (!contentRef.current) return;
+
+    const calculateDimensions = () => {
+      const tileSize = 16 * pxSize;
+      const element = contentRef.current;
+
+      const rawWidth = element.offsetWidth;
+      const rawHeight = element.offsetHeight;
+
+      const snappedWidth = Math.ceil(rawWidth / tileSize) * tileSize;
+      const snappedHeight = Math.ceil(rawHeight / tileSize) * tileSize;
+
+      setBgDimensions({
+        width: `${snappedWidth}px`,
+        height: `${snappedHeight}px`,
+      });
+    };
+
+    const observer = new ResizeObserver(() => {
+      calculateDimensions();
+    });
+
+    observer.observe(contentRef.current);
+    calculateDimensions();
+
+    return () => observer.disconnect();
+  }, [pxSize]);
+
+  return (
+    <section
+      style={{
+        position: "relative",
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        className={`skills-wrapper ${contentVisible ? "visible" : ""}`}
+        style={{
+          position: "relative",
+          marginTop: "-10vh",
+          padding: `${pxSize * 4}px 0`,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <img
+          src={SKILLS_TITLE_IMG}
+          alt="Skills"
+          style={{
+            position: "absolute",
+            top: `${-pxSize * 12}px`,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: `${pxSize * 71}px`,
+            height: "auto",
+            imageRendering: "pixelated",
+            zIndex: 2,
+            pointerEvents: "none",
+          }}
+        />
+
+        <SectionBg
+          texture={carpet_nine_slice_texture}
+          pixelSize={pxSize}
+          slice={16}
+          className="skills-section-bg"
+          style={{
+            width: bgDimensions.width,
+            height: bgDimensions.height,
+            transition: "width 0.2s ease, height 0.2s ease",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            ref={contentRef}
+            style={{
+              position: "relative",
+              display: "grid",
+              fontFamily: "'Press Start 2P', monospace",
+              gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
+              gap: "1rem",
+              padding: `${pxSize * 1.5}px`,
+              width: "100%",
+              maxWidth: "1000px",
+              boxSizing: "border-box",
+            }}
+          >
+            {skills.map((skill, index) => (
+              <SpotlightCard
+                key={index}
+                texture={gameCards_small[skill.mastery]}
+                pixelSize={pxSize}
+                slice={7}
+                maxRotation={15}
+                onMouseEnter={() => setHoveredSkill(skill)}
+                onMouseLeave={() => setHoveredSkill(null)}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    height: "100%",
+                    padding: `${pxSize * 2}px`,
+                    // Ensure the container allows z-index stacking
+                    position: "relative",
+                    zIndex: 2,
+                  }}
+                >
+                  <div
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      position: "relative", // Needed for z-index to work on children
+                    }}
+                  >
+                    <img
+                      src={skill.color_icon_url}
+                      alt={skill.name}
+                      style={{
+                        width: `${pxSize * 26}px`,
+                        height: `${pxSize * 26}px`,
+                        imageRendering: "pixelated",
+                        // FIX: Elevate image above the SpotlightCard's shine overlay
+                        position: "relative",
+                        zIndex: 10,
+                        filter: "none", // Reset any inherited filters
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ marginTop: `${pxSize * 2}px` }}>
+                    <NineSliceBorder
+                      texture={nine_slice_texture2}
+                      pixelSize={pxSize}
+                      slice={4}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: `${pxSize}px ${pxSize * 2}px`,
+                        // Also lift the text border so it doesn't look washed out
+                        position: "relative",
+                        zIndex: 5,
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "white",
+                          textAlign: "center",
+                          textShadow: "3px 3px 0 #000",
+                          fontSize: `${pxSize * 0.3}rem`,
+                          lineHeight: 1,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {skill.name}
+                      </span>
+                    </NineSliceBorder>
+                  </div>
+                </div>
+              </SpotlightCard>
+            ))}
+          </div>
+        </SectionBg>
+      </div>
+    </section>
+  );
+}
+
+function TooltipCard({ hoveredSkill, mousePos, pxSize }) {
+  if (!hoveredSkill) return null;
+
+  const cardWidth = 100 * pxSize;
+  const cardHeight = 140 * pxSize;
+  const offset = 5 * pxSize;
+
+  let left = mousePos.x + offset;
+  let top = mousePos.y + offset;
+
+  if (top + cardHeight > window.innerHeight) {
+    top = mousePos.y - cardHeight - offset;
+  }
+  if (left + cardWidth > window.innerWidth) {
+    left = window.innerWidth - cardWidth - offset;
+  }
+
+  return (
+    <AnimatePresence>
+      {hoveredSkill && (
+        <motion.div
+          key="tooltip-card"
+          initial={{ opacity: 0, scale: 0.9, filter: "brightness(3)" }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+            filter: ["brightness(2)", "brightness(1.2)", "brightness(1)"],
+          }}
+          exit={{ opacity: 0, scale: 0.9, filter: "brightness(1)" }}
+          transition={{
+            duration: 0.15,
+            ease: "easeOut",
+            filter: { duration: 0.35, ease: "easeOut" },
+          }}
+          style={{
+            position: "fixed",
+            left: `${left}px`,
+            top: `${top}px`,
+            pointerEvents: "none",
+            zIndex: 999999,
+          }}
+        >
+          <GameCard
+            pixelSize={pxSize}
+            image={hoveredSkill.cardBackground}
+            title={hoveredSkill.name}
+            item={hoveredSkill.color_icon_url}
+            category={hoveredSkill.category}
+            cardSprite={gameCards[hoveredSkill.mastery]}
+            description={hoveredSkill.description}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -298,35 +674,7 @@ function App() {
   }, [mainContentRef]);
 
   const iconRainElement = useMemo(
-    () => (
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          overflow: "hidden",
-          zIndex: -1,
-        }}
-      >
-        <IconRain
-          icons={getSkillsIconUrls()}
-          iconSize={34}
-          pixelScale={pxSize}
-          speed={0.5 * (pxSize / 4)}
-          density={getSkillsIconUrls().length * 1.2}
-          pixelSnap={false}
-          color1="#3b3379"
-          color2="#0e0911"
-          dotFrames={dotFrames}
-          dotInterval={500}
-          dotLifetime={3000}
-          dotAnimDuration={1000}
-          dotSize={10 * pxSize}
-        />
-      </div>
-    ),
+    () => <IconRainBackground pxSize={pxSize} />,
     [pxSize]
   );
 
@@ -374,80 +722,11 @@ function App() {
         {iconRainElement}
 
         {/* Centro del header */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            zIndex: 1,
-          }}
-        >
-          <ThreeLogo
-            url={"/Portfolio/3dmodels/albertdmo_pixel_logo_blue.glb"}
-            pixelSize={pxSize}
-            sparkFrames={sparkFrames}
-          />
-
-          <div
-            style={{
-              color: "#c8c3d6",
-              fontFamily: "'Press Start 2P', monospace",
-              fontSize: `${pxSize * 0.6}rem`,
-              letterSpacing: "2px",
-              textShadow: "4px 4px 0 #000",
-              whiteSpace: "nowrap",
-            }}
-          >
-            <TextType
-              text={["Computer Scientist", "Game Developer", "Digital Artist"]}
-              typingSpeed={75}
-              pauseDuration={1500}
-              showCursor={true}
-              cursorCharacter="_"
-            />
-          </div>
-
-          <div
-            style={{
-              marginTop: `${pxSize * 20}px`,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: `${pxSize * 3}px`,
-            }}
-          >
-            <HoverButton
-              href={headerButtons.github.link}
-              normalSrc={headerButtons.github.normal}
-              hoverSrc={headerButtons.github.hover}
-              alt="GitHub"
-              width={`${pxSize * 50}px`}
-              height={`${pxSize * 22}px`}
-            />
-
-            <HoverButton
-              href={headerButtons.linkedin.link}
-              normalSrc={headerButtons.linkedin.normal}
-              hoverSrc={headerButtons.linkedin.hover}
-              alt="LinkedIn"
-              width={`${pxSize * 48}px`}
-              height={`${pxSize * 22}px`}
-            />
-
-            <HoverButton
-              href={headerButtons.cv.link}
-              normalSrc={headerButtons.cv.normal}
-              hoverSrc={headerButtons.cv.hover}
-              alt="Curriculum"
-              width={`${pxSize * 56}px`}
-              height={`${pxSize * 22}px`}
-            />
-          </div>
-        </div>
+        <Header
+          pxSize={pxSize}
+          sparkFrames={sparkFrames}
+          headerButtons={headerButtons}
+        />
         <div
           ref={headerTriggerRef}
           style={{
@@ -470,242 +749,19 @@ function App() {
         }}
       >
         <div style={{ width: "60%", padding: "0 2rem" }}>
-          <section style={{ position: "relative" }}>
-            <div
-              className={`marquee-wrapper ${contentVisible ? "visible" : ""}`}
-              style={{
-                position: "relative",
-                fontFamily: "'Press Start 2P', monospace",
-                margin: "0 auto",
-                top: "-10vh",
-                overflow: "hidden",
-                textAlign: "center",
-                padding: `${pxSize * 4}px 0`,
-              }}
-            >
-              <SectionBg
-                texture={nine_slice_texture2}
-                pixelSize={pxSize}
-                slice={4}
-                className="skills-section-bg"
-              >
-                <SectionTitle
-                  text="SKILLS"
-                  pixelSize={pxSize * 2}
-                  color="#ffffffff"
-                  shadowColor="#5A2BFF"
-                />
-
-                <div style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
-                  <Marquee
-                    pauseOnHover={false}
-                    speed={40}
-                    gradient={true}
-                    gradientWidth={pxSize * 20}
-                    gradientColor="#150B27"
-                  >
-                    {skills.map((skill, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          margin: `0 ${pxSize * 8}px`,
-                        }}
-                      >
-                        <img
-                          src={skill.color_icon_url}
-                          alt={skill.name}
-                          style={{
-                            width: `${pxSize * 26}px`,
-                            height: `${pxSize * 26}px`,
-                            imageRendering: "pixelated",
-                          }}
-                        />
-                      </div>
-                    ))}
-                  </Marquee>
-                </div>
-
-                <div
-                  style={{
-                    position: "relative",
-                    display: "grid",
-                    fontFamily: "'Press Start 2P', monospace",
-                    gridTemplateColumns:
-                      "repeat(auto-fill, minmax(110px, 1fr))",
-                    gap: "1rem",
-                    margin: "0 auto",
-                    marginTop: `${pxSize * 8}px`,
-                    alignContent: "start",
-                  }}
-                >
-                  {skills.map((skill, index) => (
-                    <SpotlightCard
-                      key={index}
-                      texture={gameCards_small[skill.mastery]}
-                      pixelSize={pxSize}
-                      slice={7}
-                      maxRotation={15}
-                      onMouseEnter={() => setHoveredSkill(skill)}
-                      onMouseLeave={() => setHoveredSkill(null)}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          justifyContent: "flex-start",
-                          height: "100%",
-                          padding: 0,
-                        }}
-                      >
-                        {/* Contenedor que ocupa el 50% superior */}
-                        <div
-                          style={{
-                            height: "50%",
-                            width: "100%",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <img
-                            src={skill.color_icon_url}
-                            alt={skill.name}
-                            style={{
-                              width: `${pxSize * 26}px`,
-                              height: `${pxSize * 26}px`,
-                              imageRendering: "pixelated",
-                            }}
-                          />
-                        </div>
-
-                                                {/* Contenedor que ocupa el 50% superior */}
-                        <div
-                          style={{
-                            height: "15%",
-                            width: "100%",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        ></div>
-
-                        {/* Contenedor que ocupa el 50% inferior y centra verticalmente el texto */}
-                        <div
-                          style={{
-                            height: "35%",
-                            width: "100%",
-                            display: "flex",
-                            alignItems: "center",
-                            flexDirection: "column",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <NineSliceBorder
-                            texture={nine_slice_texture2}
-                            pixelSize={pxSize}
-                            slice={4}
-                            className="skills-section-bg"
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              overflow: "visible", // evita ocultar contenido
-                              width: "auto",
-                              height: "auto",
-                            }}
-                          >
-                            <span
-                              style={{
-                                color: "white",
-                                textAlign: "center",
-                                textShadow: "3px 3px 0 #000",
-                                fontSize: `${pxSize * 0.3}rem`,
-                                lineHeight: 1,
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {skill.name}
-                            </span>
-                          </NineSliceBorder>
-                        </div>
-                      </div>
-                    </SpotlightCard>
-                  ))}
-                </div>
-              </SectionBg>
-            </div>
-          </section>
+          <SkillsSection
+            pxSize={pxSize}
+            contentVisible={contentVisible}
+            setHoveredSkill={setHoveredSkill}
+          />
         </div>
       </main>
       {/* Tooltip GameCard animado (fuera del main para evitar clipping) */}
-      <AnimatePresence>
-        {hoveredSkill &&
-          (() => {
-            // card dimensions in pixels
-            const cardWidth = 100 * pxSize;
-            const cardHeight = 140 * pxSize;
-            const offset = 5 * pxSize;
-
-            // default position (below mouse)
-            let left = mousePos.x + offset;
-            let top = mousePos.y + offset;
-
-            // if tooltip would overflow bottom of screen, flip upward
-            if (top + cardHeight > window.innerHeight) {
-              top = mousePos.y - cardHeight - offset;
-            }
-
-            // also prevent right-side overflow
-            if (left + cardWidth > window.innerWidth) {
-              left = window.innerWidth - cardWidth - offset;
-            }
-
-            return (
-              <motion.div
-                key="tooltip-card"
-                initial={{ opacity: 0, scale: 0.9, filter: "brightness(3)" }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                  filter: [
-                    "brightness(2)", // very bright at start
-                    "brightness(1.2)", // quick fade down
-                    "brightness(1)", // normal brightness
-                  ],
-                }}
-                exit={{ opacity: 0, scale: 0.9, filter: "brightness(1)" }}
-                transition={{
-                  duration: 0.15,
-                  ease: "easeOut",
-                  filter: { duration: 0.35, ease: "easeOut" },
-                }}
-                style={{
-                  position: "fixed",
-                  left: `${left}px`,
-                  top: `${top}px`,
-                  pointerEvents: "none",
-                  zIndex: 999999,
-                }}
-              >
-                <GameCard
-                  pixelSize={pxSize}
-                  image={hoveredSkill.cardBackground}
-                  title={hoveredSkill.name}
-                  item={hoveredSkill.color_icon_url}
-                  category={hoveredSkill.category}
-                  cardSprite={gameCards[hoveredSkill.mastery]}
-                  description={hoveredSkill.description}
-                />
-              </motion.div>
-            );
-          })()}
-      </AnimatePresence>
+      <TooltipCard
+        hoveredSkill={hoveredSkill}
+        mousePos={mousePos}
+        pxSize={pxSize}
+      />
     </div>
   );
 }
