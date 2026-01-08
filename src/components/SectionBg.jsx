@@ -7,6 +7,8 @@ const SectionBg = ({
   texture,
   pixelSize = 1,
   slice = 4,
+  style: customStyle = {},
+  ...rest
 }) => {
   const divRef = useRef(null);
 
@@ -16,6 +18,7 @@ const SectionBg = ({
     '--texture-url': texture ? `url(${texture})` : 'none',
     '--slice-amount': slice,
     '--border-width-visual': `${visualBorderWidth}px`,
+    ...customStyle,
   };
 
   return (
@@ -23,6 +26,7 @@ const SectionBg = ({
       ref={divRef}
       className={`section-bg ${className}`}
       style={style}
+      {...rest}
     >
       {children}
     </div>

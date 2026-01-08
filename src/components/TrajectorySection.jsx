@@ -82,7 +82,23 @@ export default function TrajectorySection({ pxSize, nineSliceTexture }) {
           overflow: "visible", // Important for 3D/pop-out effects
         }}
       >
-        <div className="trajectory-wrapper">
+        <div
+          style={{
+            position: "absolute",
+            top: `${pxSize * -2}px`,
+            bottom: `${pxSize * -2}px`,
+            left: `${pxSize * -3}px`,
+            right: `${pxSize * -3}px`,
+            backgroundImage:
+              "linear-gradient(rgba(27, 5, 71, 0.6), rgba(15, 3, 39, 0.6)), url(/Portfolio/backgrounds/window_view_big.png)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            imageRendering: "pixelated",
+            zIndex: 0,
+          }}
+        />
+        <div className="trajectory-wrapper" style={{ position: "relative", zIndex: 1 }}>
           <div className="trajectory-line" />
 
           {trajectoryData.map((item, index) => {
