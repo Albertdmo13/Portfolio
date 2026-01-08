@@ -1,0 +1,157 @@
+.trajectory-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 0;
+  display: flex;
+  gap: 2rem;
+}
+
+/* --- DESKTOP (Horizontal) --- */
+@media (min-width: 769px) {
+  .trajectory-wrapper {
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: stretch;
+    padding: 2rem 0;
+    min-height: 350px; /* Fixed height for the grid to work */
+    gap: 2rem;
+  }
+
+  /* Horizontal central line */
+  .trajectory-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 4px;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-50%);
+    z-index: 0;
+  }
+
+  .trajectory-item {
+    display: grid;
+    grid-template-rows: 1fr 1fr; /* Split exactly in half */
+    justify-items: center;
+    position: relative;
+    flex: 1 1 0;
+    max-width: 350px;
+    z-index: 1;
+    padding: 0; /* Remove padding */
+  }
+
+  .trajectory-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    background-color: #fff;
+    transform: translate(-50%, -50%) rotate(45deg);
+    box-shadow: 0 0 10px rgba(138, 99, 255, 0.8);
+    z-index: 2;
+  }
+
+  .trajectory-date {
+    font-family: 'Press Start 2P', monospace;
+    color: #c8c3d6;
+    font-size: 0.8rem;
+    text-shadow: 2px 2px 0 #000;
+    text-align: center;
+    width: 100%;
+  }
+
+  .trajectory-content {
+    width: 100%;
+  }
+
+  /* Alternating Layout */
+  
+  /* ODD ITEMS (1, 3, 5...) -> Content ABOVE (Row 1), Date BELOW (Row 2) */
+  .trajectory-item:nth-child(odd) .trajectory-content {
+    grid-row: 1;
+    align-self: end;
+    margin-bottom: 2rem;
+  }
+  
+  .trajectory-item:nth-child(odd) .trajectory-date {
+    grid-row: 2;
+    align-self: start;
+    margin-top: 2rem;
+  }
+
+  /* EVEN ITEMS (2, 4, 6...) -> Date ABOVE (Row 1), Content BELOW (Row 2) */
+  .trajectory-item:nth-child(even) .trajectory-date {
+    grid-row: 1;
+    align-self: end;
+    margin-bottom: 2rem;
+  }
+  
+  .trajectory-item:nth-child(even) .trajectory-content {
+    grid-row: 2;
+    align-self: start;
+    margin-top: 2rem;
+  }
+}
+
+/* --- MOBILE (Vertical) --- */
+@media (max-width: 768px) {
+  .trajectory-wrapper {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  /* Vertical central line */
+  .trajectory-line {
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: none;
+    z-index: 0;
+  }
+
+  .trajectory-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+    padding-left: 50px;
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 1;
+  }
+
+  .trajectory-dot {
+    position: absolute;
+    left: 20px;
+    top: 0;
+    margin-top: 0.5rem;
+    width: 16px;
+    height: 16px;
+    background-color: #fff;
+    transform: translateX(-50%) rotate(45deg);
+    box-shadow: 0 0 10px rgba(138, 99, 255, 0.8);
+    z-index: 2;
+  }
+
+  .trajectory-date {
+    font-family: 'Press Start 2P', monospace;
+    color: #c8c3d6;
+    font-size: 0.8rem;
+    text-shadow: 2px 2px 0 #000;
+    text-align: left;
+    margin-bottom: 0.5rem;
+    width: 100%;
+  }
+
+  .trajectory-content {
+    width: 100%;
+    position: relative;
+  }
+}

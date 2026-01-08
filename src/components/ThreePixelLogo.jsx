@@ -80,78 +80,110 @@ function Model({ url, onBoxComputed, pixelSize }) {
 }
 
 // --- NO CHANGES to Sparks component ---
+// --- OPTIMIZED Sparks component ---
 function Sparks({ sparkFrames, pixelSize }) {
   const textures = useTexture(sparkFrames);
-  const [sparks, setSparks] = useState([]);
+  // Object pool size
+  const POOL_SIZE = 20;
+  
+  // Refs for the sprite objects in the scene
+  const spriteRefs = useRef([]);
+  
+  // State for the logic (not React state)
+  const sparksData = useRef(
+    Array.from({ length: POOL_SIZE }, () => ({
+      active: false,
+      x: 0,
+      y: 0,
+      lifetime: 0,
+      frameIndex: 0,
+    }))
+  );
 
-  // Force nearest-neighbor filtering and prevent any smoothing
+  // Force nearest-neighbor filtering
   useEffect(() => {
     textures.forEach((tex) => {
       tex.magFilter = THREE.NearestFilter;
       tex.minFilter = THREE.NearestFilter;
       tex.generateMipmaps = false;
       tex.anisotropy = 0;
-      tex.colorSpace = THREE.SRGBColorSpace; // Replaced deprecated sRGBEncoding
+      tex.colorSpace = THREE.SRGBColorSpace;
       tex.needsUpdate = true;
     });
   }, [textures]);
 
-  // Spawn sparks randomly near the logo
-  useEffect(() => {
-    const spawnSpark = () => {
-      const id = Math.random().toString(36).substring(2);
-      const x = (Math.random() - 0.5) * 3.0;
-      const y = Math.random() - 0.5 + 0.2;
-      setSparks((s) => [...s, { id, x, y, frameIndex: 0, lifetime: 0 }]);
-    };
-
-    const interval = setInterval(() => {
-      if (Math.random() < 0.023) spawnSpark();
-    }, 10);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Animate through spark frames
   useFrame((_, delta) => {
-    setSparks((sparks) =>
-      sparks
-        .map((s) => {
-          const frameDuration = 0.033; // 30 FPS
-          const newLifetime = s.lifetime + delta;
-          const newFrameIndex = Math.floor(newLifetime / frameDuration);
-          return { ...s, frameIndex: newFrameIndex, lifetime: newLifetime };
-        })
-        .filter((s) => s.frameIndex < sparkFrames.length)
-    );
+    const frameDuration = 0.033; // 30 FPS
+
+    // 1. Spawn new sparks
+    if (Math.random() < 0.023) {
+      // Find an inactive spark in the pool
+      const inactiveIdx = sparksData.current.findIndex(s => !s.active);
+      if (inactiveIdx !== -1) {
+        const spark = sparksData.current[inactiveIdx];
+        spark.active = true;
+        spark.x = (Math.random() - 0.5) * 3.0;
+        spark.y = Math.random() - 0.5 + 0.2;
+        spark.lifetime = 0;
+        spark.frameIndex = 0;
+        
+        // Make visible immediately
+        if (spriteRefs.current[inactiveIdx]) {
+           spriteRefs.current[inactiveIdx].visible = true;
+           spriteRefs.current[inactiveIdx].position.set(
+              spark.x * 7 * pixelSize * 0.25,
+              spark.y * 3 * pixelSize * 0.25,
+              0
+           );
+        }
+      }
+    }
+
+    // 2. Update active sparks
+    sparksData.current.forEach((spark, i) => {
+      if (!spark.active) return;
+
+      spark.lifetime += delta;
+      spark.frameIndex = Math.floor(spark.lifetime / frameDuration);
+
+      const sprite = spriteRefs.current[i];
+      if (!sprite) return;
+
+      if (spark.frameIndex >= sparkFrames.length) {
+        // Deactivate
+        spark.active = false;
+        sprite.visible = false;
+      } else {
+        // Update texture
+        sprite.material.map = textures[spark.frameIndex];
+        // Ensure position is correct (static for now, but good practice)
+        sprite.position.set(
+            spark.x * 7 * pixelSize * 0.25,
+            spark.y * 3 * pixelSize * 0.25,
+            0
+        );
+      }
+    });
   });
 
   return (
     <>
-      {sparks.map((spark) => {
-        const texture = textures[spark.frameIndex];
-        return (
-          <sprite
-            key={spark.id}
-            position={[
-              spark.x * 7 * pixelSize * 0.25,
-              spark.y * 3 * pixelSize * 0.25,
-              0,
-            ]}
-            scale={[pixelSize / 45, pixelSize / 45, pixelSize / 45]} // exact scale factor
-            renderOrder={999}
-            layers={1}
-          >
-            <spriteMaterial
-              map={texture}
-              transparent
-              depthTest={false}
-              depthWrite={false}
-              sizeAttenuation={false}
-            />
-          </sprite>
-        );
-      })}
+      {Array.from({ length: POOL_SIZE }).map((_, i) => (
+        <sprite
+          key={i}
+          ref={el => spriteRefs.current[i] = el}
+          scale={[pixelSize / 45, pixelSize / 45, pixelSize / 45]}
+          renderOrder={999}
+          visible={false} // Start invisible
+        >
+          <spriteMaterial
+            transparent
+            depthTest={false}
+            depthWrite={false}
+            sizeAttenuation={false}
+          />
+        </sprite>
+      ))}
     </>
   );
 }
@@ -161,6 +193,7 @@ export default function ThreePixelLogo({
   url,
   pixelSize = 3,
   sparkFrames = [],
+  visible = true,
 }) {
   const cameraRef = useRef();
 
@@ -176,6 +209,7 @@ export default function ThreePixelLogo({
   return (
     <div className="pixel-logo-container">
       <Canvas
+        frameloop={visible ? "always" : "never"}
         gl={{ antialias: false }}
         camera={{ position: [0, 0, 15], fov: 20 }}
         onCreated={({ camera, gl }) => {

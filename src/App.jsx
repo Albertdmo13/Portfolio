@@ -13,6 +13,7 @@ import SectionTitle from "./components/SectionTitle";
 import SectionBg from "./components/SectionBg";
 import GameCard from "./components/GameCard";
 import NineSliceBorder from "./components/NineSliceBorder";
+import TrajectorySection from "./components/TrajectorySection";
 
 // URLs, textures, and constants
 const skills_icons_url = "/Portfolio/icons/skills_icons";
@@ -286,6 +287,28 @@ function IconRainBackground({ pxSize }) {
 }
 
 function Header({ pxSize, sparkFrames, headerButtons }) {
+  const logoRef = useRef(null);
+  const [logoVisible, setLogoVisible] = useState(true);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setLogoVisible(entry.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+
+    if (logoRef.current) {
+      observer.observe(logoRef.current);
+    }
+
+    return () => {
+      if (logoRef.current) {
+        observer.unobserve(logoRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div
       style={{
@@ -299,23 +322,43 @@ function Header({ pxSize, sparkFrames, headerButtons }) {
         zIndex: 1,
       }}
     >
+      {/* Name Header */}
+      <div
+        style={{
+          color: "white",
+          fontFamily: "'Press Start 2P', monospace",
+          fontSize: `${pxSize * 0.8}rem`, // Slightly larger than the subtitle
+          textShadow: "4px 4px 0 #000",
+          marginBottom: `${pxSize * 4}px`, // Spacing between name and model
+          textAlign: "center",
+          zIndex: 2,
+          width: "100%",
+          padding: `0 ${pxSize * 2}px`, // Prevent text from touching edges on small screens
+        }}
+      >
+        Alberto Díaz Maroto Ortiz
+      </div>
+
       {/* Wrap ThreeLogo in a full-width container with explicit centering.
         This guarantees horizontal centering regardless of the model's internal canvas size,
         without affecting the vertical flow.
       */}
       <div
+        ref={logoRef}
         style={{
           width: "100%",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           position: "relative",
+          minHeight: `${pxSize * 50}px`, // Placeholder height to prevent layout shift
         }}
       >
         <ThreeLogo
           url={"/Portfolio/3dmodels/albertdmo_pixel_logo_blue.glb"}
           pixelSize={pxSize}
           sparkFrames={sparkFrames}
+          visible={logoVisible}
         />
       </div>
 
@@ -821,12 +864,17 @@ function App() {
           justifyContent: "center",
         }}
       >
-        <div style={{ width: "60%", padding: "0 2rem" }}>
+        <div style={{ position: "relative", zIndex: 2, width: "100%" }}>
           <SkillsSection
             pxSize={pxSize}
             contentVisible={contentVisible}
             hoveredSkill={hoveredSkill}
             setHoveredSkill={setHoveredSkill}
+          />
+          
+          <TrajectorySection 
+            pxSize={pxSize} 
+            nineSliceTexture={nine_slice_texture} 
           />
         </div>
       </main>

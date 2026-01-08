@@ -20,32 +20,46 @@ const SpotlightCard = ({
   // Determine effective hover state: use external if provided, otherwise internal
   const isHovered = externalHovered !== undefined ? externalHovered : internalHovered;
 
+  const requestRef = useRef(null);
+
   const handleMouseMove = e => {
     if (!divRef.current) return;
 
-    const rect = divRef.current.getBoundingClientRect();
-    const { width, height, left, top } = rect;
-    const x = e.clientX - left;
-    const y = e.clientY - top;
+    // Throttle using requestAnimationFrame
+    if (requestRef.current) return;
 
-    const percentX = x / width - 0.5;
-    const percentY = y / height - 0.5;
+    requestRef.current = requestAnimationFrame(() => {
+      if (!divRef.current) {
+        requestRef.current = null;
+        return;
+      }
 
-    const rotateX = percentY * maxRotation * -hoverBoost;
-    const rotateY = percentX * maxRotation * hoverBoost;
+      const rect = divRef.current.getBoundingClientRect();
+      const { width, height, left, top } = rect;
+      const x = e.clientX - left;
+      const y = e.clientY - top;
 
-    // Calculate holographic effect variables
-    const holoX = (x / width) * 100;
-    const holoY = (y / height) * 100;
-    // Opacity based on distance from center (0 at center, 1 at edges)
-    const distFromCenter = Math.sqrt(percentX * percentX + percentY * percentY) * 2; // *2 because percent is -0.5 to 0.5
-    const holoOpacity = Math.min(distFromCenter, 1);
+      const percentX = x / width - 0.5;
+      const percentY = y / height - 0.5;
 
-    divRef.current.style.setProperty('--rotate-x', `${rotateX}deg`);
-    divRef.current.style.setProperty('--rotate-y', `${rotateY}deg`);
-    divRef.current.style.setProperty('--holo-x', `${holoX}%`);
-    divRef.current.style.setProperty('--holo-y', `${holoY}%`);
-    divRef.current.style.setProperty('--holo-opacity', `${holoOpacity}`);
+      const rotateX = percentY * maxRotation * -hoverBoost;
+      const rotateY = percentX * maxRotation * hoverBoost;
+
+      // Calculate holographic effect variables
+      const holoX = (x / width) * 100;
+      const holoY = (y / height) * 100;
+      // Opacity based on distance from center (0 at center, 1 at edges)
+      const distFromCenter = Math.sqrt(percentX * percentX + percentY * percentY) * 2; // *2 because percent is -0.5 to 0.5
+      const holoOpacity = Math.min(distFromCenter, 1);
+
+      divRef.current.style.setProperty('--rotate-x', `${rotateX}deg`);
+      divRef.current.style.setProperty('--rotate-y', `${rotateY}deg`);
+      divRef.current.style.setProperty('--holo-x', `${holoX}%`);
+      divRef.current.style.setProperty('--holo-y', `${holoY}%`);
+      divRef.current.style.setProperty('--holo-opacity', `${holoOpacity}`);
+
+      requestRef.current = null;
+    });
   };
 
   const handleMouseLeave = e => {
