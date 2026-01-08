@@ -889,6 +889,8 @@ I'm a computer science student with a strong passion for game development and pr
   );
 }
 
+const SOFT_SKILL_CARD = "/Portfolio/misc/SoftSkillCard.png";
+
 function TooltipCard({ hoveredSkill, mousePos, pxSize }) {
   if (!hoveredSkill) return null;
 
@@ -905,6 +907,9 @@ function TooltipCard({ hoveredSkill, mousePos, pxSize }) {
   if (left + cardWidth > window.innerWidth) {
     left = window.innerWidth - cardWidth - offset;
   }
+
+  const isSoft = hoveredSkill.category === "Soft";
+  const sprite = isSoft ? SOFT_SKILL_CARD : gameCards[hoveredSkill.mastery];
 
   return (
     <AnimatePresence>
@@ -937,8 +942,9 @@ function TooltipCard({ hoveredSkill, mousePos, pxSize }) {
             title={hoveredSkill.name}
             item={hoveredSkill.color_icon_url}
             category={hoveredSkill.category}
-            cardSprite={gameCards[hoveredSkill.mastery]}
+            cardSprite={sprite}
             description={hoveredSkill.description}
+            isSoft={isSoft}
           />
         </motion.div>
       )}
