@@ -320,6 +320,7 @@ function IconRainBackground({ pxSize }) {
         dotLifetime={3000}
         dotAnimDuration={1000}
         dotSize={10 * pxSize}
+        parallaxSpeed={0.5}
       />
     </div>
   );
@@ -464,6 +465,28 @@ function Header({ pxSize, sparkFrames, headerButtons }) {
     </div>
   );
 }
+
+
+// Hook for scroll animation
+function useOnScreen(ref, rootMargin = "-200px") {
+  const [isIntersecting, setIntersecting] = useState(false);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIntersecting(entry.isIntersecting);
+      },
+      { rootMargin }
+    );
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+    return () => {
+      observer.disconnect();
+    };
+  }, [ref, rootMargin]);
+  return isIntersecting;
+}
+
 function SkillGroup({
   title,
   skills,
@@ -703,12 +726,16 @@ function SkillGroup({
 
 function SkillsSection({
   pxSize,
-  contentVisible,
   hoveredSkill,
   setHoveredSkill,
 }) {
+  const ref = useRef(null);
+  const isVisible = useOnScreen(ref, "-200px");
+
   return (
     <section
+      ref={ref}
+      className={`scroll-reveal ${isVisible ? "visible" : ""}`}
       style={{
         position: "relative",
         width: "100%",
@@ -717,7 +744,7 @@ function SkillsSection({
       }}
     >
       <div
-        className={`skills-wrapper ${contentVisible ? "visible" : ""}`}
+        className="skills-wrapper"
         style={{
           position: "relative",
           marginTop: "0",
@@ -796,8 +823,13 @@ function SkillsSection({
 }
 
 function AboutSection({ pxSize }) {
+  const ref = useRef(null);
+  const isVisible = useOnScreen(ref, "-200px");
+
   return (
     <section
+      ref={ref}
+      className={`scroll-reveal ${isVisible ? "visible" : ""}`}
       style={{
         position: "relative",
         width: "100%",
@@ -808,7 +840,7 @@ function AboutSection({ pxSize }) {
       <div
         style={{
           position: "relative",
-          marginTop: `${-pxSize * 25}px`,
+          marginTop: `${-pxSize * 45}px`,
           marginBottom: `${pxSize * 40}px`,
           padding: `${pxSize * 3}px 0`,
           display: "flex",
@@ -916,7 +948,6 @@ function TooltipCard({ hoveredSkill, mousePos, pxSize }) {
 
 function App() {
   const [pxSize, setPxSize] = useState(4);
-  const [contentVisible, setContentVisible] = useState(false);
   const [hoveredSkill, setHoveredSkill] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
@@ -933,7 +964,7 @@ function App() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  // Escala dinámica de píxel
+
   useEffect(() => {
     const updatePixelSize = () => {
       const width = window.innerWidth;
@@ -949,22 +980,6 @@ function App() {
     };
   }, []);
 
-  // Intersection Observer para mostrar el contenido principal
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          setContentVisible(entry.isIntersecting);
-        });
-      },
-      { root: null, threshold: 0.1 }
-    );
-    if (mainContentRef.current) observer.observe(mainContentRef.current);
-    return () => {
-      if (mainContentRef.current) observer.unobserve(mainContentRef.current);
-    };
-  }, [mainContentRef]);
-
   const iconRainElement = useMemo(
     () => <IconRainBackground pxSize={pxSize} />,
     [pxSize]
@@ -972,16 +987,7 @@ function App() {
 
   return (
     <div className="App" style={{ overflowX: "hidden" }}>
-      <header
-        ref={bannerRef}
-        style={{
-          position: "relative",
-          width: "100%",
-          height: "100svh",
-          overflow: "hidden",
-        }}
-      >
-        <div
+      <div
           style={{
             position: "fixed",
             inset: 0,
@@ -1008,9 +1014,23 @@ function App() {
             transparent
             antialias={false}
             shape="circle"
+            parallaxSpeed={0.2}
           />
         </div>
 
+      <header
+        ref={bannerRef}
+        style={{
+          position: "relative",
+          width: "100%",
+          height: "100svh",
+          overflow: "hidden",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 1,
+        }}
+      >
         {iconRainElement}
 
         {/* Centro del header */}
@@ -1032,7 +1052,6 @@ function App() {
 
       <main
         ref={mainContentRef}
-        className={`main-content ${contentVisible ? "visible" : ""}`}
         style={{
           position: "relative",
           zIndex: 2,
@@ -1044,7 +1063,6 @@ function App() {
           <AboutSection pxSize={pxSize} />
           <SkillsSection
             pxSize={pxSize}
-            contentVisible={contentVisible}
             hoveredSkill={hoveredSkill}
             setHoveredSkill={setHoveredSkill}
           />

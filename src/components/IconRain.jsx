@@ -15,6 +15,7 @@ export default function IconRain({
   dotAnimDuration = 1000,
   dotSize = 12,
   minDistance = 2.0,
+  parallaxSpeed = 0,
 }) {
   const canvasRef = useRef(null);
   const drops = useRef([]);
@@ -132,12 +133,24 @@ export default function IconRain({
         if (!running) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        const scrollY = window.scrollY || 0;
+        const offset = scrollY * parallaxSpeed;
+        const visibleHeight = window.innerHeight;
+
         // --- trails ---
         trails.current = trails.current.filter((t) => !t.done);
         for (const t of trails.current) {
           const age = time - t.birth;
           const fcount = recoloredDots.length;
           if (!fcount) continue;
+          
+          // Check if trail is off screen
+          const visualTy = t.y - offset;
+          if (visualTy < -dotSize || visualTy > visibleHeight + dotSize) {
+             t.done = true;
+             continue;
+          }
+
           if (age >= dotLifetime) {
             t.done = true;
             continue;
@@ -155,14 +168,19 @@ export default function IconRain({
                   fcount - 1
                 );
           const img = recoloredDots[idx];
-          ctx.drawImage(img, t.x, t.y, dotSize, dotSize);
+          ctx.drawImage(img, t.x, visualTy, dotSize, dotSize);
         }
 
         // --- drops ---
         for (const d of drops.current) {
           const img = d.icon;
+          
+          // Apply parallax offset for rendering
+          const visualY = d.y - offset;
+          
           const x = pixelSnap ? Math.floor(d.x / pixelScale) * pixelScale : d.x;
-          const y = pixelSnap ? Math.floor(d.y / pixelScale) * pixelScale : d.y;
+          const y = pixelSnap ? Math.floor(visualY / pixelScale) * pixelScale : visualY;
+          
           ctx.drawImage(img, x, y, scaledIcon, scaledIcon);
 
           if (time - d.lastDot >= dotInterval && recoloredDots.length) {
@@ -181,11 +199,19 @@ export default function IconRain({
           // 🔹 Movimiento con velocidad individual
           d.y += d.vy;
 
-          if (d.y > canvas.height + scaledIcon) {
+          // Boundary checks based on visual position
+          if (visualY > visibleHeight + scaledIcon) {
+            // Fell off bottom
             const p = findPos(drops.current);
             d.x = p.x;
-            d.y = -scaledIcon;
-            d.vy = (0.7 + Math.random() * 0.6) * speed; // reset new random speed
+            d.y = offset - scaledIcon; // Wrap to top
+            d.vy = (0.7 + Math.random() * 0.6) * speed; 
+          } else if (visualY < -scaledIcon) {
+             // Moved off top (due to scroll)
+             const p = findPos(drops.current);
+             d.x = p.x;
+             d.y = offset + visibleHeight + scaledIcon; // Wrap to bottom
+             d.vy = (0.7 + Math.random() * 0.6) * speed;
           }
         }
 
@@ -215,6 +241,7 @@ export default function IconRain({
     dotAnimDuration,
     dotSize,
     minDistance,
+    parallaxSpeed,
   ]);
 
   return (

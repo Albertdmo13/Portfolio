@@ -31,8 +31,26 @@ const trajectoryData = [
 const TRAJECTORY_TITLE_IMG = "/Portfolio/misc/trajectory.png";
 
 export default function TrajectorySection({ pxSize, nineSliceTexture }) {
+  const [isVisible, setIsVisible] = React.useState(false);
+  const sectionRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { rootMargin: "-200px" }
+    );
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <section
+      ref={sectionRef}
+      className={`scroll-reveal ${isVisible ? "visible" : ""}`}
       style={{
         position: "relative",
         width: "100%",

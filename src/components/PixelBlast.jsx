@@ -147,6 +147,7 @@ uniform float uRippleSpeed;
 uniform float uRippleThickness;
 uniform float uRippleIntensity;
 uniform float uEdgeFade;
+uniform float uScrollOffset;
 
 uniform int   uShapeType;
 const int SHAPE_SQUARE   = 0;
@@ -240,6 +241,7 @@ void main(){
   float cellPixelSize = 8.0 * pixelSize;
   vec2 cellId = floor(fragCoord / cellPixelSize);
   vec2 cellCoord = cellId * cellPixelSize;
+  cellCoord.y -= uScrollOffset; // Apply parallax offset
   vec2 uv = cellCoord / uResolution * vec2(aspectRatio, 1.0);
 
   float base = fbm2(uv, uTime * 0.05);
@@ -333,7 +335,8 @@ const PixelBlast = ({
   speed = 0.5,
   transparent = true,
   edgeFade = 0.5,
-  noiseAmount = 0
+  noiseAmount = 0,
+  parallaxSpeed = 0
 }) => {
   const containerRef = useRef(null);
   const visibilityRef = useRef({ visible: true });
@@ -398,7 +401,8 @@ const PixelBlast = ({
         uRippleSpeed: { value: rippleSpeed },
         uRippleThickness: { value: rippleThickness },
         uRippleIntensity: { value: rippleIntensityScale },
-        uEdgeFade: { value: edgeFade }
+        uEdgeFade: { value: edgeFade },
+        uScrollOffset: { value: 0 }
       };
       const scene = new THREE.Scene();
       const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -512,6 +516,7 @@ const PixelBlast = ({
           return;
         }
         uniforms.uTime.value = timeOffset + clock.getElapsedTime() * speedRef.current;
+        uniforms.uScrollOffset.value = (window.scrollY || 0) * parallaxSpeed;
         if (liquidEffect) liquidEffect.uniforms.get('uTime').value = uniforms.uTime.value;
         if (composer) {
           if (touch) touch.update();
