@@ -61,8 +61,7 @@
 .card-spotlight:hover {
     transform: perspective(1000px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale3d(1.05, 1.05, 1.05);
     /* Combine brightness with drop-shadows for the outline */
-    filter: brightness(1.2) 
-            drop-shadow(0 0 calc(1px * var(--pixel-size)) rgba(255, 255, 255, 1.0))
+    filter: drop-shadow(0 0 calc(1px * var(--pixel-size)) rgba(255, 255, 255, 1.0))
             drop-shadow(0 0 calc(5px * var(--pixel-size)) rgba(255, 255, 255, 0.3));
     z-index: 10;
 }
@@ -73,8 +72,7 @@
        but usually :hover covers the mouse interaction. 
        The original code had a separate .hovered class rule for the box-shadow. 
        Let's keep it but use filter instead of box-shadow. */
-    filter: brightness(1.2) 
-            drop-shadow(0 0 calc(1px * var(--pixel-size)) rgba(255, 255, 255, 1.0))
+    filter: drop-shadow(0 0 calc(1px * var(--pixel-size)) rgba(255, 255, 255, 1.0))
             drop-shadow(0 0 calc(5px * var(--pixel-size)) rgba(255, 255, 255, 0.3));
 }
 

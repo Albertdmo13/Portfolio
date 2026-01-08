@@ -90,7 +90,7 @@ export default function TrajectorySection({ pxSize, nineSliceTexture }) {
             left: `${pxSize * -3}px`,
             right: `${pxSize * -3}px`,
             backgroundImage:
-              "linear-gradient(rgba(27, 5, 71, 0.6), rgba(15, 3, 39, 0.6)), url(/Portfolio/backgrounds/window_view_big.png)",
+              "linear-gradient(rgba(27, 5, 71, 0.5), rgba(15, 3, 39, 0.5)), url(/Portfolio/backgrounds/window_view_big.png)",
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",

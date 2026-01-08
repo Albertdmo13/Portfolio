@@ -42,7 +42,7 @@ const gameCards_small = [
   "/Portfolio/misc/GameCard3_small.png",
 ];
 
-const skills = [
+const hardSkills = [
   {
     name: "Angular",
     icon_url: skills_icons_url + "/angular.png",
@@ -182,10 +182,49 @@ const skills = [
     name: "SQL",
     icon_url: skills_icons_url + "/sql.png",
     color_icon_url: skills_icons_url + "/sql_color.png",
-    cardBackground: cardBackgrounds[2],
-    category: "SW Dev",
+    cardBackground: cardBackgrounds[3],
+    category: "Data",
     mastery: 1,
-    description: "Language for managing and querying databases.",
+    description: "Language for managing relational databases.",
+  },
+];
+
+const softSkills = [
+  {
+    name: "Teamwork",
+    icon_url: skills_icons_url + "/teamwork.png",
+    color_icon_url: skills_icons_url + "/teamwork.png",
+    cardBackground: cardBackgrounds[0],
+    category: "Soft",
+    mastery: 1,
+    description: "Collaborating effectively with others.",
+  },
+  {
+    name: "Problem Solving",
+    icon_url: skills_icons_url + "/problem_solving.png",
+    color_icon_url: skills_icons_url + "/problem_solving.png",
+    cardBackground: cardBackgrounds[1],
+    category: "Soft",
+    mastery: 1,
+    description: "Finding solutions to complex issues.",
+  },
+  {
+    name: "Communication",
+    icon_url: skills_icons_url + "/communication.png",
+    color_icon_url: skills_icons_url + "/communication.png",
+    cardBackground: cardBackgrounds[2],
+    category: "Soft",
+    mastery: 1,
+    description: "Conveying ideas clearly.",
+  },
+  {
+    name: "Adaptability",
+    icon_url: skills_icons_url + "/adaptability.png",
+    color_icon_url: skills_icons_url + "/adaptability.png",
+    cardBackground: cardBackgrounds[3],
+    category: "Soft",
+    mastery: 1,
+    description: "Adjusting to new challenges.",
   },
 ];
 
@@ -232,7 +271,7 @@ const dotFrames = [
 ];
 
 // Helpers
-const getSkillsIconUrls = () => skills.map((skill) => skill.icon_url);
+const getSkillsIconUrls = () => hardSkills.map((skill) => skill.icon_url);
 
 // Reusable UI
 function HoverButton({ href, normalSrc, hoverSrc, alt, width, height }) {
@@ -425,11 +464,13 @@ function Header({ pxSize, sparkFrames, headerButtons }) {
     </div>
   );
 }
-function SkillsSection({
+function SkillGroup({
+  title,
+  skills,
   pxSize,
-  contentVisible,
   hoveredSkill,
   setHoveredSkill,
+  isSoft = false,
 }) {
   const contentRef = useRef(null);
   const [bgDimensions, setBgDimensions] = useState({
@@ -439,14 +480,18 @@ function SkillsSection({
   const [placeholders, setPlaceholders] = useState(0);
 
   useLayoutEffect(() => {
-    if (!contentRef.current) return;
-
     const calculateDimensions = () => {
-      const tileSize = 16 * pxSize;
-      const element = contentRef.current;
+      if (!contentRef.current) return;
 
-      const rawWidth = element.offsetWidth;
-      const rawHeight = element.offsetHeight;
+      const element = contentRef.current;
+      const rawWidth = element.scrollWidth;
+      const rawHeight = element.scrollHeight;
+
+      // Snap to nearest multiple of tile size (pxSize * 4 * slice)
+      // slice=4, so tile is 4 pixels. Scaled by pxSize.
+      // Actually 9-slice usually repeats the center.
+      // Let's just snap to a reasonable grid to avoid jitter.
+      const tileSize = pxSize * 4;
 
       const snappedWidth = Math.ceil(rawWidth / tileSize) * tileSize;
       const snappedHeight = Math.ceil(rawHeight / tileSize) * tileSize;
@@ -460,8 +505,9 @@ function SkillsSection({
       // Grid padding is pxSize * 4 on left and right
       const paddingX = pxSize * 8;
       const availableWidth = element.clientWidth - paddingX;
-      // Grid column min width is 110px
-      const numColumns = Math.floor(availableWidth / 110);
+      // Grid column min width is 110px for hard, 160px for soft
+      const minColWidth = isSoft ? 160 : 110;
+      const numColumns = Math.floor(availableWidth / minColWidth);
 
       if (numColumns > 0) {
         const needed = (numColumns - (skills.length % numColumns)) % numColumns;
@@ -477,8 +523,190 @@ function SkillsSection({
     calculateDimensions();
 
     return () => observer.disconnect();
-  }, [pxSize]);
+  }, [pxSize, skills.length]);
 
+  return (
+    <SectionBg
+      texture={nine_slice_texture}
+      pixelSize={pxSize}
+      slice={4}
+      className="skills-section-bg"
+      style={{
+        width: bgDimensions.width,
+        height: bgDimensions.height,
+        transition: "width 0.2s ease, height 0.2s ease",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "visible",
+        flex: "1 1 300px", // Allow growing/shrinking, min-width 300px
+        maxWidth: "600px", // Don't get too wide
+      }}
+    >
+      <div
+        ref={contentRef}
+        style={{
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          padding: `${pxSize * 1.5}px ${pxSize * 4}px`,
+          boxSizing: "border-box",
+          fontFamily: "'Press Start 2P', monospace", // Added font family
+        }}
+      >
+        <h3
+          style={{
+            fontFamily: "'Press Start 2P', monospace",
+            color: "#fff",
+            fontSize: `${pxSize * 0.5}rem`,
+            textAlign: "center",
+            marginBottom: `${pxSize * 4}px`,
+            textShadow: "2px 2px 0 #000",
+          }}
+        >
+          {title}
+        </h3>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: `repeat(auto-fill, minmax(${
+              isSoft ? "160px" : "110px"
+            }, 1fr))`,
+            gap: "0",
+            width: "100%",
+          }}
+        >
+          {skills.map((skill, index) => (
+            <div
+              key={index}
+              onMouseEnter={() => setHoveredSkill(skill)}
+              onMouseLeave={() => setHoveredSkill(null)}
+              style={{
+                padding: "0.5rem",
+                display: "flex",
+                zIndex: hoveredSkill?.name === skill.name ? 100 : 1,
+                position: "relative",
+                aspectRatio: "3/4",
+              }}
+            >
+              <SpotlightCard
+                texture={nine_slice_texture}
+                pixelSize={pxSize}
+                slice={4}
+                maxRotation={15}
+                style={{ width: "100%", height: "100%" }}
+                isHovered={hoveredSkill?.name === skill.name}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    height: "100%",
+                    padding: `${pxSize * (isSoft ? 4 : 2)}px`,
+                    position: "relative",
+                    zIndex: 2,
+                  }}
+                >
+                  <div
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      position: "relative",
+                    }}
+                  >
+                    {skill.color_icon_url && (
+                      <img
+                        src={skill.color_icon_url}
+                        alt={skill.name}
+                        style={{
+                          width: `${pxSize * (isSoft ? 52 : 26)}px`,
+                          height: `${pxSize * (isSoft ? 52 : 26)}px`,
+                          imageRendering: "pixelated",
+                          position: "relative",
+                          zIndex: 10,
+                          filter: "none",
+                        }}
+                      />
+                    )}
+                  </div>
+
+                  <div style={{ marginTop: `${pxSize * 2}px` }}>
+                    <NineSliceBorder
+                      texture={nine_slice_texture2}
+                      pixelSize={pxSize}
+                      slice={4}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: `${pxSize}px ${pxSize * 2}px`,
+                        position: "relative",
+                        zIndex: 5,
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "white",
+                          textAlign: "center",
+                          textShadow: "3px 3px 0 #000",
+                          fontSize: `${pxSize * 0.3}rem`,
+                          lineHeight: 1.2,
+                          whiteSpace: isSoft ? "normal" : "nowrap",
+                        }}
+                      >
+                        {skill.name}
+                      </span>
+                    </NineSliceBorder>
+                  </div>
+                </div>
+              </SpotlightCard>
+            </div>
+          ))}
+
+          {/* Empty Slots */}
+          {[...Array(placeholders)].map((_, i) => (
+            <div
+              key={`empty-${i}`}
+              style={{
+                width: "100%",
+                aspectRatio: "3/4",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "0.5rem",
+              }}
+            >
+              <NineSliceBorder
+                texture={nine_slice_texture2}
+                pixelSize={pxSize}
+                slice={4}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  opacity: 0.2,
+                  filter: "brightness(0.3) grayscale(1)",
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </SectionBg>
+  );
+}
+
+function SkillsSection({
+  pxSize,
+  contentVisible,
+  hoveredSkill,
+  setHoveredSkill,
+}) {
   return (
     <section
       style={{
@@ -497,7 +725,9 @@ function SkillsSection({
           paddingBottom: `${pxSize * 4}px`,
           display: "flex",
           justifyContent: "center",
-          alignItems: "center",
+          alignItems: "flex-start", // Align top
+          width: "100%",
+          maxWidth: "1200px",
         }}
       >
         <div
@@ -534,157 +764,32 @@ function SkillsSection({
           </style>
         </div>
 
-        <SectionBg
-          texture={nine_slice_texture}
-          pixelSize={pxSize}
-          slice={4}
-          className="skills-section-bg"
+        <div
           style={{
-            width: bgDimensions.width,
-            height: bgDimensions.height,
-            transition: "width 0.2s ease, height 0.2s ease",
             display: "flex",
-            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "2rem",
             justifyContent: "center",
-            overflow: "visible",
+            width: "100%",
+            padding: "0 1rem",
           }}
         >
-          <div
-            ref={contentRef}
-            style={{
-              position: "relative",
-              display: "grid",
-              fontFamily: "'Press Start 2P', monospace",
-              gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
-              // Remove gap to allow hitboxes to touch
-              gap: "0",
-              padding: `${pxSize * 1.5}px ${pxSize * 4}px`,
-              width: "100%",
-              maxWidth: "1000px",
-              boxSizing: "border-box",
-            }}
-          >
-            {skills.map((skill, index) => (
-              <div
-                key={index}
-                onMouseEnter={() => setHoveredSkill(skill)}
-                onMouseLeave={() => setHoveredSkill(null)}
-                style={{
-                  padding: "0.5rem", // Visual spacing
-                  display: "flex",
-                  // Bring hovered card to front
-                  zIndex: hoveredSkill?.name === skill.name ? 100 : 1,
-                  position: "relative",
-                  aspectRatio: "3/4", // Consistent sizing
-                }}
-              >
-                <SpotlightCard
-                  texture={nine_slice_texture}
-                  pixelSize={pxSize}
-                  slice={4}
-                  maxRotation={15}
-                  style={{ width: "100%", height: "100%" }}
-                  isHovered={hoveredSkill?.name === skill.name}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      height: "100%",
-                      padding: `${pxSize * 2}px`,
-                      // Ensure the container allows z-index stacking
-                      position: "relative",
-                      zIndex: 2,
-                    }}
-                  >
-                    <div
-                      style={{
-                        flex: 1,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        position: "relative", // Needed for z-index to work on children
-                      }}
-                    >
-                      <img
-                        src={skill.color_icon_url}
-                        alt={skill.name}
-                        style={{
-                          width: `${pxSize * 26}px`,
-                          height: `${pxSize * 26}px`,
-                          imageRendering: "pixelated",
-                          // FIX: Elevate image above the SpotlightCard's shine overlay
-                          position: "relative",
-                          zIndex: 10,
-                          filter: "none", // Reset any inherited filters
-                        }}
-                      />
-                    </div>
-
-                    <div style={{ marginTop: `${pxSize * 2}px` }}>
-                      <NineSliceBorder
-                        texture={nine_slice_texture2}
-                        pixelSize={pxSize}
-                        slice={4}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          padding: `${pxSize}px ${pxSize * 2}px`,
-                          // Also lift the text border so it doesn't look washed out
-                          position: "relative",
-                          zIndex: 5,
-                        }}
-                      >
-                        <span
-                          style={{
-                            color: "white",
-                            textAlign: "center",
-                            textShadow: "3px 3px 0 #000",
-                            fontSize: `${pxSize * 0.3}rem`,
-                            lineHeight: 1,
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {skill.name}
-                        </span>
-                      </NineSliceBorder>
-                    </div>
-                  </div>
-                </SpotlightCard>
-              </div>
-            ))}
-
-            {/* Empty Slots */}
-            {[...Array(placeholders)].map((_, i) => (
-              <div
-                key={`empty-${i}`}
-                style={{
-                  width: "100%",
-                  aspectRatio: "3/4", // Match skill cards
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "0.5rem", // Visual spacing
-                }}
-              >
-                <NineSliceBorder
-                  texture={nine_slice_texture2}
-                  pixelSize={pxSize}
-                  slice={4}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    opacity: 0.2,
-                    filter: "brightness(0.3) grayscale(1)",
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        </SectionBg>
+          <SkillGroup
+            title="HARD SKILLS"
+            skills={hardSkills}
+            pxSize={pxSize}
+            hoveredSkill={hoveredSkill}
+            setHoveredSkill={setHoveredSkill}
+          />
+          <SkillGroup
+            title="SOFT SKILLS"
+            skills={softSkills}
+            pxSize={pxSize}
+            hoveredSkill={hoveredSkill}
+            setHoveredSkill={setHoveredSkill}
+            isSoft={true}
+          />
+        </div>
       </div>
     </section>
   );
