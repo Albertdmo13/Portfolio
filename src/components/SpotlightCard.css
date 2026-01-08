@@ -24,10 +24,12 @@
 .card-spotlight::after {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    /* Expand to cover the border */
+    top: calc(var(--border-width-visual) * -1);
+    left: calc(var(--border-width-visual) * -1);
+    right: calc(var(--border-width-visual) * -1);
+    bottom: calc(var(--border-width-visual) * -1);
+    
     background: linear-gradient(
         135deg,
         rgba(255, 255, 255, 0) 0%,
@@ -43,22 +45,37 @@
     opacity: var(--holo-opacity);
     mix-blend-mode: color-dodge;
     pointer-events: none;
-    z-index: 20; /* Above content but below tooltip if any */
+    z-index: 20;
     transition: opacity 0.2s ease;
-    border-radius: inherit; /* Match parent shape if any */
+    
+    /* Mask the gradient to the 9-slice shape */
+    -webkit-mask-box-image-source: var(--texture-url);
+    -webkit-mask-box-image-slice: var(--slice-amount) fill;
+    -webkit-mask-box-image-repeat: stretch;
+    mask-border-source: var(--texture-url);
+    mask-border-slice: var(--slice-amount) fill;
+    mask-border-repeat: stretch;
 }
 
 /* Al pasar el mouse */
 .card-spotlight:hover {
     transform: perspective(1000px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale3d(1.05, 1.05, 1.05);
-    filter: brightness(1.2);
+    /* Combine brightness with drop-shadows for the outline */
+    filter: brightness(1.2) 
+            drop-shadow(0 0 calc(1px * var(--pixel-size)) rgba(255, 255, 255, 1.0))
+            drop-shadow(0 0 calc(5px * var(--pixel-size)) rgba(255, 255, 255, 0.3));
     z-index: 10;
 }
 
 .card-spotlight.hovered {
-    box-shadow:
-            0 0 0 calc(1px * var(--pixel-size)) rgba(255, 255, 255, 1.0),
-            0 0 calc(5px * var(--pixel-size)) calc(1px * var(--pixel-size)) rgba(255, 255, 255, 0.3);
+    /* Box shadow removed in favor of filter on :hover */
+    /* If we need to support 'hovered' prop without actual mouse hover, we might need to duplicate the filter here, 
+       but usually :hover covers the mouse interaction. 
+       The original code had a separate .hovered class rule for the box-shadow. 
+       Let's keep it but use filter instead of box-shadow. */
+    filter: brightness(1.2) 
+            drop-shadow(0 0 calc(1px * var(--pixel-size)) rgba(255, 255, 255, 1.0))
+            drop-shadow(0 0 calc(5px * var(--pixel-size)) rgba(255, 255, 255, 0.3));
 }
 
 /* Contenido en primer plano */

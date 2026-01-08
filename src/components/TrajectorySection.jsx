@@ -9,11 +9,21 @@ const trajectoryData = [
     title: "Computer Engineering",
     company: "UCLM Escuela Superior de Informatica",
     description: "Student",
+    logo: "/Portfolio/misc/uclm.png",
+    link: "https://esi.uclm.es",
   },
   {
     date: "2024 - Present",
     title: "Assistant Researcher",
     company: "VISILAB",
+    description: "",
+    logo: "/Portfolio/misc/visilab.png",
+    link: "https://visilab.etsii.uclm.es",
+  },
+  {
+    date: "2026 - Present",
+    title: "Looking for new oportunities",
+    company: "",
     description: "",
   },
 ];
@@ -29,8 +39,8 @@ export default function TrajectorySection({ pxSize, nineSliceTexture }) {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        marginTop: "5rem",
-        marginBottom: "5rem",
+        marginTop: `${pxSize * 50}px`,
+        marginBottom: `${pxSize * 10}px`,
       }}
     >
       <div
@@ -74,60 +84,91 @@ export default function TrajectorySection({ pxSize, nineSliceTexture }) {
       >
         <div className="trajectory-wrapper">
           <div className="trajectory-line" />
-          
-          {trajectoryData.map((item, index) => (
-            <div key={index} className="trajectory-item">
-              <div className="trajectory-dot" />
-              
-              <div className="trajectory-date">
-                {item.date}
-              </div>
-              
-              <div className="trajectory-content">
-                <NineSliceBorder
-                  texture={nineSliceTexture}
-                  pixelSize={pxSize}
-                  slice={4}
-                  style={{
-                    padding: "1.5rem",
-                    backgroundColor: "rgba(0, 0, 0, 0.3)", // Slight darken
-                  }}
-                >
-                  <h3
+
+          {trajectoryData.map((item, index) => {
+            const isLink = !!item.link;
+            const ItemTag = isLink ? "a" : "div";
+            const itemProps = isLink
+              ? {
+                  href: item.link,
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  className: "trajectory-item clickable",
+                }
+              : { className: "trajectory-item" };
+
+            return (
+              <ItemTag key={index} {...itemProps}>
+                <div className="trajectory-dot" />
+
+                <div className="trajectory-date">
+                  {item.logo && (
+                    <img
+                      src={item.logo}
+                      alt={item.company}
+                      style={{
+                        width: `${pxSize * 48}px`,
+                        height: `${pxSize * 24}px`,
+                        imageRendering: "pixelated",
+                        display: "block",
+                        transition: "transform 0.2s ease, filter 0.2s ease",
+                      }}
+                    />
+                  )}
+                  <span>{item.date}</span>
+                </div>
+
+                <div className="trajectory-content">
+                  <NineSliceBorder
+                    texture={nineSliceTexture}
+                    pixelSize={pxSize}
+                    slice={4}
                     style={{
-                      fontFamily: "'Press Start 2P', monospace",
-                      color: "#fff",
-                      fontSize: "1rem",
-                      marginBottom: "0.5rem",
-                      lineHeight: "1.4",
+                      padding: "1.5rem",
+                      backgroundColor: "rgba(0, 0, 0, 0.3)", // Slight darken
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      height: "100%",
+                      transition: "transform 0.2s ease, filter 0.2s ease",
                     }}
                   >
-                    {item.title}
-                  </h3>
-                  <h4
-                    style={{
-                      fontFamily: "'Press Start 2P', monospace",
-                      color: "#8a63ff",
-                      fontSize: "0.7rem",
-                      marginBottom: "1rem",
-                    }}
-                  >
-                    {item.company}
-                  </h4>
-                  <p
-                    style={{
-                      fontFamily: "'Press Start 2P', monospace",
-                      color: "#c8c3d6",
-                      fontSize: "0.6rem",
-                      lineHeight: "1.6",
-                    }}
-                  >
-                    {item.description}
-                  </p>
-                </NineSliceBorder>
-              </div>
-            </div>
-          ))}
+                    <h3
+                      style={{
+                        fontFamily: "'Press Start 2P', monospace",
+                        color: "#fff",
+                        fontSize: "1rem",
+                        marginBottom: "0.5rem",
+                        lineHeight: "1.4",
+                      }}
+                    >
+                      {item.title}
+                    </h3>
+                    <h4
+                      style={{
+                        fontFamily: "'Press Start 2P', monospace",
+                        color: "#8a63ff",
+                        fontSize: "0.7rem",
+                        marginBottom: "1rem",
+                      }}
+                    >
+                      {item.company}
+                    </h4>
+                    <p
+                      style={{
+                        fontFamily: "'Press Start 2P', monospace",
+                        color: "#c8c3d6",
+                        fontSize: "0.6rem",
+                        lineHeight: "1.6",
+                      }}
+                    >
+                      {item.description}
+                    </p>
+                  </NineSliceBorder>
+                </div>
+              </ItemTag>
+            );
+          })}
         </div>
       </SectionBg>
     </section>

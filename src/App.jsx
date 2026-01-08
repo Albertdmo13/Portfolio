@@ -325,7 +325,7 @@ function Header({ pxSize, sparkFrames, headerButtons }) {
       {/* Name Header */}
       <div
         style={{
-          color: "white",
+          color: "#8a63ff",
           fontFamily: "'Press Start 2P', monospace",
           fontSize: `${pxSize * 0.8}rem`, // Slightly larger than the subtitle
           textShadow: "4px 4px 0 #000",
@@ -336,7 +336,10 @@ function Header({ pxSize, sparkFrames, headerButtons }) {
           padding: `0 ${pxSize * 2}px`, // Prevent text from touching edges on small screens
         }}
       >
-        Alberto Díaz Maroto Ortiz
+        <span style={{ color: "white" }}>A</span>lberto{" "}
+        <span style={{ color: "white" }}>D</span>íaz{" "}
+        <span style={{ color: "white" }}>M</span>aroto{" "}
+        <span style={{ color: "white" }}>O</span>rtiz
       </div>
 
       {/* Wrap ThreeLogo in a full-width container with explicit centering.
@@ -422,7 +425,12 @@ function Header({ pxSize, sparkFrames, headerButtons }) {
     </div>
   );
 }
-function SkillsSection({ pxSize, contentVisible, hoveredSkill, setHoveredSkill }) {
+function SkillsSection({
+  pxSize,
+  contentVisible,
+  hoveredSkill,
+  setHoveredSkill,
+}) {
   const contentRef = useRef(null);
   const [bgDimensions, setBgDimensions] = useState({
     width: "100%",
@@ -454,7 +462,7 @@ function SkillsSection({ pxSize, contentVisible, hoveredSkill, setHoveredSkill }
       const availableWidth = element.clientWidth - paddingX;
       // Grid column min width is 110px
       const numColumns = Math.floor(availableWidth / 110);
-      
+
       if (numColumns > 0) {
         const needed = (numColumns - (skills.length % numColumns)) % numColumns;
         setPlaceholders(needed);
@@ -484,8 +492,9 @@ function SkillsSection({ pxSize, contentVisible, hoveredSkill, setHoveredSkill }
         className={`skills-wrapper ${contentVisible ? "visible" : ""}`}
         style={{
           position: "relative",
-          marginTop: "-10vh",
-          padding: `${pxSize * 4}px 0`,
+          marginTop: "0",
+          paddingTop: `${pxSize * 6}px`,
+          paddingBottom: `${pxSize * 4}px`,
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -494,7 +503,7 @@ function SkillsSection({ pxSize, contentVisible, hoveredSkill, setHoveredSkill }
         <div
           style={{
             position: "absolute",
-            top: `${-pxSize * 16}px`, // Moved up from 12 to 16
+            top: `${-pxSize * 16}px`,
             left: "50%",
             transform: "translateX(-50%)",
             zIndex: 3,
@@ -674,6 +683,68 @@ function SkillsSection({ pxSize, contentVisible, hoveredSkill, setHoveredSkill }
                 />
               </div>
             ))}
+          </div>
+        </SectionBg>
+      </div>
+    </section>
+  );
+}
+
+function AboutSection({ pxSize }) {
+  return (
+    <section
+      style={{
+        position: "relative",
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          position: "relative",
+          marginTop: `${-pxSize * 25}px`,
+          marginBottom: `${pxSize * 40}px`,
+          padding: `${pxSize * 3}px 0`,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <SectionBg
+          texture={carpet_nine_slice_texture}
+          pixelSize={pxSize}
+          slice={16}
+          className="about-section-bg"
+          style={{
+            width: "min(1000px, 90%)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: `${pxSize * 3}px`,
+          }}
+        >
+          <div style={{ width: "100%", textAlign: "center" }}>
+            <SectionTitle
+              text="ABOUT ME"
+              pixelSize={pxSize * 1.6}
+              color="#ffffffff"
+              shadowColor="#5A2BFF"
+            />
+
+            <p
+              style={{
+                fontFamily: "'Press Start 2P', monospace",
+                fontSize: `${pxSize * 0.35}rem`,
+                color: "#c8c3d6",
+                textShadow: "3px 3px 0 #000",
+                lineHeight: 1.6,
+                margin: `${pxSize * 2}px auto 0`,
+                maxWidth: "800px",
+              }}
+            >
+I'm a computer science student with a strong passion for game development and programming. I enjoy blending code, design, 3D, and other forms of art. I aim to gain experience and knowledge in new technologies and fields where I can apply both my artistic and technical skills.
+            </p>
           </div>
         </SectionBg>
       </div>
@@ -865,16 +936,17 @@ function App() {
         }}
       >
         <div style={{ position: "relative", zIndex: 2, width: "100%" }}>
+          <AboutSection pxSize={pxSize} />
           <SkillsSection
             pxSize={pxSize}
             contentVisible={contentVisible}
             hoveredSkill={hoveredSkill}
             setHoveredSkill={setHoveredSkill}
           />
-          
-          <TrajectorySection 
-            pxSize={pxSize} 
-            nineSliceTexture={nine_slice_texture} 
+
+          <TrajectorySection
+            pxSize={pxSize}
+            nineSliceTexture={nine_slice_texture}
           />
         </div>
       </main>

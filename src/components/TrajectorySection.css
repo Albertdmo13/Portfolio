@@ -8,6 +8,29 @@
   gap: 2rem;
 }
 
+.trajectory-item.clickable {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Hover Effects for Clickable Items */
+.trajectory-item.clickable:hover .trajectory-content > div {
+  transform: scale(1.05);
+  filter: brightness(1.2);
+}
+
+.trajectory-item.clickable:hover .trajectory-dot {
+  transform: translate(-50%, -50%) rotate(45deg) scale(1.2);
+  box-shadow: 0 0 15px rgba(138, 99, 255, 1);
+  background-color: #f0ebff;
+}
+
+.trajectory-item.clickable:hover .trajectory-date img {
+  transform: scale(1.1);
+  filter: brightness(1.1);
+}
+
 /* --- DESKTOP (Horizontal) --- */
 @media (min-width: 769px) {
   .trajectory-wrapper {
@@ -62,6 +85,11 @@
     text-shadow: 2px 2px 0 #000;
     text-align: center;
     width: 100%;
+    /* Flex layout for logo positioning */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
   }
 
   .trajectory-content {
@@ -81,6 +109,8 @@
     grid-row: 2;
     align-self: start;
     margin-top: 2rem;
+    /* Date Top, Logo Bottom (Further away) */
+    flex-direction: column-reverse;
   }
 
   /* EVEN ITEMS (2, 4, 6...) -> Date ABOVE (Row 1), Content BELOW (Row 2) */
@@ -88,6 +118,8 @@
     grid-row: 1;
     align-self: end;
     margin-bottom: 2rem;
+    /* Logo Top (Further away), Date Bottom */
+    flex-direction: column;
   }
   
   .trajectory-item:nth-child(even) .trajectory-content {
@@ -138,6 +170,10 @@
     transform: translateX(-50%) rotate(45deg);
     box-shadow: 0 0 10px rgba(138, 99, 255, 0.8);
     z-index: 2;
+  }
+
+  .trajectory-item.clickable:hover .trajectory-dot {
+    transform: translateX(-50%) rotate(45deg) scale(1.2);
   }
 
   .trajectory-date {
