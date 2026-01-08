@@ -7,22 +7,52 @@
     border-image-slice: var(--slice-amount) fill;
     border-image-repeat: stretch;
     image-rendering: pixelated;
+    box-sizing: border-box;
 
     --rotate-x: 0deg;
     --rotate-y: 0deg;
-    transform-style: preserve-3d;
-    transform: perspective(800px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale(1);
-    transition: transform 0.06s cubic-bezier(0.33, 1, 0.68, 1),
-        filter 0.01s linear, box-shadow 0.15s ease;
+    --holo-x: 50%;
+    --holo-y: 50%;
+    --holo-opacity: 0;
 
-    cursor: pointer;
-    filter: brightness(1);
+    transform: perspective(1000px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale3d(1, 1, 1);
+    transition: transform 0.1s ease-out;
+    position: relative;
+    z-index: 2;
+}
+
+.card-spotlight::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0) 30%,
+        rgba(255, 0, 255, 0.4) 45%,
+        rgba(0, 255, 255, 0.4) 50%,
+        rgba(255, 255, 0, 0.4) 55%,
+        rgba(255, 255, 255, 0) 70%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 200%;
+    background-position: var(--holo-x) var(--holo-y);
+    opacity: var(--holo-opacity);
+    mix-blend-mode: color-dodge;
+    pointer-events: none;
+    z-index: 20; /* Above content but below tooltip if any */
+    transition: opacity 0.2s ease;
+    border-radius: inherit; /* Match parent shape if any */
 }
 
 /* Al pasar el mouse */
 .card-spotlight:hover {
-    transform: perspective(800px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale(1.05);
-    filter: brightness(1.5);
+    transform: perspective(1000px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale3d(1.05, 1.05, 1.05);
+    filter: brightness(1.2);
+    z-index: 10;
 }
 
 .card-spotlight.hovered {

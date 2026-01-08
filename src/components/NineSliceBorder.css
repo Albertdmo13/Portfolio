@@ -14,6 +14,7 @@
     border-image-slice: var(--slice-amount) fill;
     border-image-repeat: stretch;
     image-rendering: pixelated;
+    box-sizing: border-box;
 
     /* Static (no tilt or animation) */
     filter: brightness(1);

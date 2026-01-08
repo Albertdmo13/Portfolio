@@ -10,10 +10,15 @@ const SpotlightCard = ({
   maxRotation = 15,
   onMouseEnter,
   onMouseLeave,
+  style: customStyle = {},
+  isHovered: externalHovered, // New prop
 }) => {
   const divRef = useRef(null);
-  const [hovered, setHovered] = useState(false); // 👈 Variable para detectar si está en hover
+  const [internalHovered, setInternalHovered] = useState(false);
   let hoverBoost = 2.5;
+
+  // Determine effective hover state: use external if provided, otherwise internal
+  const isHovered = externalHovered !== undefined ? externalHovered : internalHovered;
 
   const handleMouseMove = e => {
     if (!divRef.current) return;
@@ -29,20 +34,31 @@ const SpotlightCard = ({
     const rotateX = percentY * maxRotation * -hoverBoost;
     const rotateY = percentX * maxRotation * hoverBoost;
 
+    // Calculate holographic effect variables
+    const holoX = (x / width) * 100;
+    const holoY = (y / height) * 100;
+    // Opacity based on distance from center (0 at center, 1 at edges)
+    const distFromCenter = Math.sqrt(percentX * percentX + percentY * percentY) * 2; // *2 because percent is -0.5 to 0.5
+    const holoOpacity = Math.min(distFromCenter, 1);
+
     divRef.current.style.setProperty('--rotate-x', `${rotateX}deg`);
     divRef.current.style.setProperty('--rotate-y', `${rotateY}deg`);
+    divRef.current.style.setProperty('--holo-x', `${holoX}%`);
+    divRef.current.style.setProperty('--holo-y', `${holoY}%`);
+    divRef.current.style.setProperty('--holo-opacity', `${holoOpacity}`);
   };
 
   const handleMouseLeave = e => {
     if (!divRef.current) return;
     divRef.current.style.setProperty('--rotate-x', '0deg');
     divRef.current.style.setProperty('--rotate-y', '0deg');
-    setHovered(false);
+    divRef.current.style.setProperty('--holo-opacity', '0'); // Hide holo effect
+    setInternalHovered(false);
     if (typeof onMouseLeave === 'function') onMouseLeave(e);
   };
 
   const handleMouseEnter = e => {
-    setHovered(true);
+    setInternalHovered(true);
     if (typeof onMouseEnter === 'function') onMouseEnter(e);
   };
 
@@ -53,6 +69,7 @@ const SpotlightCard = ({
     '--slice-amount': slice,
     '--border-width-visual': `${visualBorderWidth}px`,
     '--pixel-size': pixelSize,
+    ...customStyle,
   };
 
   return (
@@ -61,7 +78,7 @@ const SpotlightCard = ({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onMouseEnter={handleMouseEnter}
-      className={`card-spotlight ${className} ${hovered ? 'hovered' : ''}`}
+      className={`card-spotlight ${className} ${isHovered ? 'hovered' : ''}`}
       style={style}
     >
       {children}
