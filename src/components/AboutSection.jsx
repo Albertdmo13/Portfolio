@@ -3,11 +3,13 @@ import NineSliceBorder from "./NineSliceBorder";
 import SectionBg from "./SectionBg";
 import SectionTitle from "./SectionTitle";
 import { useOnScreen } from "../hooks/useOnScreen";
+import { useIsMobile } from "../hooks/useIsMobile";
 import { chest_inventory_texture, carpet_nine_slice_texture } from "../constants";
 
 export default function AboutSection({ pxSize }) {
   const ref = useRef(null);
   const isVisible = useOnScreen(ref, "-20%");
+  const isMobile = useIsMobile();
 
   // Calculate the border thickness/padding for the image to sit inside the frame
   const borderPadding = pxSize * 6;
@@ -26,26 +28,26 @@ export default function AboutSection({ pxSize }) {
       <div
         style={{
           position: "relative",
-          width: "min(1200px, 95%)", // Added constraint to keep it contained
+          width: "min(1200px, 90%)", // Added constraint to keep it contained
           marginTop: `${pxSize * 5}px`,
           marginBottom: `${pxSize * 40}px`,
           padding: `${pxSize * 3}px 0`,
           display: "flex",
-          flexDirection: "row", // Ensure side-by-side
+          flexDirection: isMobile ? "column" : "row", // Responsive direction
           gap: `${pxSize * 4}px`, // Add space between image and text
           
-          // CRITICAL FIX 1: Use 'stretch'. 
-          // This forces the Image container to match the height of the Text container.
-          alignItems: "stretch", 
+          // Use stretch only for desktop row layout
+          alignItems: isMobile ? "center" : "stretch", 
           justifyContent: "center",
         }}
       >
 
-        {/* Picture Section (Left) */}
+        {/* Picture Section (Left/Top) */}
         <div
           style={{
             flex: "0 0 auto", // Don't shrink, don't grow
-            width: `${pxSize * 100}px`, // Fixed width
+            width: isMobile ? "100%" : `${pxSize * 100}px`, // Responsive width
+            maxWidth: isMobile ? "300px" : "none",
             position: "relative",
             display: "flex", 
           }}
@@ -79,6 +81,7 @@ export default function AboutSection({ pxSize }) {
           slice={16}
           className="about-section-bg"
           style={{
+            width: "100%",
             flex: "1 1 400px", // Allow growing/shrinking
             maxWidth: "800px",
             display: "flex",

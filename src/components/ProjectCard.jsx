@@ -1,8 +1,10 @@
 import { useState } from "react";
 import NineSliceBorder from "./NineSliceBorder";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function ProjectCard({ project, pxSize, nineSliceTexture, isVisible = true }) {
   const [isHovered, setIsHovered] = useState(false);
+  const isMobile = useIsMobile();
 
   const CardWrapper = project.link ? "a" : "div";
   const cardProps = project.link
@@ -55,6 +57,7 @@ export default function ProjectCard({ project, pxSize, nineSliceTexture, isVisib
             justifyContent: "space-between",
             marginBottom: `${pxSize * 3}px`,
             gap: `${pxSize * 3}px`,
+            flexWrap: "wrap", // Allow wrapping on small screens
           }}
         >
           <h3
@@ -105,6 +108,7 @@ export default function ProjectCard({ project, pxSize, nineSliceTexture, isVisib
         <div
           style={{
             display: "flex",
+            flexDirection: isMobile ? "column" : "row", // Responsive direction
             gap: `${pxSize * 4}px`,
             alignItems: "flex-start",
           }}
@@ -113,7 +117,7 @@ export default function ProjectCard({ project, pxSize, nineSliceTexture, isVisib
           {(project.image || project.video) && (
             <div
               style={{
-                width: "65%",
+                width: isMobile ? "100%" : "65%", // Responsive width
                 aspectRatio: "16 / 9",
                 overflow: "hidden",
                 position: "relative",

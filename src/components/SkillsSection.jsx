@@ -3,6 +3,7 @@ import SectionBg from "./SectionBg";
 import SpotlightCard from "./SpotlightCard";
 import NineSliceBorder from "./NineSliceBorder";
 import { useOnScreen } from "../hooks/useOnScreen";
+import { useIsMobile } from "../hooks/useIsMobile";
 import { nine_slice_texture, nine_slice_texture2, SKILLS_TITLE_IMG } from "../constants";
 
 function SkillGroup({
@@ -13,6 +14,7 @@ function SkillGroup({
   setHoveredSkill,
   isSoft = false,
 }) {
+  const isMobile = useIsMobile();
   const contentRef = useRef(null);
   const [bgDimensions, setBgDimensions] = useState({
     width: "100%",
@@ -97,10 +99,14 @@ function SkillGroup({
         <div
           style={{
             display: "grid",
+            // On mobile: larger cells + gap to prevent overlap
+            // On desktop: smaller cells + no gap for tight fit
             gridTemplateColumns: `repeat(auto-fill, minmax(${
-              isSoft ? "160px" : "110px"
+              isSoft 
+                ? (isMobile ? `${pxSize * 65}px` : `${pxSize * 55}px`) 
+                : (isMobile ? `${pxSize * 45}px` : `${pxSize * 35}px`)
             }, 1fr))`,
-            gap: "0",
+            gap: isMobile ? "1rem" : "0.5rem",
             width: "100%",
           }}
         >
@@ -226,8 +232,7 @@ export default function SkillsSection({
         style={{
           position: "relative",
           marginTop: "0",
-          paddingTop: `${pxSize * 6}px`,
-          paddingBottom: `${pxSize * 4}px`,
+          padding: `${pxSize * 6}px ${pxSize * 4}px ${pxSize * 4}px`,
           display: "flex",
           justifyContent: "center",
           alignItems: "flex-start", // Align top

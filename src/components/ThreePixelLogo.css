@@ -1,6 +1,7 @@
 .pixel-logo-container {
     position: relative;
-    width: 1400px;
+    width: 100%;
+    max-width: 1400px;
     height: 300px;
     margin: 0 auto;
     image-rendering: pixelated;

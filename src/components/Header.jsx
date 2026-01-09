@@ -7,6 +7,18 @@ import { headerButtons } from "../constants";
 export default function Header({ pxSize, sparkFrames }) {
   const logoRef = useRef(null);
   const [logoVisible, setLogoVisible] = useState(true);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Constrain logo size on very small screens to prevent overflow
+  // pxSize is min 2 on mobile, but for the 3D logo we might need smaller
+  // Use a divisor of 500 to balance size and fit (calculated sweet spot)
+  const logoPixelSize = Math.min(pxSize, windowWidth / 500);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -77,7 +89,7 @@ export default function Header({ pxSize, sparkFrames }) {
       >
         <ThreeLogo
           url={"/Portfolio/3dmodels/albertdmo_pixel_logo_blue.glb"}
-          pixelSize={pxSize}
+          pixelSize={logoPixelSize}
           sparkFrames={sparkFrames}
           visible={logoVisible}
         />

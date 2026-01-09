@@ -33,7 +33,8 @@ function App() {
   useEffect(() => {
     const updatePixelSize = () => {
       const width = window.innerWidth;
-      const scale = Math.max(1, Math.round((width / 1920) * 3));
+      // Enforce minimum scale of 2 for mobile to ensure text is readable
+      const scale = width < 768 ? 2 : Math.max(1, Math.round((width / 1920) * 3));
       setPxSize(scale);
     };
     updatePixelSize();
