@@ -34,7 +34,7 @@ function App() {
     const updatePixelSize = () => {
       const width = window.innerWidth;
       // Enforce minimum scale of 2 for mobile to ensure text is readable
-      const scale = width < 768 ? 2 : Math.max(1, Math.round((width / 1920) * 3));
+      const scale = width < 768 ? 2 : Math.max(2, Math.round((width / 1920) * 3));
       setPxSize(scale);
     };
     updatePixelSize();
