@@ -17,7 +17,8 @@
     align-items: center;
     /* Vertically centers the text and lines */
     width: 100%;
-    margin: calc(var(--pixel-size) * 4) 0;
+    margin: calc(var(--pixel-size) * 4) 0 calc(var(--pixel-size) * 8) 0;
+
 
     /* * Font anti-aliasing disabled for a crisp, pixelated look.
    * font-family is removed as requested (applied by parent component).

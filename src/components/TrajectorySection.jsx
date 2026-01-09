@@ -39,7 +39,7 @@ export default function TrajectorySection({ pxSize, nineSliceTexture }) {
       ([entry]) => {
         setIsVisible(entry.isIntersecting);
       },
-      { rootMargin: "-200px" }
+      { rootMargin: "-20%" }
     );
     if (sectionRef.current) {
       observer.observe(sectionRef.current);
@@ -64,7 +64,7 @@ export default function TrajectorySection({ pxSize, nineSliceTexture }) {
       <div
         style={{
           position: "absolute",
-          top: `${-pxSize * 20}px`,
+          top: `${-pxSize * 26}px`,
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 3,
@@ -108,7 +108,7 @@ export default function TrajectorySection({ pxSize, nineSliceTexture }) {
             left: `${pxSize * -3}px`,
             right: `${pxSize * -3}px`,
             backgroundImage:
-              "linear-gradient(rgba(27, 5, 71, 0.5), rgba(15, 3, 39, 0.5)), url(/Portfolio/backgrounds/window_view_big.png)",
+              "linear-gradient(rgba(27, 5, 71, 0.65), rgba(7, 0, 22, 0.65)), url(/Portfolio/backgrounds/window_view_big.png)",
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",

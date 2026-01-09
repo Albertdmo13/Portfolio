@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 export default function IconRain({
   icons,
   iconSize = 32,
-  speed = 0.5, // global base speed multiplier
+  speed = 0.5,
   density = 20,
   pixelScale = 5,
   pixelSnap = true,
@@ -18,6 +18,8 @@ export default function IconRain({
   parallaxSpeed = 0,
 }) {
   const canvasRef = useRef(null);
+  
+  // Use refs for state that doesn't trigger re-renders
   const drops = useRef([]);
   const trails = useRef([]);
   const animFrame = useRef(null);
@@ -28,6 +30,10 @@ export default function IconRain({
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d", { alpha: true });
 
+    // 1. Reset Refs immediately on mount to clean up any previous mess
+    trails.current = [];
+    drops.current = [];
+
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
       const { innerWidth: w, innerHeight: h } = window;
@@ -37,7 +43,6 @@ export default function IconRain({
 
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
-
       ctx.imageSmoothingEnabled = false;
     };
 
@@ -46,6 +51,7 @@ export default function IconRain({
 
     ctx.imageSmoothingEnabled = false;
 
+    // --- Color Helpers ---
     const hexToRgb = (hex) => {
       const num = parseInt(hex.slice(1), 16);
       return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
@@ -92,18 +98,31 @@ export default function IconRain({
         )
       );
 
-    let running = true;
+    // Flag to track if this specific effect instance is still active
+    let isMounted = true;
 
     (async () => {
+      // 2. Load images
       const [baseIcons, baseDots] = await Promise.all([
         loadImages(icons),
         loadImages(dotFrames),
       ]);
 
+      // 3. CRITICAL CHECK: 
+      // If the component unmounted while we were waiting for images, STOP.
+      // Do not populate refs, do not start animation.
+      if (!isMounted) return;
+
+      // 4. Force clear again inside the async block (Safety lock)
+      // This guarantees we are starting with a blank slate for *this* run.
+      drops.current = [];
+      trails.current = [];
+
       const recoloredIcons = baseIcons.map(recolor);
       const recoloredDots = baseDots.map(recolor);
 
       const rand = (max) => Math.random() * max;
+      
       const findPos = (arr, tries = 40) => {
         for (let i = 0; i < tries; i++) {
           const x = rand(canvas.width - scaledIcon);
@@ -118,43 +137,79 @@ export default function IconRain({
         return { x: rand(canvas.width - scaledIcon), y: rand(canvas.height) };
       };
 
-      // --- inicializar drops con velocidad única ---
+      const createInitialTrail = (drop, currentTime) => {
+        if (!recoloredDots.length) return;
+
+        // Calculate how many dots fit in the lifetime
+        const maxDots = Math.floor(dotLifetime / dotInterval);
+        // Cap strictly to avoid overload
+        const count = Math.min(maxDots, 5); 
+
+        const pxPerMs = drop.vy / 16.67; // approx velocity per ms
+
+        for (let i = 1; i <= count; i++) {
+          const timeAgo = i * dotInterval;
+          const distanceBack = pxPerMs * timeAgo;
+          
+          // Don't create trails that are extremely far off-screen
+          if(drop.y - distanceBack < -200) continue;
+
+          trails.current.push({
+            x: Math.floor((drop.x + scaledIcon / 2 - dotSize / 2) / pixelScale) * pixelScale,
+            y: Math.floor((drop.y - distanceBack + scaledIcon / 2 - dotSize / 2) / pixelScale) * pixelScale,
+            birth: currentTime - timeAgo,
+          });
+        }
+      };
+
+      const initTime = performance.now();
+
+      // --- Initialize Drops ---
       drops.current = Array.from({ length: density }, () => {
         const pos = findPos(drops.current);
-        return {
+        const drop = {
           ...pos,
           icon: recoloredIcons[Math.floor(rand(recoloredIcons.length))],
-          lastDot: performance.now(),
+          lastDot: initTime,
           vy: (0.7 + Math.random() * 1.2) * speed,
         };
+        
+        createInitialTrail(drop, initTime);
+        return drop;
       });
 
       const animate = (time) => {
-        if (!running) return;
+        // Stop if unmounted
+        if (!isMounted) return;
+        
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const scrollY = window.scrollY || 0;
         const offset = scrollY * parallaxSpeed;
         const visibleHeight = window.innerHeight;
 
-        // --- trails ---
+        // --- Render Trails ---
         trails.current = trails.current.filter((t) => !t.done);
+        
         for (const t of trails.current) {
           const age = time - t.birth;
           const fcount = recoloredDots.length;
-          if (!fcount) continue;
-          
-          // Check if trail is off screen
-          const visualTy = t.y - offset;
-          if (visualTy < -dotSize || visualTy > visibleHeight + dotSize) {
-             t.done = true;
-             continue;
-          }
 
+          // Cleanup old trails
           if (age >= dotLifetime) {
             t.done = true;
             continue;
           }
+          if (!fcount) continue;
+
+          const visualTy = t.y - offset;
+
+          // Cull trails far off bottom screen
+          if (visualTy > visibleHeight + 100) {
+             t.done = true; 
+             continue;
+          }
+
           const idx =
             age < dotLifetime - dotAnimDuration
               ? 0
@@ -167,51 +222,50 @@ export default function IconRain({
                   ),
                   fcount - 1
                 );
-          const img = recoloredDots[idx];
-          ctx.drawImage(img, t.x, visualTy, dotSize, dotSize);
+                
+          ctx.drawImage(recoloredDots[idx], t.x, visualTy, dotSize, dotSize);
         }
 
-        // --- drops ---
+        // --- Render Drops ---
         for (const d of drops.current) {
           const img = d.icon;
-          
-          // Apply parallax offset for rendering
           const visualY = d.y - offset;
-          
+
           const x = pixelSnap ? Math.floor(d.x / pixelScale) * pixelScale : d.x;
           const y = pixelSnap ? Math.floor(visualY / pixelScale) * pixelScale : visualY;
-          
+
           ctx.drawImage(img, x, y, scaledIcon, scaledIcon);
 
+          // Spawn new trail dot
           if (time - d.lastDot >= dotInterval && recoloredDots.length) {
             trails.current.push({
-              x:
-                Math.floor((d.x + scaledIcon / 2 - dotSize / 2) / pixelScale) *
-                pixelScale,
-              y:
-                Math.floor((d.y + scaledIcon / 2 - dotSize / 2) / pixelScale) *
-                pixelScale,
+              x: Math.floor((d.x + scaledIcon / 2 - dotSize / 2) / pixelScale) * pixelScale,
+              y: Math.floor((d.y + scaledIcon / 2 - dotSize / 2) / pixelScale) * pixelScale,
               birth: time,
             });
             d.lastDot = time;
           }
 
-          // 🔹 Movimiento con velocidad individual
           d.y += d.vy;
 
-          // Boundary checks based on visual position
+          // --- Wrapping Logic ---
           if (visualY > visibleHeight + scaledIcon) {
-            // Fell off bottom
+            // Reset to top
             const p = findPos(drops.current);
             d.x = p.x;
-            d.y = offset - scaledIcon; // Wrap to top
-            d.vy = (0.7 + Math.random() * 0.6) * speed; 
-          } else if (visualY < -scaledIcon) {
-             // Moved off top (due to scroll)
+            d.y = offset - scaledIcon - 50; 
+            d.vy = (0.7 + Math.random() * 0.6) * speed;
+            d.lastDot = time;
+            createInitialTrail(d, time); 
+            
+          } else if (visualY < -scaledIcon - 300) {
+             // Reset to bottom
              const p = findPos(drops.current);
              d.x = p.x;
-             d.y = offset + visibleHeight + scaledIcon; // Wrap to bottom
+             d.y = offset + visibleHeight + scaledIcon;
              d.vy = (0.7 + Math.random() * 0.6) * speed;
+             d.lastDot = time;
+             createInitialTrail(d, time);
           }
         }
 
@@ -222,7 +276,8 @@ export default function IconRain({
     })();
 
     return () => {
-      running = false;
+      // 5. Cleanup
+      isMounted = false; // Kill the async loop
       cancelAnimationFrame(animFrame.current);
       window.removeEventListener("resize", resize);
     };
