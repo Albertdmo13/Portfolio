@@ -240,7 +240,7 @@ export const headerButtons = {
   cv: {
     normal: "/Portfolio/header_buttons/btn_curriculum.png",
     hover: "/Portfolio/header_buttons/btn_curriculum_hovered.png",
-    link: "/Portfolio/curriculum.pdf",
+    link: "/Portfolio/data/AlbertoDiaz_CurriculumVitae.pdf",
   },
 };
 

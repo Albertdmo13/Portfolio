@@ -13,6 +13,7 @@ import GameCard from "./components/GameCard";
 import TooltipCard from "./components/TooltipCard";
 
 import ProjectsSection from "./components/ProjectsSection";
+import ContactSection from "./components/ContactSection";
 
 // Constants
 import {
@@ -137,6 +138,9 @@ function App() {
 
         {/* Projects / Games Section (Marquee) */}
         <ProjectsSection pxSize={pxSize} />
+        
+        {/* Contact Section */}
+        <ContactSection pxSize={pxSize} />
 
         {/* Footer */}
         <footer
