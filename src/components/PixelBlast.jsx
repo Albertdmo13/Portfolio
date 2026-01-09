@@ -341,6 +341,7 @@ const PixelBlast = ({
   const containerRef = useRef(null);
   const visibilityRef = useRef({ visible: true });
   const speedRef = useRef(speed);
+  const pixelSizeRef = useRef(pixelSize);
 
   const threeRef = useRef(null);
   const prevConfigRef = useRef(null);
@@ -348,6 +349,7 @@ const PixelBlast = ({
     const container = containerRef.current;
     if (!container) return;
     speedRef.current = speed;
+    pixelSizeRef.current = pixelSize;
     const needsReinitKeys = ['antialias', 'liquid', 'noiseAmount'];
     const cfg = { antialias, liquid, noiseAmount };
     let mustReinit = false;
@@ -426,7 +428,7 @@ const PixelBlast = ({
         uniforms.uResolution.value.set(renderer.domElement.width, renderer.domElement.height);
         if (threeRef.current?.composer)
           threeRef.current.composer.setSize(renderer.domElement.width, renderer.domElement.height);
-        uniforms.uPixelSize.value = pixelSize * renderer.getPixelRatio();
+        uniforms.uPixelSize.value = pixelSizeRef.current * renderer.getPixelRatio();
       };
       setSize();
       const ro = new ResizeObserver(setSize);
