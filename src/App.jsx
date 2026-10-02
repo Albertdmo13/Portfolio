@@ -1,172 +1,307 @@
-import { useState, useEffect } from "react";
-import Marquee from "react-fast-marquee";
+import { useState } from "react";
+import { portfolioData } from "./data";
+import GradientWaves from "./GradientWaves";
+import TextType from "./TextType";
+import SpecularButton from "./SpecularButton";
+import RubberSegment from "./RubberSegment";
+import BusinessCardHero from "./BusinessCardHero";
 import "./App.css";
 
-// Components
-import IconRainBackground from "./components/IconRainBackground";
-import PixelBlast from "./components/PixelBlast";
-import Header from "./components/Header";
-import AboutSection from "./components/AboutSection";
-import SkillsSection from "./components/SkillsSection";
-import TrajectorySection from "./components/TrajectorySection";
-import GameCard from "./components/GameCard";
-import TooltipCard from "./components/TooltipCard";
+// Minimal SVG icons
+const Icons = {
+  Github: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+    </svg>
+  ),
+  Linkedin: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+      <rect x="2" y="9" width="4" height="12" />
+      <circle cx="4" cy="4" r="2" />
+    </svg>
+  ),
+  Mail: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect width="20" height="16" x="2" y="4" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    </svg>
+  ),
+  Cv: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <line x1="10" y1="9" x2="8" y2="9" />
+    </svg>
+  ),
+  External: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
+    </svg>
+  ),
+  Copy: () => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+    </svg>
+  ),
+  Check: () => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  ),
+};
 
-import ProjectsSection from "./components/ProjectsSection";
-import ContactSection from "./components/ContactSection";
+export default function App() {
+  const [lang, setLang] = useState("en");
+  const [copied, setCopied] = useState(false);
+  const base = import.meta.env.BASE_URL;
 
-// Constants
-import {
-  hardSkills,
-  softSkills,
-  sparkFrames,
-  headerButtons,
-  nine_slice_texture,
-} from "./constants";
+  const t = portfolioData[lang] || portfolioData.en;
 
-function App() {
-  const [pxSize, setPxSize] = useState(1);
-  const [hoveredSkill, setHoveredSkill] = useState(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  // Handle resizing
-  useEffect(() => {
-    const updatePixelSize = () => {
-      const width = window.innerWidth;
-      // Enforce minimum scale of 2 for mobile to ensure text is readable
-      const scale = width < 768 ? 2 : Math.max(2, Math.round((width / 1920) * 3));
-      setPxSize(scale);
-    };
-    updatePixelSize();
-    window.addEventListener("resize", updatePixelSize);
-    document.addEventListener("fullscreenchange", updatePixelSize);
-    return () => {
-      window.removeEventListener("resize", updatePixelSize);
-      document.removeEventListener("fullscreenchange", updatePixelSize);
-    };
-  }, []);
-
-  // Track mouse for tooltip
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText(t.personalInfo.email);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
-    <div className="app-container">
-      {/* PixelBlast Background */}
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          backgroundColor: "#0e0911",
-          zIndex: -2,
-        }}
-      />
-      <div style={{ position: "fixed", inset: 0, zIndex: -1 }}>
-        <PixelBlast
-          variant="square"
-          pixelSize={pxSize}
-          color="#190044"
-          patternScale={3}
-          patternDensity={1.2}
-          enableRipples
-          rippleSpeed={0.4}
-          rippleThickness={0.12}
-          rippleIntensityScale={1.5}
-          liquid
-          liquidRadius={1.2}
-          liquidWobbleSpeed={5}
-          speed={5.0}
-          edgeFade={0}
-          transparent
-          antialias={false}
-          shape="circle"
-          parallaxSpeed={0.2}
+    <div className="background-layer">
+      {/* Gradient Wave Background */}
+      <div className="waves-bg-container">
+        <GradientWaves
+          horizonColor="#5227FF"
+          waveColor="#FF9FFC"
+          crestColor="#FFFFFF"
+          speed={0.12}
+          amplitude={2.5}
+          waveScale={0.6}
+          waveRatio={0.9}
+          swell={35}
+          turbulence={20}
+          tilt={1.11}
+          zoom={1}
+          height={5.5}
+          fogDepth={15}
+          detail="medium"
+          brightness={1}
+          opacity={1}
+          mouseInteraction={false}
+          parallaxStrength={0}
+          grain
+          grainIntensity={0.05}
         />
       </div>
 
-      {/* Background Rain */}
-      <IconRainBackground pxSize={pxSize} />
+      <div className="foreground-layer">
+        {/* Navigation Bar */}
+        <header className="nav-header">
+          <div className="nav-content">
+            <a href="#" className="nav-brand">
+              {t.personalInfo.shortName}
+            </a>
+            <nav className="nav-links">
+              <a href="#experience" className="nav-link">{t.nav.experience}</a>
+              <a href="#projects" className="nav-link">{t.nav.projects}</a>
+              <a href="#skills" className="nav-link">{t.nav.skills}</a>
+              <a href="#contact" className="nav-link">{t.nav.contact}</a>
+              <RubberSegment
+                items={[
+                  { value: "en", label: "EN" },
+                  { value: "es", label: "ES" },
+                ]}
+                value={lang}
+                onChange={(val) => setLang(val)}
+                size="sm"
+                radius={9999}
+                inset={2}
+                trackColor="rgba(255, 255, 255, 0.06)"
+                thumbColor="#ffffff"
+                textColor="rgba(255, 255, 255, 0.65)"
+                activeTextColor="#0a0a0f"
+                aria-label="Language selector"
+              />
+              <SpecularButton
+                size="sm"
+                radius={8}
+                tint="rgba(255, 255, 255, 0.05)"
+                blur={10}
+                lineColor="#a78bfa"
+                baseColor="#3a3a44"
+                intensity={1.3}
+                autoAnimate={true}
+                onClick={() => {
+                  window.open(`${base}${t.personalInfo.links.cv.replace(/^\/?(Portfolio\/)?/, "")}`, "_blank");
+                }}
+              >
+                <Icons.Cv />
+                {t.nav.cv}
+              </SpecularButton>
+            </nav>
+          </div>
+        </header>
 
-      {/* Main Content */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          width: "100%",
-          minHeight: "100vh",
-          overflowX: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        {/* Header Section */}
-        <section
-          style={{
-            height: "85vh",
-            width: "100%",
-            position: "relative",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Header pxSize={pxSize} sparkFrames={sparkFrames} />
-        </section>
+        {/* Main Content Area */}
+        <main className="main-content animate-in">
+          {/* Business Card Hero Section */}
+          <BusinessCardHero
+            t={t}
+            lang={lang}
+            Icons={Icons}
+            onContactClick={() => {
+              document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          />
 
-        {/* About Me Section */}
-        <AboutSection pxSize={pxSize} />
+          {/* Trajectory / Experience Section */}
+          <section id="experience" className="section">
+            <h2 className="section-label">{t.sections.trajectory}</h2>
+            <div className="timeline-container">
+              <div className="timeline-track" />
+              <div className="timeline-items">
+                {t.trajectory.map((item, idx) => (
+                  <div key={idx} className="timeline-item">
+                    <div className="timeline-marker">
+                      <span className="timeline-dot" />
+                      <span className="timeline-connector" />
+                    </div>
+                    <div className="timeline-card">
+                      <div className="timeline-header">
+                        <h3 className="timeline-role">{item.role}</h3>
+                        <span className="timeline-period">{item.period}</span>
+                      </div>
+                      {item.institution && (
+                        <p className="timeline-institution">
+                          {item.link ? (
+                            <a href={item.link} target="_blank" rel="noreferrer" className="timeline-link">
+                              {item.institution}
+                            </a>
+                          ) : (
+                            item.institution
+                          )}
+                        </p>
+                      )}
+                      {item.description && <p className="timeline-desc">{item.description}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
 
-        {/* Skills Section */}
-        <SkillsSection
-          pxSize={pxSize}
-          hoveredSkill={hoveredSkill}
-          setHoveredSkill={setHoveredSkill}
-          hardSkills={hardSkills}
-          softSkills={softSkills}
-        />
+          {/* Projects Section */}
+          <section id="projects" className="section">
+            <h2 className="section-label">{t.sections.projects}</h2>
+            <div className="projects-grid">
+              {t.projects.map((proj) => (
+                <article key={proj.id} className="project-card">
+                  {proj.video && (
+                    <div className="project-media">
+                      <video
+                        src={`${base}${proj.video.replace(/^\/?(Portfolio\/)?/, "")}`}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="project-video"
+                      />
+                    </div>
+                  )}
+                  <div className="project-body">
+                    <div className="project-top">
+                      <div>
+                        <h3 className="project-title">{proj.title}</h3>
+                        <p className="project-subtitle">{proj.subtitle}</p>
+                      </div>
+                    </div>
+                    <p className="project-desc">{proj.description}</p>
+                    <div className="project-tags">
+                      {proj.tags.map((tag, i) => (
+                        <span key={i} className="project-tag">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="project-links">
+                      {proj.link && (
+                        <a href={proj.link} target="_blank" rel="noreferrer" className="project-link-btn">
+                          <Icons.External /> Live App
+                        </a>
+                      )}
+                      {proj.github && (
+                        <a href={proj.github} target="_blank" rel="noreferrer" className="project-link-btn">
+                          <Icons.Github /> Source
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
 
-        {/* Trajectory Section */}
-        <TrajectorySection
-          pxSize={pxSize}
-          nineSliceTexture={nine_slice_texture}
-        />
+          {/* Skills Section */}
+          <section id="skills" className="section">
+            <h2 className="section-label">{t.sections.skills}</h2>
+            <div className="skills-grid">
+              {t.skillCategories.map((cat, idx) => (
+                <div key={idx} className="skill-category-card">
+                  <h3 className="skill-category-name">{cat.name}</h3>
+                  <div className="skill-pill-container">
+                    {cat.skills.map((skill, i) => (
+                      <span key={i} className="skill-pill">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
 
-        {/* Projects / Games Section (Marquee) */}
-        <ProjectsSection pxSize={pxSize} />
-        
-        {/* Contact Section */}
-        <ContactSection pxSize={pxSize} />
+          {/* Contact Section */}
+          <section id="contact" className="section">
+            <h2 className="section-label">{t.sections.contact}</h2>
+            <div className="contact-card">
+              <h3 className="contact-card-title">{t.contact.title}</h3>
+              <p className="contact-card-desc">{t.contact.desc}</p>
+              <div className="contact-actions">
+                <button onClick={handleCopyEmail} className="email-copy-btn">
+                  {copied ? <Icons.Check /> : <Icons.Copy />}
+                  {copied ? t.contact.copiedBtn : t.personalInfo.email}
+                </button>
+                <SpecularButton
+                  size="md"
+                  radius={10}
+                  tint="rgba(255, 255, 255, 0.06)"
+                  blur={14}
+                  lineColor="#a78bfa"
+                  baseColor="#40404c"
+                  intensity={1.5}
+                  autoAnimate={true}
+                  onClick={() => {
+                    window.location.href = t.personalInfo.links.email;
+                  }}
+                >
+                  <Icons.Mail />
+                  {t.contact.clientBtn}
+                </SpecularButton>
+              </div>
+            </div>
+          </section>
+        </main>
 
         {/* Footer */}
-        <footer
-          style={{
-            width: "100%",
-            padding: `${pxSize * 4}px`,
-            textAlign: "center",
-            color: "#666",
-            fontFamily: "'Press Start 2P', monospace",
-            fontSize: `${pxSize * 0.25}rem`,
-            backgroundColor: "#0e0911",
-          }}
-        >
-          <p>© 2025 Alberto Díaz Maroto Ortiz. All rights reserved.</p>
+        <footer className="footer">
+          <p className="footer-text">
+            © {new Date().getFullYear()} {t.personalInfo.name}. {t.footer.text}
+          </p>
         </footer>
       </div>
-
-      {/* Tooltip Layer */}
-      <TooltipCard
-        hoveredSkill={hoveredSkill}
-        mousePos={mousePos}
-        pxSize={pxSize}
-      />
     </div>
   );
 }
-
-export default App;
