@@ -1,9 +1,9 @@
 :root {
   /* Deep Base Layer */
-  --bg-backdrop: #08080a;
+  --bg-backdrop: #080808;
   
   /* Crystal Glass Backgrounds */
-  --glass-panel: rgba(10, 10, 15, 0.2);
+  --glass-panel: rgba(10, 10, 10, 0.2);
   --glass-card: rgba(0, 0, 0, 0.35);
   --glass-card-hover: rgba(0, 0, 0, 0.55);
   --glass-pill: rgba(0, 0, 0, 0.4);

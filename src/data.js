@@ -24,6 +24,7 @@ export const portfolioData = {
     nav: {
       experience: "Experience",
       projects: "Projects",
+      publications: "Publications",
       skills: "Skills",
       contact: "Contact",
       cv: "CV",
@@ -34,6 +35,7 @@ export const portfolioData = {
     sections: {
       trajectory: "Trajectory & Education",
       projects: "Featured Projects",
+      publications: "Publications",
       skills: "Skills & Technologies",
       contact: "Get in Touch",
     },
@@ -80,6 +82,13 @@ export const portfolioData = {
         video: "/Portfolio/media/projectA.mp4",
         github: "https://github.com/Albertdmo13",
       },
+    ],
+        publications: [
+      {
+        title: "Real-Time Edge Computing vs. GPU-Accelerated Pipelines for Low-Cost Microscopy Applications",
+        abstract: "Environmental microscopy is crucial for analyzing microorganisms, but traditional optical microscopes are often expensive, bulky, and impractical for field use. AI-driven image recognition, powered by deep learning models like YOLO, enhances microscopy analysis but typically requires high computational resources. To address these challenges, we present two cost-effective pipelines integrating AI with low-cost microscopes and edge computing. Both approaches use the OpenFlexure Microscope and Raspberry Pi devices. The first performs real-time inference with a Raspberry Pi 5 and Hailo-8L accelerator, while the second captures images with a Raspberry Pi 4, transferring them to a GPU-equipped desktop for processing. Using YOLOv8, we evaluate their ability to detect phytoplankton species, including cyanobacteria and diatoms. Results show that edge computing enables accurate, efficient, and low-power microscopy analysis, demonstrating its potential for real-time environmental monitoring in resource-limited settings.",
+        link: "https://www.mdpi.com/2079-9292/14/5/930"
+      }
     ],
     skillCategories: [
       {
@@ -136,6 +145,7 @@ export const portfolioData = {
     nav: {
       experience: "Experiencia",
       projects: "Proyectos",
+      publications: "Publicaciones",
       skills: "Habilidades",
       contact: "Contacto",
       cv: "CV",
@@ -146,6 +156,7 @@ export const portfolioData = {
     sections: {
       trajectory: "Trayectoria y Educación",
       projects: "Proyectos Destacados",
+      publications: "Publicaciones",
       skills: "Habilidades y Tecnologías",
       contact: "Contacto",
     },
@@ -192,6 +203,20 @@ export const portfolioData = {
         video: "/Portfolio/media/projectA.mp4",
         github: "https://github.com/Albertdmo13",
       },
+    ],
+        publications: [
+      {
+        title: "Real-Time Edge Computing vs. GPU-Accelerated Pipelines for Low-Cost Microscopy Applications",
+        abstract: "Environmental microscopy is crucial for analyzing microorganisms, but traditional optical microscopes are often expensive, bulky, and impractical for field use. AI-driven image recognition, powered by deep learning models like YOLO, enhances microscopy analysis but typically requires high computational resources. To address these challenges, we present two cost-effective pipelines integrating AI with low-cost microscopes and edge computing. Both approaches use the OpenFlexure Microscope and Raspberry Pi devices. The first performs real-time inference with a Raspberry Pi 5 and Hailo-8L accelerator, while the second captures images with a Raspberry Pi 4, transferring them to a GPU-equipped desktop for processing. Using YOLOv8, we evaluate their ability to detect phytoplankton species, including cyanobacteria and diatoms. Results show that edge computing enables accurate, efficient, and low-power microscopy analysis, demonstrating its potential for real-time environmental monitoring in resource-limited settings.",
+        link: "https://www.mdpi.com/2079-9292/14/5/930"
+      }
+    ],
+        publications: [
+      {
+        title: "Real-Time Edge Computing vs. GPU-Accelerated Pipelines for Low-Cost Microscopy Applications",
+        abstract: "Environmental microscopy is crucial for analyzing microorganisms, but traditional optical microscopes are often expensive, bulky, and impractical for field use. AI-driven image recognition, powered by deep learning models like YOLO, enhances microscopy analysis but typically requires high computational resources. To address these challenges, we present two cost-effective pipelines integrating AI with low-cost microscopes and edge computing. Both approaches use the OpenFlexure Microscope and Raspberry Pi devices. The first performs real-time inference with a Raspberry Pi 5 and Hailo-8L accelerator, while the second captures images with a Raspberry Pi 4, transferring them to a GPU-equipped desktop for processing. Using YOLOv8, we evaluate their ability to detect phytoplankton species, including cyanobacteria and diatoms. Results show that edge computing enables accurate, efficient, and low-power microscopy analysis, demonstrating its potential for real-time environmental monitoring in resource-limited settings.",
+        link: "https://www.mdpi.com/2079-9292/14/5/930"
+      }
     ],
     skillCategories: [
       {

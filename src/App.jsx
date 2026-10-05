@@ -134,6 +134,7 @@ export default function App() {
             <nav className="nav-links">
               <a href="#experience" className="nav-link">{t.nav.experience}</a>
               <a href="#projects" className="nav-link">{t.nav.projects}</a>
+              <a href="#publications" className="nav-link">{t.nav.publications}</a>
               <a href="#skills" className="nav-link">{t.nav.skills}</a>
               <a href="#contact" className="nav-link">{t.nav.contact}</a>
               <RubberSegment
@@ -157,7 +158,7 @@ export default function App() {
                 radius={8}
                 tint="rgba(255, 255, 255, 0.05)"
                 blur={10}
-                lineColor="#a78bfa"
+                lineColor="#60a5fa"
                 baseColor="#3a3a44"
                 intensity={1.3}
                 autoAnimate={true}
@@ -283,6 +284,25 @@ export default function App() {
             </div>
           </motion.section>
 
+          {/* Publications Section */}
+          <motion.section id="publications" className="section" {...sectionAnimation}>
+            <h2 className="section-label">{t.sections.publications || "Publications"}</h2>
+            <div className="publications-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {t.publications && t.publications.map((pub, idx) => (
+                <article key={idx} className="project-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <h3 className="project-title" style={{ margin: 0, color: 'var(--text-main)' }}>{pub.title}</h3>
+                  <p className="project-desc" style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6' }}>
+                    <strong>Abstract:</strong> {pub.abstract}
+                  </p>
+                  <div>
+                    <a href={pub.link} target="_blank" rel="noreferrer" className="project-link-btn" style={{ display: 'inline-flex', width: 'max-content' }}>
+                      <Icons.External /> View Paper
+                    </a>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </motion.section>
           {/* Skills Section */}
           <motion.section id="skills" className="section" {...sectionAnimation}>
             <h2 className="section-label">{t.sections.skills}</h2>
@@ -318,7 +338,7 @@ export default function App() {
                   radius={10}
                   tint="rgba(255, 255, 255, 0.06)"
                   blur={14}
-                  lineColor="#a78bfa"
+                  lineColor="#60a5fa"
                   baseColor="#40404c"
                   intensity={1.5}
                   autoAnimate={true}
