@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { portfolioData } from "./data";
 import LatticeLoader from "./LatticeLoader";
-import GradientWaves from "./GradientWaves";
 import TextType from "./TextType";
 import SpecularButton from "./SpecularButton";
 import RubberSegment from "./RubberSegment";
@@ -81,10 +80,10 @@ export default function App() {
   const t = portfolioData[lang] || portfolioData.en;
 
   const sectionAnimation = {
-    initial: { opacity: 0, y: 50 },
-    whileInView: { opacity: 1, y: 0 },
+    initial: { opacity: 0 },
+    whileInView: { opacity: 1 },
     viewport: { once: true, margin: "-50px" },
-    transition: { duration: 0.7, ease: "easeOut" }
+    transition: { duration: 0.5 }
   };
 
   const handleCopyEmail = () => {
@@ -125,32 +124,6 @@ export default function App() {
         )}
       </AnimatePresence>
       <div className="background-layer">
-      {/* Gradient Wave Background */}
-      <div className="waves-bg-container">
-        <GradientWaves
-          horizonColor="#5227FF"
-          waveColor="#FF9FFC"
-          crestColor="#FFFFFF"
-          speed={0.2}
-          amplitude={1.5}
-          waveScale={0.6}
-          waveRatio={0.9}
-          swell={35}
-          turbulence={20}
-          tilt={0.8}
-          zoom={0.9}
-          height={6.5}
-          fogDepth={15}
-          detail="medium"
-          brightness={0.9}
-          opacity={1}
-          mouseInteraction={false}
-          parallaxStrength={0}
-          grain
-          grainIntensity={0.025}
-        />
-      </div>
-
       <div className="foreground-layer">
         {/* Navigation Bar */}
         <header className="nav-header">
@@ -221,20 +194,20 @@ export default function App() {
                   <div key={idx} className="timeline-item">
                     <motion.div 
                       className="timeline-marker"
-                      initial={{ scale: 0 }}
-                      whileInView={{ scale: 1 }}
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
                       viewport={{ once: true, margin: "-50px" }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.2 + idx * 0.2 }}
+                      transition={{ duration: 0.3, delay: idx * 0.1 }}
                     >
                       <span className="timeline-dot" />
                       <span className="timeline-connector" />
                     </motion.div>
                     <motion.div 
                       className="timeline-card"
-                      initial={{ opacity: 0, x: -30 }}
-                      whileInView={{ opacity: 1, x: 0 }}
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
                       viewport={{ once: true, margin: "-50px" }}
-                      transition={{ delay: 0.4 + idx * 0.2, duration: 0.5, ease: "easeOut" }}
+                      transition={{ delay: 0.1 + idx * 0.1, duration: 0.3 }}
                     >
                       <div className="timeline-header">
                         <h3 className="timeline-role">{item.role}</h3>

@@ -6,26 +6,13 @@
 .background-layer {
   min-height: 100vh;
   width: 100%;
-  background-color: var(--bg-backdrop);
+  background-color: #1a1a1a;
+  background-image: radial-gradient(#3a3a3a 1px, transparent 1px);
+  background-size: 20px 20px;
   display: flex;
   justify-content: center;
   position: relative;
   overflow-x: hidden;
-}
-
-/* Gradient Waves Fixed Non-Scrolling Crystal Backdrop */
-.waves-bg-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.9;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
 }
 
 /* Wide Crystal Glass Foreground Canvas - Translucent frosted crystal backdrop */
@@ -34,8 +21,8 @@
   max-width: 1080px;
   min-height: 100vh;
   background-color: var(--glass-panel);
-  backdrop-filter: blur(4px) brightness(0.8) saturate(130%);
-  -webkit-backdrop-filter: blur(4px) brightness(0.8) saturate(130%);
+  backdrop-filter: blur(4px) brightness(1) saturate(130%);
+  -webkit-backdrop-filter: blur(4px) brightness(1) saturate(130%);
   border-left: 1px solid var(--glass-border);
   border-right: 1px solid var(--glass-border);
   display: flex;
@@ -98,7 +85,7 @@
   padding: 6px 14px;
   font-size: 0.84rem;
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: 4px;
   background: var(--glass-btn);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -241,7 +228,7 @@
   align-items: center;
   gap: 8px;
   padding: 9px 18px;
-  border-radius: 10px;
+  border-radius: 4px;
   background: var(--glass-btn);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -269,7 +256,7 @@
   justify-content: center;
   width: 38px;
   height: 38px;
-  border-radius: 10px;
+  border-radius: 4px;
   background: var(--glass-btn);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -321,7 +308,7 @@
   transform: translateX(-50%);
   background: linear-gradient(
     to bottom,
-    rgba(167, 139, 250, 0.85) 0%,
+    rgba(96, 165, 250, 0.85) 0%,
     rgba(255, 255, 255, 0.25) 50%,
     rgba(255, 255, 255, 0.08) 100%
   );
@@ -367,7 +354,7 @@
 }
 
 .timeline-item:first-child .timeline-dot {
-  border-color: #a78bfa;
+  border-color: #60a5fa;
   background: #1c152b;
 }
 
@@ -387,7 +374,7 @@
 .timeline-card {
   flex-grow: 1;
   padding: 20px 24px;
-  border-radius: 14px;
+  border-radius: 4px;
   background: var(--glass-card);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -408,14 +395,14 @@
 }
 
 .timeline-item:hover .timeline-dot {
-  border-color: #c084fc;
+  border-color: #3b82f6;
   background: #251d38;
   transform: translate(-50%, -50%) scale(1.3);
 }
 
 .timeline-item:hover .timeline-connector {
   width: 32px;
-  background: rgba(192, 132, 252, 0.7);
+  background: rgba(59, 130, 246, 0.7);
 }
 
 .timeline-header {
@@ -478,7 +465,7 @@
 .project-card {
   display: flex;
   flex-direction: column;
-  border-radius: 16px;
+  border-radius: 4px;
   background: var(--glass-card);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -560,7 +547,7 @@
 .project-tag {
   font-size: 0.75rem;
   padding: 3px 9px;
-  border-radius: 6px;
+  border-radius: 4px;
   background: var(--glass-pill);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -612,7 +599,7 @@
 
 .skill-category-card {
   padding: 18px 20px;
-  border-radius: 14px;
+  border-radius: 4px;
   background: var(--glass-card);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -649,7 +636,7 @@
 .skill-pill {
   font-size: 0.8rem;
   padding: 4px 10px;
-  border-radius: 7px;
+  border-radius: 4px;
   background: var(--glass-pill);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -671,7 +658,7 @@
 /* Crystal Contact Card */
 .contact-card {
   padding: 32px;
-  border-radius: 16px;
+  border-radius: 4px;
   background: var(--glass-card);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -710,7 +697,7 @@
   align-items: center;
   gap: 8px;
   padding: 9px 16px;
-  border-radius: 10px;
+  border-radius: 4px;
   background: var(--glass-pill);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -798,15 +785,15 @@
 @media (max-width: 768px) {
   .foreground-layer {
     background-color: transparent !important;
-    backdrop-filter: brightness(0.8) saturate(130%) !important;
-    -webkit-backdrop-filter: brightness(0.8) saturate(130%) !important;
+    backdrop-filter: brightness(1) saturate(130%) !important;
+    -webkit-backdrop-filter: brightness(1) saturate(130%) !important;
     box-shadow: none !important;
   }
   
   .nav-header {
     background-color: transparent !important;
-    backdrop-filter: brightness(0.8) saturate(130%) !important;
-    -webkit-backdrop-filter: brightness(0.8) saturate(130%) !important;
+    backdrop-filter: brightness(1) saturate(130%) !important;
+    -webkit-backdrop-filter: brightness(1) saturate(130%) !important;
     border-bottom: none !important;
     box-shadow: none !important;
     padding: 12px !important;
@@ -814,7 +801,7 @@
 
   .nav-content {
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
     align-items: center;
   }
 
@@ -822,7 +809,30 @@
     flex-wrap: wrap;
     justify-content: center;
     width: 100%;
-    gap: 10px;
+    gap: 12px;
+  }
+
+  /* Make all buttons bigger for touch on mobile */
+  .btn-primary, 
+  .nav-cv-btn, 
+  .email-copy-btn, 
+  .project-link-btn {
+    padding: 14px 24px !important;
+    font-size: 1.05rem !important;
+    min-height: 48px;
+  }
+
+  .nav-link {
+    padding: 12px 16px !important;
+    font-size: 1.05rem !important;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .rubber-segment {
+    transform: scale(1.15);
+    margin: 4px 0;
   }
 }
 
