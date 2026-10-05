@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { portfolioData } from "./data";
+import LatticeLoader from "./LatticeLoader";
 import GradientWaves from "./GradientWaves";
 import TextType from "./TextType";
 import SpecularButton from "./SpecularButton";
@@ -59,9 +61,31 @@ const Icons = {
 export default function App() {
   const [lang, setLang] = useState("en");
   const [copied, setCopied] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loaderStatus, setLoaderStatus] = useState("working");
   const base = import.meta.env.BASE_URL;
 
+  useEffect(() => {
+    const timer1 = setTimeout(() => {
+      setLoaderStatus("done");
+    }, 600);
+    const timer2 = setTimeout(() => {
+      setIsLoading(false);
+    }, 1200);
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, []);
+
   const t = portfolioData[lang] || portfolioData.en;
+
+  const sectionAnimation = {
+    initial: { opacity: 0, y: 50 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, margin: "-50px" },
+    transition: { duration: 0.7, ease: "easeOut" }
+  };
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(t.personalInfo.email);
@@ -70,30 +94,60 @@ export default function App() {
   };
 
   return (
-    <div className="background-layer">
+    <>
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div
+            className="loading-screen"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#08080a',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <LatticeLoader 
+              status={loaderStatus} 
+              color="#a78bfa" 
+              doneColor="#10a37f" 
+              label="Loading Portfolio"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div className="background-layer">
       {/* Gradient Wave Background */}
       <div className="waves-bg-container">
         <GradientWaves
           horizonColor="#5227FF"
           waveColor="#FF9FFC"
           crestColor="#FFFFFF"
-          speed={0.12}
-          amplitude={2.5}
+          speed={0.2}
+          amplitude={1.5}
           waveScale={0.6}
           waveRatio={0.9}
           swell={35}
           turbulence={20}
-          tilt={1.11}
-          zoom={1}
-          height={5.5}
+          tilt={0.8}
+          zoom={0.9}
+          height={6.5}
           fogDepth={15}
           detail="medium"
-          brightness={1}
+          brightness={0.9}
           opacity={1}
           mouseInteraction={false}
           parallaxStrength={0}
           grain
-          grainIntensity={0.05}
+          grainIntensity={0.025}
         />
       </div>
 
@@ -158,18 +212,30 @@ export default function App() {
           />
 
           {/* Trajectory / Experience Section */}
-          <section id="experience" className="section">
+          <motion.section id="experience" className="section" {...sectionAnimation}>
             <h2 className="section-label">{t.sections.trajectory}</h2>
             <div className="timeline-container">
               <div className="timeline-track" />
               <div className="timeline-items">
                 {t.trajectory.map((item, idx) => (
                   <div key={idx} className="timeline-item">
-                    <div className="timeline-marker">
+                    <motion.div 
+                      className="timeline-marker"
+                      initial={{ scale: 0 }}
+                      whileInView={{ scale: 1 }}
+                      viewport={{ once: true, margin: "-50px" }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.2 + idx * 0.2 }}
+                    >
                       <span className="timeline-dot" />
                       <span className="timeline-connector" />
-                    </div>
-                    <div className="timeline-card">
+                    </motion.div>
+                    <motion.div 
+                      className="timeline-card"
+                      initial={{ opacity: 0, x: -30 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true, margin: "-50px" }}
+                      transition={{ delay: 0.4 + idx * 0.2, duration: 0.5, ease: "easeOut" }}
+                    >
                       <div className="timeline-header">
                         <h3 className="timeline-role">{item.role}</h3>
                         <span className="timeline-period">{item.period}</span>
@@ -186,15 +252,15 @@ export default function App() {
                         </p>
                       )}
                       {item.description && <p className="timeline-desc">{item.description}</p>}
-                    </div>
+                    </motion.div>
                   </div>
                 ))}
               </div>
             </div>
-          </section>
+          </motion.section>
 
           {/* Projects Section */}
-          <section id="projects" className="section">
+          <motion.section id="projects" className="section" {...sectionAnimation}>
             <h2 className="section-label">{t.sections.projects}</h2>
             <div className="projects-grid">
               {t.projects.map((proj) => (
@@ -242,10 +308,10 @@ export default function App() {
                 </article>
               ))}
             </div>
-          </section>
+          </motion.section>
 
           {/* Skills Section */}
-          <section id="skills" className="section">
+          <motion.section id="skills" className="section" {...sectionAnimation}>
             <h2 className="section-label">{t.sections.skills}</h2>
             <div className="skills-grid">
               {t.skillCategories.map((cat, idx) => (
@@ -261,10 +327,10 @@ export default function App() {
                 </div>
               ))}
             </div>
-          </section>
+          </motion.section>
 
           {/* Contact Section */}
-          <section id="contact" className="section">
+          <motion.section id="contact" className="section" {...sectionAnimation}>
             <h2 className="section-label">{t.sections.contact}</h2>
             <div className="contact-card">
               <h3 className="contact-card-title">{t.contact.title}</h3>
@@ -292,7 +358,7 @@ export default function App() {
                 </SpecularButton>
               </div>
             </div>
-          </section>
+          </motion.section>
         </main>
 
         {/* Footer */}
@@ -303,5 +369,6 @@ export default function App() {
         </footer>
       </div>
     </div>
+    </>
   );
 }

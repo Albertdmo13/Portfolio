@@ -147,29 +147,23 @@ const SpecularButton = ({
     ro.observe(btn);
     resize();
 
-    let pointerAngle = null;
-    let proximityT = 0;
-    const onPointerMove = e => {
-      const rect = btn.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const dx = Math.max(rect.left - e.clientX, 0, e.clientX - rect.right);
-      const dy = Math.max(rect.top - e.clientY, 0, e.clientY - rect.bottom);
-      const dist = Math.hypot(dx, dy);
-      if (dist === 0) {
-        const nx = (e.clientX - cx) / (rect.width / 2);
-        const ny = (cy - e.clientY) / (rect.height / 2);
-        pointerAngle = Math.atan2(2 / rect.height, -2 / rect.width) + nx * 0.3 + ny * 0.15;
-      } else {
-        pointerAngle = Math.atan2(cy - e.clientY, e.clientX - cx);
-      }
-      const t = Math.max(0, 1 - dist / Math.max(propsRef.current.proximity, 1));
-      proximityT = t * t * (3 - 2 * t);
+    let isHovered = false;
+    let hoverStartAngle = null;
+    let hasSpun = false;
+
+    const onEnter = () => { 
+      isHovered = true; 
+      hoverStartAngle = angle;
+      hasSpun = false;
     };
-    window.addEventListener('pointermove', onPointerMove);
+    const onLeave = () => { 
+      isHovered = false; 
+    };
+    btn.addEventListener('pointerenter', onEnter);
+    btn.addEventListener('pointerleave', onLeave);
 
     let angle = 2.4;
-    let idleAngle = 2.4;
+    let currentSpeed = propsRef.current.speed * 2.5;
     let bright = 0;
     let last = performance.now();
     let raf = 0;
@@ -183,13 +177,21 @@ const SpecularButton = ({
       last = now;
       const p = propsRef.current;
 
-      idleAngle += p.speed * dt;
-      const steer = p.followMouse && pointerAngle != null && (!p.autoAnimate || proximityT > 0);
-      const target = steer ? pointerAngle : idleAngle;
-      const diff = ((target - angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
-      angle += diff * (1 - Math.exp(-dt * 7));
+      const baseSpeed = p.speed * 2.5;
+      let wantsSpin = isHovered && !hasSpun;
+      
+      if (wantsSpin && hoverStartAngle !== null) {
+         if (angle - hoverStartAngle >= Math.PI * 2) {
+             hasSpun = true;
+             wantsSpin = false;
+         }
+      }
 
-      const brightTarget = p.autoAnimate ? 1 : proximityT;
+      const targetSpeed = wantsSpin ? baseSpeed * 5 : baseSpeed;
+      currentSpeed += (targetSpeed - currentSpeed) * (1 - Math.exp(-dt * 5));
+      angle += currentSpeed * dt;
+
+      const brightTarget = 1;
       bright += (brightTarget - bright) * (1 - Math.exp(-dt * 8));
 
       lineC.set(p.lineColor);
@@ -209,7 +211,8 @@ const SpecularButton = ({
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
-      window.removeEventListener('pointermove', onPointerMove);
+      btn.removeEventListener('pointerenter', onEnter);
+      btn.removeEventListener('pointerleave', onLeave);
       if (gl.canvas.parentNode === fx) fx.removeChild(gl.canvas);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };

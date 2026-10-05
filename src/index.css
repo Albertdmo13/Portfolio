@@ -3,12 +3,13 @@
   --bg-backdrop: #08080a;
   
   /* Crystal Glass Backgrounds */
-  --glass-panel: rgba(10, 10, 18, 0.22);
-  --glass-card: rgba(255, 255, 255, 0.035);
-  --glass-card-hover: rgba(255, 255, 255, 0.07);
-  --glass-pill: rgba(255, 255, 255, 0.05);
-  --glass-btn: rgba(255, 255, 255, 0.06);
-  --glass-btn-hover: rgba(255, 255, 255, 0.11);
+  --glass-panel: rgba(10, 10, 15, 0.2);
+  --glass-card: rgba(0, 0, 0, 0.35);
+  --glass-card-hover: rgba(0, 0, 0, 0.55);
+  --glass-pill: rgba(0, 0, 0, 0.4);
+  --glass-btn: rgba(0, 0, 0, 0.35);
+  --glass-btn-hover: rgba(0, 0, 0, 0.6);
+  --glass-blur: blur(6px);
   
   /* Specular Glass Borders */
   --glass-border: rgba(255, 255, 255, 0.12);
