@@ -112,19 +112,13 @@ export const portfolioData = {
         abstract: "Environmental microscopy is crucial for analyzing microorganisms, but traditional optical microscopes are often expensive, bulky, and impractical for field use. AI-driven image recognition, powered by deep learning models like YOLO, enhances microscopy analysis but typically requires high computational resources. To address these challenges, we present two cost-effective pipelines integrating AI with low-cost microscopes and edge computing. [...]",
         link: "https://www.mdpi.com/2079-9292/14/5/930",
         images: [
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g001.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g002.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g003.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g004.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g005.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g006.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g007.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g008.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g009.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g010.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g011.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g012.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g013.png"
+          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g001.png",
+          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g004.png",
+          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g006.png",
+          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g009.png",
+          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g010.png",
+          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g011.png",
+          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g013.png"
         ]
       }
     ],
@@ -271,19 +265,13 @@ export const portfolioData = {
         abstract: "Environmental microscopy is crucial for analyzing microorganisms, but traditional optical microscopes are often expensive, bulky, and impractical for field use. AI-driven image recognition, powered by deep learning models like YOLO, enhances microscopy analysis but typically requires high computational resources. To address these challenges, we present two cost-effective pipelines integrating AI with low-cost microscopes and edge computing. [...]",
         link: "https://www.mdpi.com/2079-9292/14/5/930",
         images: [
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g001.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g002.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g003.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g004.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g005.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g006.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g007.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g008.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g009.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g010.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g011.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g012.png",
-        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g013.png"
+          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g001.png",
+          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g004.png",
+          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g006.png",
+          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g009.png",
+          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g010.png",
+          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g011.png",
+          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g013.png"
         ]
       }
     ],
