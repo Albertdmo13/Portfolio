@@ -211,8 +211,8 @@ export default function App() {
                         viewport={{ once: true, margin: "-50px" }}
                         transition={{ delay: 0.1 + idx * 0.1, duration: 0.3 }}
                       >
-                        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                          <div style={{ flexGrow: 1 }}>
+                        <div className="timeline-inner">
+                          <div className="timeline-content">
                             <div className="timeline-header">
                               <h3 className="timeline-role">{item.role}</h3>
                               <span className="timeline-period">{item.period}</span>
@@ -232,18 +232,18 @@ export default function App() {
                           </div>
                           {item.logo && (
                             item.link ? (
-                              <a href={item.link} target="_blank" rel="noreferrer" style={{ display: 'flex', transition: 'transform 0.2s ease', cursor: 'pointer' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                              <a href={item.link} target="_blank" rel="noreferrer" className="timeline-logo-link" style={{ display: 'flex' }}>
                                 <img 
                                   src={`${base}${item.logo.replace(/^\/?(Portfolio\/)?/, "")}`} 
                                   alt={`${item.institution} logo`}
-                                  style={{ width: '72px', height: '72px', objectFit: 'contain', borderRadius: '8px', flexShrink: 0, backgroundColor: 'rgba(255,255,255,0.05)', padding: '6px' }}
+                                  className="timeline-logo"
                                 />
                               </a>
                             ) : (
                               <img 
                                 src={`${base}${item.logo.replace(/^\/?(Portfolio\/)?/, "")}`} 
                                 alt={`${item.institution} logo`}
-                                style={{ width: '72px', height: '72px', objectFit: 'contain', borderRadius: '8px', flexShrink: 0, backgroundColor: 'rgba(255,255,255,0.05)', padding: '6px' }}
+                                className="timeline-logo"
                               />
                             )
                           )}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
 export default function ImageCarousel({ images, base }) {
@@ -9,6 +10,9 @@ export default function ImageCarousel({ images, base }) {
   const [startX, setStartX] = useState(0);
   const [scrollLeftState, setScrollLeftState] = useState(0);
   const [dragged, setDragged] = useState(false);
+
+  // Triple the images for seamless infinite looping
+  const extendedImages = [...images, ...images, ...images];
 
   const handleMouseDown = (e) => {
     setIsDragging(true);
@@ -31,7 +35,7 @@ export default function ImageCarousel({ images, base }) {
     e.preventDefault();
     setDragged(true);
     const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX) * 1.5;
+    const walk = x - startX;
     scrollRef.current.scrollLeft = scrollLeftState - walk;
   };
 
@@ -46,8 +50,15 @@ export default function ImageCarousel({ images, base }) {
 
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el || isHovered) return;
+    if (!el) return;
     
+    // Initial start in the middle set to allow scrolling left
+    if (el.scrollLeft === 0) {
+      el.scrollLeft = el.scrollWidth / 3;
+    }
+
+    if (isHovered) return;
+
     let animationId;
     let scrollAmount = 1;
     let exactScroll = el.scrollLeft;
@@ -56,14 +67,17 @@ export default function ImageCarousel({ images, base }) {
       if (!isHovered) {
         exactScroll += scrollAmount;
         el.scrollLeft = exactScroll;
-        
-        // Sync to catch manual scrolls or bounds hitting
         exactScroll = el.scrollLeft;
 
-        if (exactScroll >= el.scrollWidth - el.clientWidth - 1) {
-          scrollAmount = -1;
-        } else if (exactScroll <= 0) {
-          scrollAmount = 1;
+        const oneSetWidth = el.scrollWidth / 3;
+
+        // Infinite loop seamless snapping
+        if (exactScroll >= oneSetWidth * 2) {
+          exactScroll -= oneSetWidth;
+          el.scrollLeft = exactScroll;
+        } else if (exactScroll <= oneSetWidth) {
+          exactScroll += oneSetWidth;
+          el.scrollLeft = exactScroll;
         }
       }
       animationId = requestAnimationFrame(step);
@@ -95,7 +109,7 @@ export default function ImageCarousel({ images, base }) {
           scrollbarWidth: 'none', /* Firefox */
         }}
       >
-        {images.map((imgUrl, i) => (
+        {extendedImages.map((imgUrl, i) => (
           <img 
             key={i}
             src={`${base}${imgUrl.replace(/^\/?(Portfolio\/)?/, "")}`}
@@ -123,66 +137,68 @@ export default function ImageCarousel({ images, base }) {
         ))}
       </div>
 
-      <AnimatePresence>
-        {selectedImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedImage(null)}
-            style={{
-              position: 'fixed',
-              top: 0, left: 0, right: 0, bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.85)',
-              zIndex: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'zoom-out',
-              padding: '40px'
-            }}
-          >
-            <motion.img
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              src={selectedImage}
-              alt="Enlarged view"
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                maxWidth: '100%',
-                maxHeight: '100%',
-                objectFit: 'contain',
-                borderRadius: '8px',
-                boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
-                cursor: 'default'
-              }}
-            />
-            {/* Close button for clarity */}
-            <button
+      {createPortal(
+        <AnimatePresence>
+          {selectedImage && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setSelectedImage(null)}
               style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: 'none',
-                color: 'white',
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                cursor: 'pointer',
+                position: 'fixed',
+                top: 0, left: 0, right: 0, bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                zIndex: 99999,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '24px'
+                cursor: 'zoom-out',
+                padding: '40px'
               }}
             >
-              ×
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <motion.img
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                src={selectedImage}
+                alt="Enlarged view"
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+                  cursor: 'default'
+                }}
+              />
+              <button
+                onClick={() => setSelectedImage(null)}
+                style={{
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: 'none',
+                  color: 'white',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '24px'
+                }}
+              >
+                ×
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 }

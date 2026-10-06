@@ -806,7 +806,46 @@
   .timeline-card {
     padding: 16px 18px;
   }
+
+  .timeline-inner {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .timeline-logo {
+    width: 56px !important;
+    height: 56px !important;
+    margin-bottom: -4px;
+  }
 }
+
+.timeline-inner {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.timeline-content {
+  flex-grow: 1;
+}
+
+.timeline-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 6px;
+}
+
+.timeline-logo-link {
+  display: flex;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
 
 @media (max-width: 768px) {
   .foreground-layer {
