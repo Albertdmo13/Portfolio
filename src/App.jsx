@@ -58,6 +58,37 @@ const Icons = {
   ),
 };
 
+const getTechIconUrl = (techName) => {
+  const map = {
+    "React": "react",
+    "JavaScript": "javascript",
+    "Python": "python",
+    "Flask": "flask",
+    "MySQL": "mysql",
+    "Docker": "docker",
+    "Qt": "qt",
+    "Raspberry Pi 5": "raspberrypi",
+    "Java": "java",
+    "C / C++": "cplusplus",
+    "SQL": "postgresql",
+    "HTML / CSS": "html5",
+    "Angular": "angular",
+    "Node.js": "nodedotjs",
+    "OpenGL": "opengl",
+    "Three.js basics": "threedotjs",
+    "Three.js básico": "threedotjs",
+    "Git": "git",
+    "GitHub": "github",
+    "Linux": "linux",
+    "Blender": "blender",
+    "Arduino": "arduino",
+    "Aseprite": "aseprite",
+    "GameMaker": "gamemaker",
+  };
+  const iconName = map[techName];
+  return iconName ? `https://cdn.simpleicons.org/${iconName}/white` : null;
+};
+
 export default function App() {
   const [lang, setLang] = useState("en");
   const [copied, setCopied] = useState(false);
@@ -282,11 +313,15 @@ export default function App() {
                       </div>
                       <p className="project-desc">{proj.description}</p>
                       <div className="project-tags">
-                        {proj.tags.map((tag, i) => (
-                          <span key={i} className="project-tag">
-                            {tag}
-                          </span>
-                        ))}
+                        {proj.tags.map((tag, i) => {
+                          const iconUrl = getTechIconUrl(tag);
+                          return (
+                            <span key={i} className="project-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                              {iconUrl && <img src={iconUrl} alt={tag} style={{ width: '16px', height: '16px' }} />}
+                              {tag}
+                            </span>
+                          );
+                        })}
                       </div>
                       <div className="project-links">
                         {proj.link && (
@@ -354,11 +389,15 @@ export default function App() {
                   <div key={idx} className="skill-category-card">
                     <h3 className="skill-category-name">{cat.name}</h3>
                     <div className="skill-pill-container">
-                      {cat.skills.map((skill, i) => (
-                        <span key={i} className="skill-pill">
-                          {skill}
-                        </span>
-                      ))}
+                      {cat.skills.map((skill, i) => {
+                        const iconUrl = getTechIconUrl(skill);
+                        return (
+                          <span key={i} className="skill-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                            {iconUrl && <img src={iconUrl} alt={skill} style={{ width: '20px', height: '20px' }} />}
+                            {skill}
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
