@@ -152,7 +152,7 @@ export default function App() {
           >
             <LatticeLoader
               status={loaderStatus}
-              color="#a78bfa"
+              color="#488ee9ff"
               doneColor="#10a37f"
               label="Loading Portfolio"
             />
@@ -228,24 +228,19 @@ export default function App() {
                 <div className="timeline-track" />
                 <div className="timeline-items">
                   {t.trajectory.map((item, idx) => (
-                    <div key={idx} className="timeline-item">
-                      <motion.div
-                        className="timeline-marker"
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true, margin: "-50px" }}
-                        transition={{ duration: 0.3, delay: idx * 0.1 }}
-                      >
+                    <motion.div
+                      key={idx}
+                      className="timeline-item"
+                      initial={{ opacity: 0, y: 16 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, amount: 0.15 }}
+                      transition={{ duration: 0.35, delay: idx * 0.08 }}
+                    >
+                      <div className="timeline-marker">
                         <span className="timeline-dot" />
                         <span className="timeline-connector" />
-                      </motion.div>
-                      <motion.div
-                        className="timeline-card"
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true, margin: "-50px" }}
-                        transition={{ delay: 0.1 + idx * 0.1, duration: 0.3 }}
-                      >
+                      </div>
+                      <div className="timeline-card">
                         <div className="timeline-inner">
                           <div className="timeline-content">
                             <div className="timeline-header">
@@ -268,23 +263,23 @@ export default function App() {
                           {item.logo && (
                             item.link ? (
                               <a href={item.link} target="_blank" rel="noreferrer" className="timeline-logo-link" style={{ display: 'flex' }}>
-                                <img 
-                                  src={`${base}${item.logo.replace(/^\/?(Portfolio\/)?/, "")}`} 
+                                <img
+                                  src={`${base}${item.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
                                   alt={`${item.institution} logo`}
                                   className="timeline-logo"
                                 />
                               </a>
                             ) : (
-                              <img 
-                                src={`${base}${item.logo.replace(/^\/?(Portfolio\/)?/, "")}`} 
+                              <img
+                                src={`${base}${item.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
                                 alt={`${item.institution} logo`}
                                 className="timeline-logo"
                               />
                             )
                           )}
                         </div>
-                      </motion.div>
-                    </div>
+                      </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
@@ -322,10 +317,10 @@ export default function App() {
                           return (
                             <span key={i} className="project-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                               {iconUrl && (
-                                <img 
-                                  src={iconUrl} 
-                                  alt={tag} 
-                                  style={{ width: '16px', height: '16px' }} 
+                                <img
+                                  src={iconUrl}
+                                  alt={tag}
+                                  style={{ width: '16px', height: '16px' }}
                                   onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                 />
                               )}
@@ -368,10 +363,10 @@ export default function App() {
                         )}
                       </div>
                       {pub.logo && (
-                        <img 
-                          src={`${base}${pub.logo.replace(/^\/?(Portfolio\/)?/, "")}`} 
-                          alt="Publication logo" 
-                          style={{ width: '64px', height: 'auto', flexShrink: 0, filter: 'invert(1)', opacity: 0.8 }} 
+                        <img
+                          src={`${base}${pub.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
+                          alt="Publication logo"
+                          style={{ width: '64px', height: 'auto', flexShrink: 0, filter: 'invert(1)', opacity: 0.8 }}
                         />
                       )}
                     </div>
@@ -405,10 +400,10 @@ export default function App() {
                         return (
                           <span key={i} className="skill-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
                             {iconUrl && (
-                              <img 
-                                src={iconUrl} 
-                                alt={skill} 
-                                style={{ width: '20px', height: '20px' }} 
+                              <img
+                                src={iconUrl}
+                                alt={skill}
+                                style={{ width: '20px', height: '20px' }}
                                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
                               />
                             )}

@@ -7,9 +7,25 @@ export default function ImageCarousel({ images, base }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeftState, setScrollLeftState] = useState(0);
-  const [dragged, setDragged] = useState(false);
+
+  const exactScrollRef = useRef(0);
+  const isHoveredRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  const isTouchingRef = useRef(false);
+  const scrollEndTimerRef = useRef(null);
+
+  const startXRef = useRef(0);
+  const scrollLeftStateRef = useRef(0);
+  const draggedRef = useRef(false);
+  const touchStartXRef = useRef(0);
+
+  useEffect(() => {
+    isHoveredRef.current = isHovered;
+  }, [isHovered]);
+
+  useEffect(() => {
+    isDraggingRef.current = isDragging;
+  }, [isDragging]);
 
   // Duplicate the images enough times to ensure seamless infinite looping without hitting scrollbar limits
   const K = 20;
@@ -17,31 +33,103 @@ export default function ImageCarousel({ images, base }) {
 
   const handleMouseDown = (e) => {
     setIsDragging(true);
-    setDragged(false);
-    setStartX(e.pageX - scrollRef.current.offsetLeft);
-    setScrollLeftState(scrollRef.current.scrollLeft);
+    isDraggingRef.current = true;
+    draggedRef.current = false;
+    startXRef.current = e.pageX - scrollRef.current.offsetLeft;
+    scrollLeftStateRef.current = scrollRef.current.scrollLeft;
+    exactScrollRef.current = scrollRef.current.scrollLeft;
   };
 
   const handleMouseLeave = () => {
     setIsHovered(false);
+    isHoveredRef.current = false;
     setIsDragging(false);
+    isDraggingRef.current = false;
+    if (scrollRef.current) {
+      exactScrollRef.current = scrollRef.current.scrollLeft;
+    }
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
+    isDraggingRef.current = false;
+    if (scrollRef.current) {
+      exactScrollRef.current = scrollRef.current.scrollLeft;
+    }
   };
 
   const handleMouseMove = (e) => {
-    if (!isDragging) return;
+    if (!isDraggingRef.current || !scrollRef.current) return;
     e.preventDefault();
-    setDragged(true);
     const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = x - startX;
-    scrollRef.current.scrollLeft = scrollLeftState - walk;
+    const walk = x - startXRef.current;
+    if (Math.abs(walk) > 4) {
+      draggedRef.current = true;
+    }
+    scrollRef.current.scrollLeft = scrollLeftStateRef.current - walk;
+    exactScrollRef.current = scrollRef.current.scrollLeft;
+  };
+
+  const handleTouchStart = (e) => {
+    setIsHovered(true);
+    isHoveredRef.current = true;
+    isTouchingRef.current = true;
+    draggedRef.current = false;
+    if (e.touches && e.touches[0]) {
+      touchStartXRef.current = e.touches[0].clientX;
+    }
+    if (scrollRef.current) {
+      exactScrollRef.current = scrollRef.current.scrollLeft;
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches && e.touches[0]) {
+      const diff = Math.abs(e.touches[0].clientX - touchStartXRef.current);
+      if (diff > 6) {
+        draggedRef.current = true;
+      }
+    }
+    if (scrollRef.current) {
+      exactScrollRef.current = scrollRef.current.scrollLeft;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    isTouchingRef.current = false;
+    if (scrollRef.current) {
+      exactScrollRef.current = scrollRef.current.scrollLeft;
+    }
+    clearTimeout(scrollEndTimerRef.current);
+    scrollEndTimerRef.current = setTimeout(() => {
+      setIsHovered(false);
+      isHoveredRef.current = false;
+      if (scrollRef.current) {
+        exactScrollRef.current = scrollRef.current.scrollLeft;
+      }
+    }, 400);
+  };
+
+  const handleScroll = () => {
+    if (!scrollRef.current) return;
+    exactScrollRef.current = scrollRef.current.scrollLeft;
+
+    if (isTouchingRef.current || isHoveredRef.current || isDraggingRef.current) {
+      clearTimeout(scrollEndTimerRef.current);
+      scrollEndTimerRef.current = setTimeout(() => {
+        if (!isTouchingRef.current) {
+          setIsHovered(false);
+          isHoveredRef.current = false;
+          if (scrollRef.current) {
+            exactScrollRef.current = scrollRef.current.scrollLeft;
+          }
+        }
+      }, 400);
+    }
   };
 
   const handleImageClick = (e, url) => {
-    if (dragged) {
+    if (draggedRef.current) {
       e.preventDefault();
       e.stopPropagation();
       return;
@@ -65,13 +153,16 @@ export default function ImageCarousel({ images, base }) {
     const el = scrollRef.current;
     if (!el) return;
     
-    // Initial start in the middle set to allow scrolling left
+    // Initial start in the middle set to allow scrolling left or right
     if (el.scrollLeft === 0) {
-      el.scrollLeft = el.scrollWidth / K;
+      const initialScroll = (el.scrollWidth / K) * 10;
+      el.scrollLeft = initialScroll;
+      exactScrollRef.current = initialScroll;
+    } else {
+      exactScrollRef.current = el.scrollLeft;
     }
 
     let animationId;
-    let exactScroll = el.scrollLeft;
     let lastTime = performance.now();
     const speed = 25; // pixels per second (slower, gentle scroll)
 
@@ -79,39 +170,51 @@ export default function ImageCarousel({ images, base }) {
       const delta = (currentTime - lastTime) / 1000;
       lastTime = currentTime;
 
-      if (!isHovered && delta > 0 && delta < 0.1) {
-        exactScroll += speed * delta;
-        el.scrollLeft = exactScroll;
+      const currentEl = scrollRef.current;
+      if (currentEl) {
+        const isPaused = isHoveredRef.current || isDraggingRef.current || isTouchingRef.current;
+        if (!isPaused && delta > 0 && delta < 0.1) {
+          exactScrollRef.current += speed * delta;
 
-        const oneSetWidth = el.scrollWidth / K;
-
-        // Infinite loop seamless snapping
-        while (exactScroll >= oneSetWidth * 2) {
-          exactScroll -= oneSetWidth;
-        }
-        while (exactScroll <= oneSetWidth) {
-          exactScroll += oneSetWidth;
+          const oneSetWidth = currentEl.scrollWidth / K;
+          if (oneSetWidth > 0) {
+            while (exactScrollRef.current >= oneSetWidth * (K - 2)) {
+              exactScrollRef.current -= oneSetWidth * 5;
+            }
+            while (exactScrollRef.current <= oneSetWidth * 2) {
+              exactScrollRef.current += oneSetWidth * 5;
+            }
+          }
+          currentEl.scrollLeft = exactScrollRef.current;
+        } else if (isPaused) {
+          exactScrollRef.current = currentEl.scrollLeft;
         }
       }
+
       animationId = requestAnimationFrame(step);
     };
 
     animationId = requestAnimationFrame(step);
     
-    return () => cancelAnimationFrame(animationId);
-  }, [isHovered]);
+    return () => {
+      cancelAnimationFrame(animationId);
+      clearTimeout(scrollEndTimerRef.current);
+    };
+  }, []);
 
   return (
     <>
       <div 
         ref={scrollRef}
-        onMouseEnter={() => setIsHovered(true)}
+        onMouseEnter={() => { setIsHovered(true); isHoveredRef.current = true; }}
         onMouseLeave={handleMouseLeave}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
-        onTouchStart={() => setIsHovered(true)}
-        onTouchEnd={() => setIsHovered(false)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onScroll={handleScroll}
         style={{ 
           display: 'flex', 
           alignItems: 'center',
