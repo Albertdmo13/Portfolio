@@ -11,8 +11,9 @@ export default function ImageCarousel({ images, base }) {
   const [scrollLeftState, setScrollLeftState] = useState(0);
   const [dragged, setDragged] = useState(false);
 
-  // Triple the images for seamless infinite looping
-  const extendedImages = [...images, ...images, ...images];
+  // Duplicate the images enough times to ensure seamless infinite looping without hitting scrollbar limits
+  const K = 20;
+  const extendedImages = Array(K).fill(images).flat();
 
   const handleMouseDown = (e) => {
     setIsDragging(true);
@@ -54,7 +55,7 @@ export default function ImageCarousel({ images, base }) {
     
     // Initial start in the middle set to allow scrolling left
     if (el.scrollLeft === 0) {
-      el.scrollLeft = el.scrollWidth / 3;
+      el.scrollLeft = el.scrollWidth / K;
     }
 
     if (isHovered) return;
@@ -67,17 +68,15 @@ export default function ImageCarousel({ images, base }) {
       if (!isHovered) {
         exactScroll += scrollAmount;
         el.scrollLeft = exactScroll;
-        exactScroll = el.scrollLeft;
 
-        const oneSetWidth = el.scrollWidth / 3;
+        const oneSetWidth = el.scrollWidth / K;
 
         // Infinite loop seamless snapping
-        if (exactScroll >= oneSetWidth * 2) {
+        while (exactScroll >= oneSetWidth * 2) {
           exactScroll -= oneSetWidth;
-          el.scrollLeft = exactScroll;
-        } else if (exactScroll <= oneSetWidth) {
+        }
+        while (exactScroll <= oneSetWidth) {
           exactScroll += oneSetWidth;
-          el.scrollLeft = exactScroll;
         }
       }
       animationId = requestAnimationFrame(step);
