@@ -46,6 +46,7 @@ export const portfolioData = {
         institution: "UCLM Escuela Superior de Informática",
         description: "Graduate studies specializing in advanced software engineering, distributed computing, intelligent systems, and computational research.",
         link: "https://esi.uclm.es",
+        logo: "media/LogoUCLM.jpg",
       },
       {
         period: "2024 — Present",
@@ -53,6 +54,7 @@ export const portfolioData = {
         institution: "VISILAB",
         description: "Computer vision and artificial intelligence research laboratory, developing computational experiments and data pipelines.",
         link: "https://visilab.etsii.uclm.es",
+        logo: "media/VISILAB_Logo.svg",
       },
       {
         period: "2022 — 2026",
@@ -60,6 +62,7 @@ export const portfolioData = {
         institution: "UCLM Escuela Superior de Informática",
         description: "Comprehensive education covering algorithms, data structures, software architecture, operating systems, and computer graphics.",
         link: "https://esi.uclm.es",
+        logo: "media/LogoUCLM.jpg",
       },
     ],
     projects: [
@@ -83,11 +86,28 @@ export const portfolioData = {
         github: "https://github.com/Albertdmo13",
       },
     ],
-        publications: [
+    publications: [
       {
         title: "Real-Time Edge Computing vs. GPU-Accelerated Pipelines for Low-Cost Microscopy Applications",
-        abstract: "Environmental microscopy is crucial for analyzing microorganisms, but traditional optical microscopes are often expensive, bulky, and impractical for field use. AI-driven image recognition, powered by deep learning models like YOLO, enhances microscopy analysis but typically requires high computational resources. To address these challenges, we present two cost-effective pipelines integrating AI with low-cost microscopes and edge computing. Both approaches use the OpenFlexure Microscope and Raspberry Pi devices. The first performs real-time inference with a Raspberry Pi 5 and Hailo-8L accelerator, while the second captures images with a Raspberry Pi 4, transferring them to a GPU-equipped desktop for processing. Using YOLOv8, we evaluate their ability to detect phytoplankton species, including cyanobacteria and diatoms. Results show that edge computing enables accurate, efficient, and low-power microscopy analysis, demonstrating its potential for real-time environmental monitoring in resource-limited settings.",
-        link: "https://www.mdpi.com/2079-9292/14/5/930"
+        logo: "/Portfolio/media/MDPI-logo-black.svg",
+        authors: "Gloria Bueno, Lucia Sanchez-Vargas, Alberto Diaz-Maroto, Jesus Ruiz-Santaquiteria, Maria Blanco, Jesus Salido, Gabriel Cristobal",
+        abstract: "Environmental microscopy is crucial for analyzing microorganisms, but traditional optical microscopes are often expensive, bulky, and impractical for field use. AI-driven image recognition, powered by deep learning models like YOLO, enhances microscopy analysis but typically requires high computational resources. To address these challenges, we present two cost-effective pipelines integrating AI with low-cost microscopes and edge computing. [...]",
+        link: "https://www.mdpi.com/2079-9292/14/5/930",
+        images: [
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g001.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g002.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g003.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g004.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g005.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g006.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g007.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g008.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g009.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g010.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g011.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g012.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g013.png"
+        ]
       }
     ],
     skillCategories: [
@@ -167,6 +187,7 @@ export const portfolioData = {
         institution: "UCLM Escuela Superior de Informática",
         description: "Estudios de posgrado especializados en ingeniería de software avanzada, computación distribuida, sistemas inteligentes e investigación computacional.",
         link: "https://esi.uclm.es",
+        logo: "media/LogoUCLM.jpg",
       },
       {
         period: "2024 — Presente",
@@ -174,6 +195,7 @@ export const portfolioData = {
         institution: "VISILAB",
         description: "Laboratorio de investigación en visión por computador e inteligencia artificial, desarrollando experimentos computacionales y flujos de datos.",
         link: "https://visilab.etsii.uclm.es",
+        logo: "media/VISILAB_Logo.svg",
       },
       {
         period: "2022 — 2026",
@@ -181,6 +203,7 @@ export const portfolioData = {
         institution: "UCLM Escuela Superior de Informática",
         description: "Formación integral en algoritmos, estructuras de datos, arquitectura del software, sistemas operativos y computación gráfica.",
         link: "https://esi.uclm.es",
+        logo: "media/LogoUCLM.jpg",
       },
     ],
     projects: [
@@ -204,18 +227,28 @@ export const portfolioData = {
         github: "https://github.com/Albertdmo13",
       },
     ],
-        publications: [
+    publications: [
       {
         title: "Real-Time Edge Computing vs. GPU-Accelerated Pipelines for Low-Cost Microscopy Applications",
-        abstract: "Environmental microscopy is crucial for analyzing microorganisms, but traditional optical microscopes are often expensive, bulky, and impractical for field use. AI-driven image recognition, powered by deep learning models like YOLO, enhances microscopy analysis but typically requires high computational resources. To address these challenges, we present two cost-effective pipelines integrating AI with low-cost microscopes and edge computing. Both approaches use the OpenFlexure Microscope and Raspberry Pi devices. The first performs real-time inference with a Raspberry Pi 5 and Hailo-8L accelerator, while the second captures images with a Raspberry Pi 4, transferring them to a GPU-equipped desktop for processing. Using YOLOv8, we evaluate their ability to detect phytoplankton species, including cyanobacteria and diatoms. Results show that edge computing enables accurate, efficient, and low-power microscopy analysis, demonstrating its potential for real-time environmental monitoring in resource-limited settings.",
-        link: "https://www.mdpi.com/2079-9292/14/5/930"
-      }
-    ],
-        publications: [
-      {
-        title: "Real-Time Edge Computing vs. GPU-Accelerated Pipelines for Low-Cost Microscopy Applications",
-        abstract: "Environmental microscopy is crucial for analyzing microorganisms, but traditional optical microscopes are often expensive, bulky, and impractical for field use. AI-driven image recognition, powered by deep learning models like YOLO, enhances microscopy analysis but typically requires high computational resources. To address these challenges, we present two cost-effective pipelines integrating AI with low-cost microscopes and edge computing. Both approaches use the OpenFlexure Microscope and Raspberry Pi devices. The first performs real-time inference with a Raspberry Pi 5 and Hailo-8L accelerator, while the second captures images with a Raspberry Pi 4, transferring them to a GPU-equipped desktop for processing. Using YOLOv8, we evaluate their ability to detect phytoplankton species, including cyanobacteria and diatoms. Results show that edge computing enables accurate, efficient, and low-power microscopy analysis, demonstrating its potential for real-time environmental monitoring in resource-limited settings.",
-        link: "https://www.mdpi.com/2079-9292/14/5/930"
+        logo: "/Portfolio/media/MDPI-logo-black.svg",
+        authors: "Gloria Bueno 1,* [ORCID], Lucia Sanchez-Vargas 1, Alberto Diaz-Maroto 1, Jesus Ruiz-Santaquiteria 1 [ORCID], Maria Blanco 1 [ORCID], Jesus Salido 1 [ORCID] and Gabriel Cristobal",
+        abstract: "Environmental microscopy is crucial for analyzing microorganisms, but traditional optical microscopes are often expensive, bulky, and impractical for field use. AI-driven image recognition, powered by deep learning models like YOLO, enhances microscopy analysis but typically requires high computational resources. To address these challenges, we present two cost-effective pipelines integrating AI with low-cost microscopes and edge computing. [...]",
+        link: "https://www.mdpi.com/2079-9292/14/5/930",
+        images: [
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g001.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g002.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g003.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g004.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g005.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g006.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g007.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g008.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g009.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g010.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g011.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g012.png",
+        "/Portfolio/media/Publication1_Figures/electronics-14-00930-g013.png"
+        ]
       }
     ],
     skillCategories: [

@@ -24,7 +24,7 @@ const PATTERNS = {
 };
 const DEFAULT_PATTERN = { 3: 'orbit', 4: 'sweep' };
 const MARKS = {
-  3: { done: [2, 3, 5, 7], error: [0, 2, 4, 6, 8] },
+  3: { done: [0, 1, 2, 3, 5, 6, 7, 8], error: [0, 2, 4, 6, 8] },
   4: { done: [7, 8, 10, 13], error: [0, 3, 5, 6, 9, 10, 12, 15] }
 };
 

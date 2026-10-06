@@ -6,6 +6,7 @@ import TextType from "./TextType";
 import SpecularButton from "./SpecularButton";
 import RubberSegment from "./RubberSegment";
 import BusinessCardHero from "./BusinessCardHero";
+import ImageCarousel from "./ImageCarousel";
 import "./App.css";
 
 // Minimal SVG icons
@@ -114,254 +115,296 @@ export default function App() {
               justifyContent: 'center'
             }}
           >
-            <LatticeLoader 
-              status={loaderStatus} 
-              color="#a78bfa" 
-              doneColor="#10a37f" 
+            <LatticeLoader
+              status={loaderStatus}
+              color="#a78bfa"
+              doneColor="#10a37f"
               label="Loading Portfolio"
             />
           </motion.div>
         )}
       </AnimatePresence>
       <div className="background-layer">
-      <div className="foreground-layer">
-        {/* Navigation Bar */}
-        <header className="nav-header">
-          <div className="nav-content">
-            <a href="#" className="nav-brand">
-              {t.personalInfo.shortName}
-            </a>
-            <nav className="nav-links">
-              <a href="#experience" className="nav-link">{t.nav.experience}</a>
-              <a href="#projects" className="nav-link">{t.nav.projects}</a>
-              <a href="#publications" className="nav-link">{t.nav.publications}</a>
-              <a href="#skills" className="nav-link">{t.nav.skills}</a>
-              <a href="#contact" className="nav-link">{t.nav.contact}</a>
-              <RubberSegment
-                items={[
-                  { value: "en", label: "EN" },
-                  { value: "es", label: "ES" },
-                ]}
-                value={lang}
-                onChange={(val) => setLang(val)}
-                size="sm"
-                radius={9999}
-                inset={2}
-                trackColor="rgba(255, 255, 255, 0.06)"
-                thumbColor="#ffffff"
-                textColor="rgba(255, 255, 255, 0.65)"
-                activeTextColor="#0a0a0f"
-                aria-label="Language selector"
-              />
-              <SpecularButton
-                size="sm"
-                radius={8}
-                tint="rgba(255, 255, 255, 0.05)"
-                blur={10}
-                lineColor="#60a5fa"
-                baseColor="#3a3a44"
-                intensity={1.3}
-                autoAnimate={true}
-                onClick={() => {
-                  window.open(`${base}${t.personalInfo.links.cv.replace(/^\/?(Portfolio\/)?/, "")}`, "_blank");
-                }}
-              >
-                <Icons.Cv />
-                {t.nav.cv}
-              </SpecularButton>
-            </nav>
-          </div>
-        </header>
+        <div className="foreground-layer">
+          {/* Navigation Bar */}
+          <header className="nav-header">
+            <div className="nav-content">
+              <a href="#" className="nav-brand">
+                {t.personalInfo.shortName}
+              </a>
+              <nav className="nav-links">
+                <a href="#experience" className="nav-link">{t.nav.experience}</a>
+                <a href="#projects" className="nav-link">{t.nav.projects}</a>
+                <a href="#publications" className="nav-link">{t.nav.publications}</a>
+                <a href="#skills" className="nav-link">{t.nav.skills}</a>
+                <a href="#contact" className="nav-link">{t.nav.contact}</a>
+                <RubberSegment
+                  items={[
+                    { value: "en", label: "EN" },
+                    { value: "es", label: "ES" },
+                  ]}
+                  value={lang}
+                  onChange={(val) => setLang(val)}
+                  size="sm"
+                  radius={9999}
+                  inset={2}
+                  trackColor="rgba(255, 255, 255, 0.06)"
+                  thumbColor="#ffffff"
+                  textColor="rgba(255, 255, 255, 0.65)"
+                  activeTextColor="#0a0a0f"
+                  aria-label="Language selector"
+                />
+                <SpecularButton
+                  size="sm"
+                  radius={8}
+                  tint="rgba(255, 255, 255, 0.05)"
+                  blur={10}
+                  lineColor="#60a5fa"
+                  baseColor="#3a3a44"
+                  intensity={1.3}
+                  autoAnimate={true}
+                  onClick={() => {
+                    window.open(`${base}${t.personalInfo.links.cv.replace(/^\/?(Portfolio\/)?/, "")}`, "_blank");
+                  }}
+                >
+                  <Icons.Cv />
+                  {t.nav.cv}
+                </SpecularButton>
+              </nav>
+            </div>
+          </header>
 
-        {/* Main Content Area */}
-        <main className="main-content animate-in">
-          {/* Business Card Hero Section */}
-          <BusinessCardHero
-            t={t}
-            lang={lang}
-            Icons={Icons}
-            onContactClick={() => {
-              document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
-            }}
-          />
+          {/* Main Content Area */}
+          <main className="main-content animate-in">
+            {/* Business Card Hero Section */}
+            <BusinessCardHero
+              t={t}
+              lang={lang}
+              Icons={Icons}
+              onContactClick={() => {
+                document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+              }}
+            />
 
-          {/* Trajectory / Experience Section */}
-          <motion.section id="experience" className="section" {...sectionAnimation}>
-            <h2 className="section-label">{t.sections.trajectory}</h2>
-            <div className="timeline-container">
-              <div className="timeline-track" />
-              <div className="timeline-items">
-                {t.trajectory.map((item, idx) => (
-                  <div key={idx} className="timeline-item">
-                    <motion.div 
-                      className="timeline-marker"
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true, margin: "-50px" }}
-                      transition={{ duration: 0.3, delay: idx * 0.1 }}
-                    >
-                      <span className="timeline-dot" />
-                      <span className="timeline-connector" />
-                    </motion.div>
-                    <motion.div 
-                      className="timeline-card"
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true, margin: "-50px" }}
-                      transition={{ delay: 0.1 + idx * 0.1, duration: 0.3 }}
-                    >
-                      <div className="timeline-header">
-                        <h3 className="timeline-role">{item.role}</h3>
-                        <span className="timeline-period">{item.period}</span>
-                      </div>
-                      {item.institution && (
-                        <p className="timeline-institution">
-                          {item.link ? (
-                            <a href={item.link} target="_blank" rel="noreferrer" className="timeline-link">
-                              {item.institution}
-                            </a>
-                          ) : (
-                            item.institution
+            {/* Trajectory / Experience Section */}
+            <motion.section id="experience" className="section" {...sectionAnimation}>
+              <h2 className="section-label">{t.sections.trajectory}</h2>
+              <div className="timeline-container">
+                <div className="timeline-track" />
+                <div className="timeline-items">
+                  {t.trajectory.map((item, idx) => (
+                    <div key={idx} className="timeline-item">
+                      <motion.div
+                        className="timeline-marker"
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true, margin: "-50px" }}
+                        transition={{ duration: 0.3, delay: idx * 0.1 }}
+                      >
+                        <span className="timeline-dot" />
+                        <span className="timeline-connector" />
+                      </motion.div>
+                      <motion.div
+                        className="timeline-card"
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true, margin: "-50px" }}
+                        transition={{ delay: 0.1 + idx * 0.1, duration: 0.3 }}
+                      >
+                        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                          <div style={{ flexGrow: 1 }}>
+                            <div className="timeline-header">
+                              <h3 className="timeline-role">{item.role}</h3>
+                              <span className="timeline-period">{item.period}</span>
+                            </div>
+                            {item.institution && (
+                              <p className="timeline-institution">
+                                {item.link ? (
+                                  <a href={item.link} target="_blank" rel="noreferrer" className="timeline-link">
+                                    {item.institution}
+                                  </a>
+                                ) : (
+                                  item.institution
+                                )}
+                              </p>
+                            )}
+                            {item.description && <p className="timeline-desc">{item.description}</p>}
+                          </div>
+                          {item.logo && (
+                            item.link ? (
+                              <a href={item.link} target="_blank" rel="noreferrer" style={{ display: 'flex', transition: 'transform 0.2s ease', cursor: 'pointer' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                                <img 
+                                  src={`${base}${item.logo.replace(/^\/?(Portfolio\/)?/, "")}`} 
+                                  alt={`${item.institution} logo`}
+                                  style={{ width: '72px', height: '72px', objectFit: 'contain', borderRadius: '8px', flexShrink: 0, backgroundColor: 'rgba(255,255,255,0.05)', padding: '6px' }}
+                                />
+                              </a>
+                            ) : (
+                              <img 
+                                src={`${base}${item.logo.replace(/^\/?(Portfolio\/)?/, "")}`} 
+                                alt={`${item.institution} logo`}
+                                style={{ width: '72px', height: '72px', objectFit: 'contain', borderRadius: '8px', flexShrink: 0, backgroundColor: 'rgba(255,255,255,0.05)', padding: '6px' }}
+                              />
+                            )
                           )}
-                        </p>
-                      )}
-                      {item.description && <p className="timeline-desc">{item.description}</p>}
-                    </motion.div>
-                  </div>
+                        </div>
+                      </motion.div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.section>
+
+            {/* Projects Section */}
+            <motion.section id="projects" className="section" {...sectionAnimation}>
+              <h2 className="section-label">{t.sections.projects}</h2>
+              <div className="projects-grid">
+                {t.projects.map((proj) => (
+                  <article key={proj.id} className="project-card">
+                    {proj.video && (
+                      <div className="project-media">
+                        <video
+                          src={`${base}${proj.video.replace(/^\/?(Portfolio\/)?/, "")}`}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="project-video"
+                        />
+                      </div>
+                    )}
+                    <div className="project-body">
+                      <div className="project-top">
+                        <div>
+                          <h3 className="project-title">{proj.title}</h3>
+                          <p className="project-subtitle">{proj.subtitle}</p>
+                        </div>
+                      </div>
+                      <p className="project-desc">{proj.description}</p>
+                      <div className="project-tags">
+                        {proj.tags.map((tag, i) => (
+                          <span key={i} className="project-tag">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="project-links">
+                        {proj.link && (
+                          <a href={proj.link} target="_blank" rel="noreferrer" className="project-link-btn">
+                            <Icons.External /> Live App
+                          </a>
+                        )}
+                        {proj.github && (
+                          <a href={proj.github} target="_blank" rel="noreferrer" className="project-link-btn">
+                            <Icons.Github /> Source
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </article>
                 ))}
               </div>
-            </div>
-          </motion.section>
+            </motion.section>
 
-          {/* Projects Section */}
-          <motion.section id="projects" className="section" {...sectionAnimation}>
-            <h2 className="section-label">{t.sections.projects}</h2>
-            <div className="projects-grid">
-              {t.projects.map((proj) => (
-                <article key={proj.id} className="project-card">
-                  {proj.video && (
-                    <div className="project-media">
-                      <video
-                        src={`${base}${proj.video.replace(/^\/?(Portfolio\/)?/, "")}`}
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        className="project-video"
-                      />
-                    </div>
-                  )}
-                  <div className="project-body">
-                    <div className="project-top">
-                      <div>
-                        <h3 className="project-title">{proj.title}</h3>
-                        <p className="project-subtitle">{proj.subtitle}</p>
+            {/* Publications Section */}
+            <motion.section id="publications" className="section" {...sectionAnimation}>
+              <h2 className="section-label">{t.sections.publications || "Publications"}</h2>
+              <div className="publications-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {t.publications && t.publications.map((pub, idx) => (
+                  <article key={idx} className="project-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                      <div style={{ flexGrow: 1 }}>
+                        <h3 className="project-title" style={{ margin: 0, color: 'var(--text-main)' }}>{pub.title}</h3>
+                        {pub.authors && (
+                          <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.55)', fontStyle: 'italic' }}>
+                            {pub.authors}
+                          </p>
+                        )}
                       </div>
+                      {pub.logo && (
+                        <img 
+                          src={`${base}${pub.logo.replace(/^\/?(Portfolio\/)?/, "")}`} 
+                          alt="Publication logo" 
+                          style={{ width: '64px', height: 'auto', flexShrink: 0, filter: 'invert(1)', opacity: 0.8 }} 
+                        />
+                      )}
                     </div>
-                    <p className="project-desc">{proj.description}</p>
-                    <div className="project-tags">
-                      {proj.tags.map((tag, i) => (
-                        <span key={i} className="project-tag">
-                          {tag}
+                    <p className="project-desc" style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6' }}>
+                      <strong>Abstract:</strong> {pub.abstract}
+                    </p>
+                    {pub.images && pub.images.length > 0 && (
+                      <div style={{ marginTop: '16px' }}>
+                        <ImageCarousel images={pub.images} base={base} />
+                      </div>
+                    )}
+                    <div>
+                      <a href={pub.link} target="_blank" rel="noreferrer" className="project-link-btn" style={{ display: 'inline-flex', width: 'max-content' }}>
+                        <Icons.External /> View Paper
+                      </a>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </motion.section>
+            {/* Skills Section */}
+            <motion.section id="skills" className="section" {...sectionAnimation}>
+              <h2 className="section-label">{t.sections.skills}</h2>
+              <div className="skills-grid">
+                {t.skillCategories.map((cat, idx) => (
+                  <div key={idx} className="skill-category-card">
+                    <h3 className="skill-category-name">{cat.name}</h3>
+                    <div className="skill-pill-container">
+                      {cat.skills.map((skill, i) => (
+                        <span key={i} className="skill-pill">
+                          {skill}
                         </span>
                       ))}
                     </div>
-                    <div className="project-links">
-                      {proj.link && (
-                        <a href={proj.link} target="_blank" rel="noreferrer" className="project-link-btn">
-                          <Icons.External /> Live App
-                        </a>
-                      )}
-                      {proj.github && (
-                        <a href={proj.github} target="_blank" rel="noreferrer" className="project-link-btn">
-                          <Icons.Github /> Source
-                        </a>
-                      )}
-                    </div>
                   </div>
-                </article>
-              ))}
-            </div>
-          </motion.section>
-
-          {/* Publications Section */}
-          <motion.section id="publications" className="section" {...sectionAnimation}>
-            <h2 className="section-label">{t.sections.publications || "Publications"}</h2>
-            <div className="publications-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {t.publications && t.publications.map((pub, idx) => (
-                <article key={idx} className="project-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <h3 className="project-title" style={{ margin: 0, color: 'var(--text-main)' }}>{pub.title}</h3>
-                  <p className="project-desc" style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6' }}>
-                    <strong>Abstract:</strong> {pub.abstract}
-                  </p>
-                  <div>
-                    <a href={pub.link} target="_blank" rel="noreferrer" className="project-link-btn" style={{ display: 'inline-flex', width: 'max-content' }}>
-                      <Icons.External /> View Paper
-                    </a>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </motion.section>
-          {/* Skills Section */}
-          <motion.section id="skills" className="section" {...sectionAnimation}>
-            <h2 className="section-label">{t.sections.skills}</h2>
-            <div className="skills-grid">
-              {t.skillCategories.map((cat, idx) => (
-                <div key={idx} className="skill-category-card">
-                  <h3 className="skill-category-name">{cat.name}</h3>
-                  <div className="skill-pill-container">
-                    {cat.skills.map((skill, i) => (
-                      <span key={i} className="skill-pill">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.section>
-
-          {/* Contact Section */}
-          <motion.section id="contact" className="section" {...sectionAnimation}>
-            <h2 className="section-label">{t.sections.contact}</h2>
-            <div className="contact-card">
-              <h3 className="contact-card-title">{t.contact.title}</h3>
-              <p className="contact-card-desc">{t.contact.desc}</p>
-              <div className="contact-actions">
-                <button onClick={handleCopyEmail} className="email-copy-btn">
-                  {copied ? <Icons.Check /> : <Icons.Copy />}
-                  {copied ? t.contact.copiedBtn : t.personalInfo.email}
-                </button>
-                <SpecularButton
-                  size="md"
-                  radius={10}
-                  tint="rgba(255, 255, 255, 0.06)"
-                  blur={14}
-                  lineColor="#60a5fa"
-                  baseColor="#40404c"
-                  intensity={1.5}
-                  autoAnimate={true}
-                  onClick={() => {
-                    window.location.href = t.personalInfo.links.email;
-                  }}
-                >
-                  <Icons.Mail />
-                  {t.contact.clientBtn}
-                </SpecularButton>
+                ))}
               </div>
-            </div>
-          </motion.section>
-        </main>
+            </motion.section>
 
-        {/* Footer */}
-        <footer className="footer">
-          <p className="footer-text">
-            © {new Date().getFullYear()} {t.personalInfo.name}. {t.footer.text}
-          </p>
-        </footer>
+            {/* Contact Section */}
+            <motion.section id="contact" className="section" {...sectionAnimation}>
+              <h2 className="section-label">{t.sections.contact}</h2>
+              <div className="contact-card">
+                <h3 className="contact-card-title">{t.contact.title}</h3>
+                <p className="contact-card-desc">{t.contact.desc}</p>
+                <div className="contact-actions">
+                  <button onClick={handleCopyEmail} className="email-copy-btn">
+                    {copied ? <Icons.Check /> : <Icons.Copy />}
+                    {copied ? t.contact.copiedBtn : t.personalInfo.email}
+                  </button>
+                  <SpecularButton
+                    size="md"
+                    radius={10}
+                    tint="rgba(255, 255, 255, 0.06)"
+                    blur={14}
+                    lineColor="#60a5fa"
+                    baseColor="#40404c"
+                    intensity={1.5}
+                    autoAnimate={true}
+                    onClick={() => {
+                      window.location.href = t.personalInfo.links.email;
+                    }}
+                  >
+                    <Icons.Mail />
+                    {t.contact.clientBtn}
+                  </SpecularButton>
+                </div>
+              </div>
+            </motion.section>
+          </main>
+
+          {/* Footer */}
+          <footer className="footer">
+            <p className="footer-text">
+              © {new Date().getFullYear()} {t.personalInfo.name}. {t.footer.text}
+            </p>
+          </footer>
+        </div>
       </div>
-    </div>
     </>
   );
 }

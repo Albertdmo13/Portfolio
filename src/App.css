@@ -85,7 +85,7 @@
   padding: 6px 14px;
   font-size: 0.84rem;
   font-weight: 500;
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--glass-btn);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -124,6 +124,7 @@
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
   }
@@ -195,30 +196,34 @@
 }
 
 /* Specular Crystal Buttons */
-.btn-primary, .nav-cv-btn, .email-copy-btn {
+.btn-primary,
+.nav-cv-btn,
+.email-copy-btn {
   position: relative;
   overflow: hidden;
 }
 
-.btn-primary::after, .nav-cv-btn::after, .email-copy-btn::after {
+.btn-primary::after,
+.nav-cv-btn::after,
+.email-copy-btn::after {
   content: "";
   position: absolute;
   top: -50%;
   left: -130%;
   width: 60%;
   height: 200%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.18) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.18) 50%,
+      transparent 100%);
   transform: rotate(25deg);
   pointer-events: none;
   transition: none;
 }
 
-.btn-primary:hover::after, .nav-cv-btn:hover::after, .email-copy-btn:hover::after {
+.btn-primary:hover::after,
+.nav-cv-btn:hover::after,
+.email-copy-btn:hover::after {
   left: 150%;
   transition: left 0.75s ease-in-out;
 }
@@ -228,7 +233,7 @@
   align-items: center;
   gap: 8px;
   padding: 9px 18px;
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--glass-btn);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -256,7 +261,7 @@
   justify-content: center;
   width: 38px;
   height: 38px;
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--glass-btn);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -306,12 +311,11 @@
   bottom: 28px;
   width: 2px;
   transform: translateX(-50%);
-  background: linear-gradient(
-    to bottom,
-    rgba(96, 165, 250, 0.85) 0%,
-    rgba(255, 255, 255, 0.25) 50%,
-    rgba(255, 255, 255, 0.08) 100%
-  );
+  background: linear-gradient(to bottom,
+      rgba(96, 165, 250, 0.85) 0%,
+      rgba(96, 165, 250, 0.85) 42%,
+      rgba(255, 255, 255, 0.25) 82%,
+      rgba(255, 255, 255, 0.00) 100%);
   z-index: 1;
 }
 
@@ -353,9 +357,17 @@
   z-index: 3;
 }
 
-.timeline-item:first-child .timeline-dot {
+.timeline-item:nth-child(-n+2) .timeline-dot {
   border-color: #60a5fa;
-  background: #1c152b;
+  background: #0d0d0d;
+}
+
+.timeline-item:nth-child(-n+2) .timeline-card {
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
+.timeline-item:nth-child(-n+2) .timeline-connector {
+  background: rgba(96, 165, 250, 0.4);
 }
 
 /* Connector Line from Bullet Point (X=20px) to Card (X=48px) */
@@ -374,7 +386,7 @@
 .timeline-card {
   flex-grow: 1;
   padding: 20px 24px;
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--glass-card);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -392,6 +404,10 @@
   border-color: var(--glass-border-hover);
   box-shadow: var(--glass-shadow-hover);
   transform: translateX(4px);
+}
+
+.timeline-item:nth-child(-n+2):hover .timeline-card {
+  border-color: rgba(96, 165, 250, 0.6);
 }
 
 .timeline-item:hover .timeline-dot {
@@ -465,7 +481,7 @@
 .project-card {
   display: flex;
   flex-direction: column;
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--glass-card);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -547,7 +563,7 @@
 .project-tag {
   font-size: 0.75rem;
   padding: 3px 9px;
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--glass-pill);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -599,7 +615,7 @@
 
 .skill-category-card {
   padding: 18px 20px;
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--glass-card);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -636,7 +652,7 @@
 .skill-pill {
   font-size: 0.8rem;
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--glass-pill);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -658,7 +674,7 @@
 /* Crystal Contact Card */
 .contact-card {
   padding: 32px;
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--glass-card);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -697,7 +713,7 @@
   align-items: center;
   gap: 8px;
   padding: 9px 16px;
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--glass-pill);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -745,38 +761,48 @@
   .hero-title {
     font-size: 1.95rem;
   }
+
   .nav-header {
     padding: 14px 20px;
   }
+
   .nav-links {
     gap: 12px;
   }
+
   .nav-link {
     font-size: 0.8rem;
   }
+
   .main-content {
     padding: 36px 20px 64px;
     gap: 48px;
   }
+
   .timeline-item {
     padding-left: 36px;
   }
+
   .timeline-track {
     left: 14px;
     top: 24px;
     bottom: 24px;
   }
+
   .timeline-marker {
     left: 14px;
     top: 24px;
   }
+
   .timeline-connector {
     width: 22px;
   }
+
   .timeline-dot {
     width: 12px;
     height: 12px;
   }
+
   .timeline-card {
     padding: 16px 18px;
   }
@@ -789,7 +815,7 @@
     -webkit-backdrop-filter: brightness(1) saturate(130%) !important;
     box-shadow: none !important;
   }
-  
+
   .nav-header {
     background-color: transparent !important;
     backdrop-filter: brightness(1) saturate(130%) !important;
@@ -813,9 +839,9 @@
   }
 
   /* Make all buttons bigger for touch on mobile */
-  .btn-primary, 
-  .nav-cv-btn, 
-  .email-copy-btn, 
+  .btn-primary,
+  .nav-cv-btn,
+  .email-copy-btn,
   .project-link-btn {
     padding: 14px 24px !important;
     font-size: 1.05rem !important;
@@ -829,10 +855,9 @@
     display: flex;
     align-items: center;
   }
-  
+
   .rubber-segment {
     transform: scale(1.15);
     margin: 4px 0;
   }
 }
-
