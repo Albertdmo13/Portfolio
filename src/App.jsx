@@ -7,6 +7,7 @@ import SpecularButton from "./SpecularButton";
 import RubberSegment from "./RubberSegment";
 import BusinessCardHero from "./BusinessCardHero";
 import ImageCarousel from "./ImageCarousel";
+import RulerScroller from "./RulerScroller";
 import "./App.css";
 
 // Minimal SVG icons
@@ -156,6 +157,7 @@ export default function App() {
         )}
       </AnimatePresence>
       <div className="background-layer">
+        <RulerScroller label={t.nav?.projects || "HIGHLIGHTS"} />
         <div className="foreground-layer">
           {/* Navigation Bar */}
           <header className="nav-header">
@@ -189,7 +191,7 @@ export default function App() {
                   size="sm"
                   radius={8}
                   tint="rgba(255, 255, 255, 0.05)"
-                  blur={10}
+                  blur={0}
                   lineColor="#60a5fa"
                   baseColor="#3a3a44"
                   intensity={1.3}
@@ -419,7 +421,7 @@ export default function App() {
                     size="md"
                     radius={10}
                     tint="rgba(255, 255, 255, 0.06)"
-                    blur={14}
+                    blur={0}
                     lineColor="#60a5fa"
                     baseColor="#40404c"
                     intensity={1.5}

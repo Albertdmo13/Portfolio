@@ -1,0 +1,86 @@
+.ruler-scroller {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  z-index: 100;
+  font-family: "Space Grotesk", sans-serif;
+  pointer-events: none; /* Let clicks pass through if needed */
+}
+
+.ruler-vertical-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  color: #555555;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  margin-right: 24px;
+  user-select: none;
+}
+
+.ruler-ticks {
+  position: relative;
+  height: 65vh;
+  min-height: 300px;
+  width: 60px;
+}
+
+.ruler-tick-container {
+  position: absolute;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  transform: translateY(-50%);
+}
+
+.active-indicator {
+  z-index: 10;
+}
+
+.ruler-label {
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  color: #555555;
+  position: absolute;
+  right: 36px;
+  line-height: 1;
+}
+
+.active-label {
+  color: #60a5fa;
+  font-weight: 700;
+  background-color: #080808; /* occlude static numbers */
+  padding: 4px 0;
+}
+
+.ruler-line {
+  height: 1px;
+  background-color: #333333;
+  position: absolute;
+  right: 0;
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+.ruler-line.major {
+  width: 24px;
+}
+
+.ruler-line.minor {
+  width: 12px;
+}
+
+.ruler-line.active-line {
+  background-color: #60a5fa;
+  width: 36px; /* slightly longer for the active line */
+}
+
+@media (max-width: 1200px) {
+  .ruler-scroller {
+    display: none; /* Hide on smaller screens to prevent overlap */
+  }
+}

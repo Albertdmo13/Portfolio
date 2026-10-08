@@ -63,7 +63,7 @@ export default function BusinessCardHero({ t, lang, onContactClick, Icons }) {
                 size="md"
                 radius={10}
                 tint="rgba(255, 255, 255, 0.08)"
-                blur={14}
+                blur={0}
                 lineColor="#ffffff"
                 baseColor="#3e3e4a"
                 intensity={1.5}

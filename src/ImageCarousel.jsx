@@ -118,7 +118,7 @@ export default function ImageCarousel({ images, base }) {
             style={{ 
               height: '180px', 
               width: 'auto', 
-              borderRadius: '8px', 
+              borderRadius: 0, 
               flexShrink: 0, 
               backgroundColor: 'rgba(255,255,255,0.02)', 
               objectFit: 'contain', 
@@ -167,8 +167,8 @@ export default function ImageCarousel({ images, base }) {
                   maxWidth: '100%',
                   maxHeight: '100%',
                   objectFit: 'contain',
-                  borderRadius: '8px',
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+                  borderRadius: 0,
+                  boxShadow: "none",
                   cursor: 'default'
                 }}
               />
@@ -183,7 +183,7 @@ export default function ImageCarousel({ images, base }) {
                   color: 'white',
                   width: '40px',
                   height: '40px',
-                  borderRadius: '50%',
+                  borderRadius: 0,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',

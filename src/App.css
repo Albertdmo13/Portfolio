@@ -21,8 +21,8 @@
   max-width: 1080px;
   min-height: 100vh;
   background-color: var(--glass-panel);
-  backdrop-filter: blur(4px) brightness(1) saturate(130%);
-  -webkit-backdrop-filter: blur(4px) brightness(1) saturate(130%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-left: 1px solid var(--glass-border);
   border-right: 1px solid var(--glass-border);
   display: flex;
@@ -37,10 +37,10 @@
   top: 0;
   z-index: 50;
   background-color: rgba(10, 10, 10, 0.65);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-bottom: 1px solid var(--glass-border);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: none;
   padding: 16px 36px;
 }
 
@@ -85,24 +85,24 @@
   padding: 6px 14px;
   font-size: 0.84rem;
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--glass-btn);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--glass-border);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
   color: var(--text-main);
   transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .nav-cv-btn:hover {
   background: var(--glass-btn-hover);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-color: var(--glass-border-hover);
-  box-shadow: var(--glass-shadow-hover);
+  box-shadow: none;
 }
 
 /* Main Content Area */
@@ -143,14 +143,14 @@
   gap: 8px;
   align-self: flex-start;
   padding: 5px 12px;
-  border-radius: 9999px;
+  border-radius: 0;
   background: var(--glass-card);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--glass-border);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
   font-size: 0.78rem;
   color: var(--text-secondary);
 }
@@ -158,7 +158,7 @@
 .status-dot {
   width: 7px;
   height: 7px;
-  border-radius: 50%;
+  border-radius: 0;
   background-color: var(--accent-dot);
 }
 
@@ -233,14 +233,14 @@
   align-items: center;
   gap: 8px;
   padding: 9px 18px;
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--glass-btn);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--glass-border);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
   color: var(--text-main);
   font-size: 0.88rem;
   font-weight: 500;
@@ -249,10 +249,10 @@
 
 .btn-primary:hover {
   background: var(--glass-btn-hover);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-color: var(--glass-border-hover);
-  box-shadow: var(--glass-shadow-hover);
+  box-shadow: none;
 }
 
 .btn-icon {
@@ -261,24 +261,24 @@
   justify-content: center;
   width: 38px;
   height: 38px;
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--glass-btn);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--glass-border);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
   color: var(--text-secondary);
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .btn-icon:hover {
   background: var(--glass-btn-hover);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-color: var(--glass-border-hover);
-  box-shadow: var(--glass-shadow-hover);
+  box-shadow: none;
   color: var(--text-main);
 }
 
@@ -350,7 +350,7 @@
   transform: translate(-50%, -50%);
   width: 14px;
   height: 14px;
-  border-radius: 50%;
+  border-radius: 0;
   background: #0d0d0d;
   border: 2px solid rgba(255, 255, 255, 0.4);
   transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
@@ -386,23 +386,23 @@
 .timeline-card {
   flex-grow: 1;
   padding: 20px 24px;
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--glass-card);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  box-shadow: none;
   transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 .timeline-item:hover .timeline-card {
   background: var(--glass-card-hover);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-color: var(--glass-border-hover);
-  box-shadow: var(--glass-shadow-hover);
+  box-shadow: none;
   transform: translateX(4px);
 }
 
@@ -481,24 +481,24 @@
 .project-card {
   display: flex;
   flex-direction: column;
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--glass-card);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  box-shadow: none;
   overflow: hidden;
   transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 .project-card:hover {
   background: var(--glass-card-hover);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-color: var(--glass-border-hover);
-  box-shadow: var(--glass-shadow-hover);
+  box-shadow: none;
 }
 
 .project-media {
@@ -563,13 +563,13 @@
 .project-tag {
   font-size: 0.9rem;
   padding: 6px 14px;
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--glass-pill);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--glass-border);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   color: var(--text-muted);
 }
 
@@ -615,23 +615,23 @@
 
 .skill-category-card {
   padding: 18px 20px;
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--glass-card);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  box-shadow: none;
   transition: border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 .skill-category-card:hover {
   background: var(--glass-card-hover);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-color: var(--glass-border-hover);
-  box-shadow: var(--glass-shadow-hover);
+  box-shadow: none;
 }
 
 .skill-category-name {
@@ -652,21 +652,21 @@
 .skill-pill {
   font-size: 0.95rem;
   padding: 8px 16px;
-  border-radius: 10px;
+  border-radius: 0;
   background: var(--glass-pill);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--glass-border);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   color: var(--text-secondary);
   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .skill-pill:hover {
   background: var(--glass-card-hover);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-color: var(--glass-border-hover);
   color: var(--text-main);
 }
@@ -674,14 +674,14 @@
 /* Crystal Contact Card */
 .contact-card {
   padding: 32px;
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--glass-card);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -713,14 +713,14 @@
   align-items: center;
   gap: 8px;
   padding: 9px 16px;
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--glass-pill);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--glass-border);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
   font-size: 0.86rem;
   color: var(--text-main);
   transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
@@ -728,10 +728,10 @@
 
 .email-copy-btn:hover {
   background: var(--glass-card-hover);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-color: var(--glass-border-hover);
-  box-shadow: var(--glass-shadow-hover);
+  box-shadow: none;
 }
 
 /* Crystal Footer */
@@ -740,8 +740,8 @@
   padding: 32px 36px;
   text-align: center;
   background: rgba(10, 10, 10, 0.65);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .footer-text {
@@ -834,7 +834,7 @@
   width: 72px;
   height: 72px;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: 0;
   flex-shrink: 0;
   background-color: rgba(255, 255, 255, 0.05);
   padding: 6px;
@@ -850,17 +850,17 @@
 @media (max-width: 768px) {
   .foreground-layer {
     background-color: transparent !important;
-    backdrop-filter: brightness(1) saturate(130%) !important;
-    -webkit-backdrop-filter: brightness(1) saturate(130%) !important;
-    box-shadow: none !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
   }
 
   .nav-header {
     background-color: transparent !important;
-    backdrop-filter: brightness(1) saturate(130%) !important;
-    -webkit-backdrop-filter: brightness(1) saturate(130%) !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     border-bottom: none !important;
-    box-shadow: none !important;
+    box-shadow: none;
     padding: 12px !important;
   }
 
