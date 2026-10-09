@@ -10,16 +10,7 @@
   pointer-events: none; /* Let clicks pass through if needed */
 }
 
-.ruler-vertical-text {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  color: #555555;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.3em;
-  margin-right: 24px;
-  user-select: none;
-}
+
 
 .ruler-ticks {
   position: relative;
@@ -52,7 +43,7 @@
 }
 
 .active-label {
-  color: #60a5fa;
+  color: var(--accent-color);
   font-weight: 700;
   background-color: #080808; /* occlude static numbers */
   padding: 4px 0;
@@ -66,6 +57,25 @@
   transition: width 0.2s ease, background-color 0.2s ease;
 }
 
+.ruler-section-marker {
+  position: absolute;
+  right: 60px;
+  transform: translateY(-50%);
+  font-size: 10px;
+  color: #555555;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  user-select: none;
+  font-family: "Space Grotesk", sans-serif;
+  z-index: 15;
+}
+
+.ruler-section-marker.active {
+  color: var(--accent-color);
+}
+
 .ruler-line.major {
   width: 24px;
 }
@@ -75,7 +85,7 @@
 }
 
 .ruler-line.active-line {
-  background-color: #60a5fa;
+  background-color: var(--accent-color);
   width: 36px; /* slightly longer for the active line */
 }
 

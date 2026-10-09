@@ -1,18 +1,10 @@
-import { useState } from "react";
 import TextType from "./TextType";
 import SpecularButton from "./SpecularButton";
+import CopyEmailButton from "./CopyEmailButton";
 import "./BusinessCardHero.css";
 
 export default function BusinessCardHero({ t, lang, onContactClick, Icons }) {
-  const { Mail, Check, Copy, Github, Linkedin } = Icons;
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyEmail = (e) => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(t.personalInfo.email);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const { Mail, Github, Linkedin } = Icons;
 
   return (
     <section className="hero-section">
@@ -63,7 +55,7 @@ export default function BusinessCardHero({ t, lang, onContactClick, Icons }) {
                 size="md"
                 radius={10}
                 tint="rgba(255, 255, 255, 0.08)"
-                blur={0}
+                blur={14}
                 lineColor="#ffffff"
                 baseColor="#3e3e4a"
                 intensity={1.5}
@@ -76,15 +68,11 @@ export default function BusinessCardHero({ t, lang, onContactClick, Icons }) {
                 {t.hero.getInTouch}
               </SpecularButton>
 
-              <button
-                type="button"
-                onClick={handleCopyEmail}
-                className="card-email-pill"
-                title="Copy email to clipboard"
-              >
-                {copied ? <Check /> : <Copy />}
-                <span>{copied ? (t.contact?.copiedBtn || "Copied!") : t.personalInfo.email}</span>
-              </button>
+              <CopyEmailButton 
+                email={t.personalInfo.email} 
+                copiedText={t.contact?.copiedBtn || "Copied!"} 
+                Icons={Icons} 
+              />
             </div>
 
             <div className="card-actions-right">

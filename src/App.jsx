@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import Lenis from 'lenis';
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import { portfolioData } from "./data";
 import LatticeLoader from "./LatticeLoader";
 import TextType from "./TextType";
@@ -8,7 +9,78 @@ import RubberSegment from "./RubberSegment";
 import BusinessCardHero from "./BusinessCardHero";
 import ImageCarousel from "./ImageCarousel";
 import RulerScroller from "./RulerScroller";
+import CopyEmailButton from "./CopyEmailButton";
 import "./App.css";
+
+function AnimatedCard({ children, className, style, delay = 0 }) {
+  const [isEntered, setIsEntered] = useState(false);
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, amount: 0.05 });
+
+  return (
+    <motion.article
+      ref={ref}
+      className={className}
+      style={style}
+      initial={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
+      animate={inView ? { opacity: 1, scale: 1, filter: "blur(0px)" } : {}}
+      transition={
+        isEntered 
+        ? { duration: 0.05, ease: "easeOut" } 
+        : { duration: 0.6, delay: delay, ease: "easeOut" }
+      }
+      onAnimationComplete={() => setIsEntered(true)}
+      whileHover={{ scale: 1.02, transition: { duration: 0.05, ease: "easeOut" } }}
+    >
+      {children}
+    </motion.article>
+  );
+}
+
+function SectionDivider({ label }) {
+  const [topOffset, setTopOffset] = useState(-40);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const updateOffset = () => {
+      if (!ref.current) return;
+      const absoluteY = window.scrollY + ref.current.getBoundingClientRect().top;
+      
+      const targetY = absoluteY - 40;
+      // Snap to the 20px background dot grid (dots are at 10, 30, 50...)
+      const snappedY = Math.round((targetY - 10) / 20) * 20 + 10;
+      
+      setTopOffset(snappedY - absoluteY);
+    };
+
+    updateOffset();
+    const timeout = setTimeout(updateOffset, 800);
+    window.addEventListener('resize', updateOffset);
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener('resize', updateOffset);
+    };
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, pointerEvents: 'none', zIndex: 10 }}>
+      <div 
+        className="section-divider-line"
+        style={{ top: `${topOffset}px` }}
+      />
+      <h2 
+        className="section-label"
+        style={{ 
+          position: 'sticky',
+          top: '100px', // distance from top of viewport
+          marginTop: `${topOffset + 16}px` // starting offset
+        }}
+      >
+        {label}
+      </h2>
+    </div>
+  );
+}
 
 // Minimal SVG icons
 const Icons = {
@@ -96,10 +168,27 @@ const getTechIconUrl = (techName) => {
 
 export default function App() {
   const [lang, setLang] = useState("en");
-  const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loaderStatus, setLoaderStatus] = useState("working");
+  const [accentColor, setAccentColor] = useState("#60a5fa");
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const base = import.meta.env.BASE_URL;
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    
+    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleResize);
+    handleScroll();
+    handleResize();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     const timer1 = setTimeout(() => {
@@ -114,6 +203,47 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const rootStyle = getComputedStyle(document.documentElement);
+    const color = rootStyle.getPropertyValue('--accent-color').trim();
+    if (color) setAccentColor(color);
+  }, []);
+
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+    });
+    window.lenis = lenis;
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    const handleAnchorClick = (e) => {
+      const target = e.target.closest('a[href^="#"]');
+      if (target) {
+        e.preventDefault();
+        const id = target.getAttribute('href');
+        if (id && id !== '#') {
+          lenis.scrollTo(id);
+        }
+      }
+    };
+    document.addEventListener('click', handleAnchorClick);
+
+    return () => {
+      document.removeEventListener('click', handleAnchorClick);
+      lenis.destroy();
+      window.lenis = null;
+    };
+  }, []);
+
   const t = portfolioData[lang] || portfolioData.en;
 
   const sectionAnimation = {
@@ -121,12 +251,6 @@ export default function App() {
     whileInView: { opacity: 1 },
     viewport: { once: true, margin: "-50px" },
     transition: { duration: 0.5 }
-  };
-
-  const handleCopyEmail = () => {
-    navigator.clipboard.writeText(t.personalInfo.email);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -153,7 +277,7 @@ export default function App() {
           >
             <LatticeLoader
               status={loaderStatus}
-              color="#488ee9ff"
+              color="var(--accent-color)"
               doneColor="#10a37f"
               label="Loading Portfolio"
             />
@@ -164,17 +288,19 @@ export default function App() {
         <RulerScroller label={t.nav?.projects || "HIGHLIGHTS"} />
         <div className="foreground-layer">
           {/* Navigation Bar */}
-          <header className="nav-header">
+          <header className={`nav-header ${isMobile && isScrolled ? 'nav-compressed' : ''}`}>
             <div className="nav-content">
               <a href="#" className="nav-brand">
                 {t.personalInfo.shortName}
               </a>
-              <nav className="nav-links">
+              <div className="nav-links-inner">
                 <a href="#experience" className="nav-link">{t.nav.experience}</a>
                 <a href="#projects" className="nav-link">{t.nav.projects}</a>
                 <a href="#publications" className="nav-link">{t.nav.publications}</a>
                 <a href="#skills" className="nav-link">{t.nav.skills}</a>
                 <a href="#contact" className="nav-link">{t.nav.contact}</a>
+              </div>
+              <div className="nav-actions">
                 <RubberSegment
                   items={[
                     { value: "en", label: "EN" },
@@ -195,8 +321,8 @@ export default function App() {
                   size="sm"
                   radius={8}
                   tint="rgba(255, 255, 255, 0.05)"
-                  blur={0}
-                  lineColor="#60a5fa"
+                  blur={10}
+                  lineColor={accentColor}
                   baseColor="#3a3a44"
                   intensity={1.3}
                   autoAnimate={true}
@@ -207,7 +333,7 @@ export default function App() {
                   <Icons.Cv />
                   {t.nav.cv}
                 </SpecularButton>
-              </nav>
+              </div>
             </div>
           </header>
 
@@ -219,13 +345,17 @@ export default function App() {
               lang={lang}
               Icons={Icons}
               onContactClick={() => {
-                document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+                if (window.lenis) {
+                  window.lenis.scrollTo('#contact');
+                } else {
+                  document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+                }
               }}
             />
 
             {/* Trajectory / Experience Section */}
             <motion.section id="experience" className="section" {...sectionAnimation}>
-              <h2 className="section-label">{t.sections.trajectory}</h2>
+              <SectionDivider label={t.sections.trajectory} />
               <div className="timeline-container">
                 <div className="timeline-track" />
                 <div className="timeline-items">
@@ -289,10 +419,14 @@ export default function App() {
 
             {/* Projects Section */}
             <motion.section id="projects" className="section" {...sectionAnimation}>
-              <h2 className="section-label">{t.sections.projects}</h2>
+              <SectionDivider label={t.sections.projects} />
               <div className="projects-grid">
-                {t.projects.map((proj) => (
-                  <article key={proj.id} className="project-card">
+                {t.projects.map((proj, idx) => (
+                  <AnimatedCard
+                    key={proj.id}
+                    className="project-card"
+                    delay={(idx % 4) * 0.15}
+                  >
                     {proj.video && (
                       <div className="project-media">
                         <video
@@ -344,17 +478,22 @@ export default function App() {
                         )}
                       </div>
                     </div>
-                  </article>
+                  </AnimatedCard>
                 ))}
               </div>
             </motion.section>
 
             {/* Publications Section */}
             <motion.section id="publications" className="section" {...sectionAnimation}>
-              <h2 className="section-label">{t.sections.publications || "Publications"}</h2>
-              <div className="publications-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <SectionDivider label={t.sections.publications || "Publications"} />
+              <div className="publications-list" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                 {t.publications && t.publications.map((pub, idx) => (
-                  <article key={idx} className="project-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <AnimatedCard
+                    key={idx}
+                    className="project-card"
+                    style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}
+                    delay={idx * 0.15}
+                  >
                     <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                       <div style={{ flexGrow: 1 }}>
                         <h3 className="project-title" style={{ margin: 0, color: 'var(--text-main)' }}>{pub.title}</h3>
@@ -385,16 +524,20 @@ export default function App() {
                         <Icons.External /> View Paper
                       </a>
                     </div>
-                  </article>
+                  </AnimatedCard>
                 ))}
               </div>
             </motion.section>
             {/* Skills Section */}
             <motion.section id="skills" className="section" {...sectionAnimation}>
-              <h2 className="section-label">{t.sections.skills}</h2>
+              <SectionDivider label={t.sections.skills} />
               <div className="skills-grid">
                 {t.skillCategories.map((cat, idx) => (
-                  <div key={idx} className="skill-category-card">
+                  <AnimatedCard
+                    key={idx}
+                    className="skill-category-card"
+                    delay={(idx % 4) * 0.15}
+                  >
                     <h3 className="skill-category-name">{cat.name}</h3>
                     <div className="skill-pill-container">
                       {cat.skills.map((skill, i) => {
@@ -414,28 +557,29 @@ export default function App() {
                         );
                       })}
                     </div>
-                  </div>
+                  </AnimatedCard>
                 ))}
               </div>
             </motion.section>
 
             {/* Contact Section */}
             <motion.section id="contact" className="section" {...sectionAnimation}>
-              <h2 className="section-label">{t.sections.contact}</h2>
+              <SectionDivider label={t.sections.contact} />
               <div className="contact-card">
                 <h3 className="contact-card-title">{t.contact.title}</h3>
                 <p className="contact-card-desc">{t.contact.desc}</p>
                 <div className="contact-actions">
-                  <button onClick={handleCopyEmail} className="email-copy-btn">
-                    {copied ? <Icons.Check /> : <Icons.Copy />}
-                    {copied ? t.contact.copiedBtn : t.personalInfo.email}
-                  </button>
+                  <CopyEmailButton
+                    email={t.personalInfo.email}
+                    copiedText={t.contact.copiedBtn}
+                    Icons={Icons}
+                  />
                   <SpecularButton
                     size="md"
                     radius={10}
                     tint="rgba(255, 255, 255, 0.06)"
-                    blur={0}
-                    lineColor="#60a5fa"
+                    blur={14}
+                    lineColor={accentColor}
                     baseColor="#40404c"
                     intensity={1.5}
                     autoAnimate={true}

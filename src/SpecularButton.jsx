@@ -148,13 +148,9 @@ const SpecularButton = ({
     resize();
 
     let isHovered = false;
-    let hoverStartAngle = null;
-    let hasSpun = false;
 
     const onEnter = () => { 
       isHovered = true; 
-      hoverStartAngle = angle;
-      hasSpun = false;
     };
     const onLeave = () => { 
       isHovered = false; 
@@ -178,20 +174,12 @@ const SpecularButton = ({
       const p = propsRef.current;
 
       const baseSpeed = p.speed * 2.5;
-      let wantsSpin = isHovered && !hasSpun;
       
-      if (wantsSpin && hoverStartAngle !== null) {
-         if (angle - hoverStartAngle >= Math.PI * 2) {
-             hasSpun = true;
-             wantsSpin = false;
-         }
-      }
-
-      const targetSpeed = wantsSpin ? baseSpeed * 5 : baseSpeed;
+      const targetSpeed = isHovered ? baseSpeed * 5 : baseSpeed;
       currentSpeed += (targetSpeed - currentSpeed) * (1 - Math.exp(-dt * 5));
       angle += currentSpeed * dt;
 
-      const brightTarget = 1;
+      const brightTarget = isHovered ? 1.7 : 1.0;
       bright += (brightTarget - bright) * (1 - Math.exp(-dt * 8));
 
       lineC.set(p.lineColor);

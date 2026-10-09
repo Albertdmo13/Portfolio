@@ -37,21 +37,17 @@
 .lattice-loader__cell {
   width: var(--ll-cell);
   height: var(--ll-cell);
-  border-radius: 0;
+  border-radius: max(1px, calc(var(--ll-cell) * 0.25));
   background: var(--ll-color);
   opacity: var(--ll-idle);
 }
 
-.lattice-loader[data-shape='round'] .lattice-loader__cell {
-  border-radius: 0;
-}
-
 .lattice-loader[data-glow] .lattice-loader__run .lattice-loader__cell:not([data-hole]) {
-  box-shadow: none;
+  box-shadow: 0 0 calc(var(--ll-cell) * 1.2) calc(var(--ll-cell) * 0.12) var(--ll-glow);
 }
 
 .lattice-loader[data-glow] .lattice-loader__mark .lattice-loader__cell[data-on] {
-  box-shadow: none;
+  box-shadow: 0 0 calc(var(--ll-cell) * 1.2) calc(var(--ll-cell) * 0.12) var(--ll-mark-glow);
 }
 
 .lattice-loader__run {
@@ -127,7 +123,7 @@
   left: 0;
   white-space: nowrap;
   opacity: 0;
-  filter: none;
+  filter: blur(2px);
   transition:
     opacity 200ms ease,
     filter 200ms ease;
@@ -136,7 +132,7 @@
 .lattice-loader__text[data-active] {
   position: static;
   opacity: 1;
-  filter: none;
+  filter: blur(0);
 }
 
 .lattice-loader__timer {
@@ -159,6 +155,7 @@
 }
 
 @keyframes lattice-on {
+
   0%,
   100% {
     opacity: var(--ll-idle);
@@ -175,6 +172,7 @@
 }
 
 @keyframes lattice-on-45 {
+
   0%,
   100% {
     opacity: var(--ll-idle);
@@ -191,6 +189,7 @@
 }
 
 @keyframes lattice-on-35 {
+
   0%,
   100% {
     opacity: var(--ll-idle);
@@ -207,6 +206,7 @@
 }
 
 @keyframes lattice-on-25 {
+
   0%,
   100% {
     opacity: var(--ll-idle);
