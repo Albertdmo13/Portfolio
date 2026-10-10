@@ -10,6 +10,7 @@ import BusinessCardHero from "./BusinessCardHero";
 import ImageCarousel from "./ImageCarousel";
 import RulerScroller from "./RulerScroller";
 import CopyEmailButton from "./CopyEmailButton";
+import Grainient from "./Grainient";
 import "./App.css";
 
 function AnimatedCard({ children, className, style, delay = 0 }) {
@@ -25,9 +26,9 @@ function AnimatedCard({ children, className, style, delay = 0 }) {
       initial={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
       animate={inView ? { opacity: 1, scale: 1, filter: "blur(0px)" } : {}}
       transition={
-        isEntered 
-        ? { duration: 0.05, ease: "easeOut" } 
-        : { duration: 0.6, delay: delay, ease: "easeOut" }
+        isEntered
+          ? { duration: 0.05, ease: "easeOut" }
+          : { duration: 0.6, delay: delay, ease: "easeOut" }
       }
       onAnimationComplete={() => setIsEntered(true)}
       whileHover={{ scale: 1.02, transition: { duration: 0.05, ease: "easeOut" } }}
@@ -37,7 +38,7 @@ function AnimatedCard({ children, className, style, delay = 0 }) {
   );
 }
 
-function SectionDivider({ label }) {
+function SectionDivider({ label, targetGridY }) {
   const [topOffset, setTopOffset] = useState(-40);
   const ref = useRef(null);
 
@@ -45,11 +46,13 @@ function SectionDivider({ label }) {
     const updateOffset = () => {
       if (!ref.current) return;
       const absoluteY = window.scrollY + ref.current.getBoundingClientRect().top;
-      
-      const targetY = absoluteY - 40;
-      // Snap to the 20px background dot grid (dots are at 10, 30, 50...)
-      const snappedY = Math.round((targetY - 10) / 20) * 20 + 10;
-      
+
+      // If targetGridY is provided, snap directly to that dotted-grid coordinate;
+      // otherwise, snap targetY (absoluteY - 40) to the 20px background dot grid (dots at 10, 30, 50...)
+      const snappedY = targetGridY !== undefined && targetGridY > 0
+        ? targetGridY
+        : Math.round(((absoluteY - 40) - 10) / 20) * 20 + 10;
+
       setTopOffset(snappedY - absoluteY);
     };
 
@@ -60,17 +63,17 @@ function SectionDivider({ label }) {
       clearTimeout(timeout);
       window.removeEventListener('resize', updateOffset);
     };
-  }, []);
+  }, [targetGridY]);
 
   return (
     <div ref={ref} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, pointerEvents: 'none', zIndex: 10 }}>
-      <div 
+      <div
         className="section-divider-line"
         style={{ top: `${topOffset}px` }}
       />
-      <h2 
+      <h2
         className="section-label"
-        style={{ 
+        style={{
           position: 'sticky',
           top: '100px', // distance from top of viewport
           marginTop: `${topOffset + 16}px` // starting offset
@@ -173,20 +176,196 @@ export default function App() {
   const [accentColor, setAccentColor] = useState("#60a5fa");
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [heroHeight, setHeroHeight] = useState(0);
+  const heroStageRef = useRef(null);
+  const heroContainerRef = useRef(null);
+  const heroCardRef = useRef(null);
+  const navHeaderRef = useRef(null);
+  const uncompressedNavHeightRef = useRef(110);
   const base = import.meta.env.BASE_URL;
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    
-    window.addEventListener("scroll", handleScroll);
-    window.addEventListener("resize", handleResize);
+    if (!heroContainerRef.current) return;
+    const updateHeight = () => {
+      if (heroContainerRef.current) {
+        const rawHeight = heroContainerRef.current.offsetHeight;
+        if (rawHeight > 0) {
+          // Snap the hero height to the 20px background dot grid (dots at 10, 30, 50, 70...)
+          // Exactly matching the section divider grid snapping formula: Math.round((target - 10) / 20) * 20 + 10
+          const snappedHeight = Math.round((rawHeight - 10) / 20) * 20 + 10;
+          setHeroHeight(snappedHeight);
+        }
+      }
+    };
+    updateHeight();
+    const ro = new ResizeObserver(updateHeight);
+    ro.observe(heroContainerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY || window.pageYOffset;
+
+      // Keep uncompressed nav height updated whenever nav is in uncompressed state
+      if (navHeaderRef.current && !navHeaderRef.current.classList.contains('nav-compressed')) {
+        const h = navHeaderRef.current.offsetHeight;
+        if (h > 0) uncompressedNavHeightRef.current = h;
+      }
+
+      // Subtract the uncompressed bar size from the scroll distance threshold
+      const uncompressedNavHeight = uncompressedNavHeightRef.current || 110;
+      const compressThreshold = Math.max(0, heroHeight - uncompressedNavHeight);
+      setIsScrolled(scrollY >= compressThreshold);
+
+      if (!heroCardRef.current || !heroHeight) return;
+
+      const fadeEnd = Math.max(1, heroHeight * 0.55);
+      const progress = Math.min(1, Math.max(0, scrollY / fadeEnd));
+      const opacity = 1 - progress;
+
+      heroCardRef.current.style.opacity = opacity.toFixed(3);
+
+      if (opacity <= 0.01) {
+        heroCardRef.current.style.pointerEvents = 'none';
+        heroCardRef.current.style.visibility = 'hidden';
+      } else {
+        heroCardRef.current.style.pointerEvents = 'auto';
+        heroCardRef.current.style.visibility = 'visible';
+      }
+
+      if (heroStageRef.current) {
+        if (scrollY >= heroHeight) {
+          heroStageRef.current.style.visibility = 'hidden';
+        } else {
+          heroStageRef.current.style.visibility = 'visible';
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    if (window.lenis) {
+      window.lenis.on('scroll', handleScroll);
+    }
     handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (window.lenis) {
+        window.lenis.off('scroll', handleScroll);
+      }
+    };
+  }, [heroHeight]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      if (navHeaderRef.current && !navHeaderRef.current.classList.contains('nav-compressed')) {
+        const h = navHeaderRef.current.offsetHeight;
+        if (h > 0) uncompressedNavHeightRef.current = h;
+      }
+    };
+    window.addEventListener("resize", handleResize);
     handleResize();
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  // Simulate hover for grid elements (projects, publications, skills) on mobile based on scroll coordinates
+  useEffect(() => {
+    let activeCards = new Set();
+
+    const updateMobileHover = () => {
+      // Only active on mobile viewports (<= 768px)
+      if (window.innerWidth > 768) {
+        if (activeCards.size > 0) {
+          activeCards.forEach((card) => card.classList.remove('is-hovered'));
+          activeCards.clear();
+        }
+        return;
+      }
+
+      // Focal reading line: central region of mobile viewport (~48% of screen height)
+      const focusY = window.innerHeight * 0.48;
+      const targetCards = Array.from(
+        document.querySelectorAll(
+          '.projects-grid .project-card, .publications-list .project-card, .skills-grid .skill-category-card'
+        )
+      );
+
+      if (targetCards.length === 0) return;
+
+      const newActiveCards = new Set();
+      let closestCard = null;
+      let minDistance = Infinity;
+
+      for (const card of targetCards) {
+        const rect = card.getBoundingClientRect();
+
+        // Card strictly encompasses the focal line
+        if (rect.top <= focusY && rect.bottom >= focusY) {
+          newActiveCards.add(card);
+        } else if (rect.bottom > 80 && rect.top < window.innerHeight - 80) {
+          const cardCenter = (rect.top + rect.bottom) / 2;
+          const dist = Math.abs(cardCenter - focusY);
+          if (dist < minDistance) {
+            minDistance = dist;
+            closestCard = card;
+          }
+        }
+      }
+
+      // If between card boundaries or during quick scrolls, latch onto the closest clearly visible card
+      if (newActiveCards.size === 0 && closestCard && minDistance < window.innerHeight * 0.35) {
+        newActiveCards.add(closestCard);
+      }
+
+      // Only perform DOM updates if the active set has changed
+      let hasChanged = activeCards.size !== newActiveCards.size;
+      if (!hasChanged) {
+        for (const card of newActiveCards) {
+          if (!activeCards.has(card)) {
+            hasChanged = true;
+            break;
+          }
+        }
+      }
+
+      if (hasChanged) {
+        activeCards.forEach((card) => {
+          if (!newActiveCards.has(card)) {
+            card.classList.remove('is-hovered');
+          }
+        });
+        newActiveCards.forEach((card) => {
+          if (!activeCards.has(card)) {
+            card.classList.add('is-hovered');
+          }
+        });
+        activeCards = newActiveCards;
+      }
+    };
+
+    window.addEventListener('scroll', updateMobileHover, { passive: true });
+    window.addEventListener('resize', updateMobileHover);
+
+    if (window.lenis) {
+      window.lenis.on('scroll', updateMobileHover);
+    }
+
+    updateMobileHover();
+    const timer = setTimeout(updateMobileHover, 500);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', updateMobileHover);
+      window.removeEventListener('resize', updateMobileHover);
+      if (window.lenis) {
+        window.lenis.off('scroll', updateMobileHover);
+      }
+      activeCards.forEach((card) => card.classList.remove('is-hovered'));
     };
   }, []);
 
@@ -230,7 +409,9 @@ export default function App() {
       if (target) {
         e.preventDefault();
         const id = target.getAttribute('href');
-        if (id && id !== '#') {
+        if (id === '#' || !id) {
+          lenis.scrollTo(0);
+        } else {
           lenis.scrollTo(id);
         }
       }
@@ -284,62 +465,42 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
-      <div className="background-layer">
-        <RulerScroller label={t.nav?.projects || "HIGHLIGHTS"} />
-        <div className="foreground-layer">
-          {/* Navigation Bar */}
-          <header className={`nav-header ${isMobile && isScrolled ? 'nav-compressed' : ''}`}>
-            <div className="nav-content">
-              <a href="#" className="nav-brand">
-                {t.personalInfo.shortName}
-              </a>
-              <div className="nav-links-inner">
-                <a href="#experience" className="nav-link">{t.nav.experience}</a>
-                <a href="#projects" className="nav-link">{t.nav.projects}</a>
-                <a href="#publications" className="nav-link">{t.nav.publications}</a>
-                <a href="#skills" className="nav-link">{t.nav.skills}</a>
-                <a href="#contact" className="nav-link">{t.nav.contact}</a>
-              </div>
-              <div className="nav-actions">
-                <RubberSegment
-                  items={[
-                    { value: "en", label: "EN" },
-                    { value: "es", label: "ES" },
-                  ]}
-                  value={lang}
-                  onChange={(val) => setLang(val)}
-                  size="sm"
-                  radius={9999}
-                  inset={2}
-                  trackColor="rgba(255, 255, 255, 0.06)"
-                  thumbColor="#ffffff"
-                  textColor="rgba(255, 255, 255, 0.65)"
-                  activeTextColor="#0a0a0f"
-                  aria-label="Language selector"
-                />
-                <SpecularButton
-                  size="sm"
-                  radius={8}
-                  tint="rgba(255, 255, 255, 0.05)"
-                  blur={10}
-                  lineColor={accentColor}
-                  baseColor="#3a3a44"
-                  intensity={1.3}
-                  autoAnimate={true}
-                  onClick={() => {
-                    window.open(`${base}${t.personalInfo.links.cv.replace(/^\/?(Portfolio\/)?/, "")}`, "_blank");
-                  }}
-                >
-                  <Icons.Cv />
-                  {t.nav.cv}
-                </SpecularButton>
-              </div>
-            </div>
-          </header>
+      {/* Fixed Hero Stage (Background + Business Card) */}
+      <div
+        id="hero"
+        className="hero-fixed-stage"
+        ref={heroStageRef}
+        style={{ height: heroHeight > 0 ? `${heroHeight}px` : undefined }}
+      >
+        <div className="hero-background-grainient" aria-hidden="true">
+          <Grainient
+            color1="#343343"
+            color2="#0d0d0e"
+            color3="#565972"
+            timeSpeed={0.4}
+            colorBalance={0.09}
+            warpStrength={1}
+            warpFrequency={5}
+            warpSpeed={2}
+            warpAmplitude={16}
+            blendAngle={0}
+            blendSoftness={0.58}
+            rotationAmount={500}
+            noiseScale={1.65}
+            grainAmount={0.02}
+            grainScale={8}
+            grainAnimated={false}
+            contrast={1.5}
+            gamma={1}
+            saturation={0.75}
+            centerX={0}
+            centerY={0}
+            zoom={0.7}
+          />
+        </div>
 
-          {/* Main Content Area */}
-          <main className="main-content animate-in">
-            {/* Business Card Hero Section */}
+        <div className="hero-foreground-container" ref={heroContainerRef}>
+          <div className="hero-card-fade-wrapper" ref={heroCardRef}>
             <BusinessCardHero
               t={t}
               lang={lang}
@@ -352,255 +513,364 @@ export default function App() {
                 }
               }}
             />
+          </div>
+        </div>
+      </div>
 
-            {/* Trajectory / Experience Section */}
-            <motion.section id="experience" className="section" {...sectionAnimation}>
-              <SectionDivider label={t.sections.trajectory} />
-              <div className="timeline-container">
-                <div className="timeline-track" />
-                <div className="timeline-items">
-                  {t.trajectory.map((item, idx) => (
-                    <motion.div
-                      key={idx}
-                      className="timeline-item"
-                      initial={{ opacity: 0, y: 16 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, amount: 0.15 }}
-                      transition={{ duration: 0.35, delay: idx * 0.08 }}
-                    >
-                      <div className="timeline-marker">
-                        <span className="timeline-dot" />
-                        <span className="timeline-connector" />
-                      </div>
-                      <div className="timeline-card">
-                        <div className="timeline-inner">
-                          <div className="timeline-content">
-                            <div className="timeline-header">
-                              <h3 className="timeline-role">{item.role}</h3>
-                              <span className="timeline-period">{item.period}</span>
+      {/* Navigation Bar */}
+      <header ref={navHeaderRef} className={`nav-header ${isMobile && isScrolled ? 'nav-compressed' : ''}`}>
+        <div className="nav-content">
+          <a href="#" className="nav-brand">
+            {t.personalInfo.shortName}
+          </a>
+          <div className="nav-links-inner">
+            <a href="#experience" className="nav-link">{t.nav.experience}</a>
+            <a href="#projects" className="nav-link">{t.nav.projects}</a>
+            <a href="#publications" className="nav-link">{t.nav.publications}</a>
+            <a href="#skills" className="nav-link">{t.nav.skills}</a>
+            <a href="#contact" className="nav-link">{t.nav.contact}</a>
+          </div>
+          <div className="nav-actions">
+            <RubberSegment
+              items={[
+                { value: "en", label: "EN" },
+                { value: "es", label: "ES" },
+              ]}
+              value={lang}
+              onChange={(val) => setLang(val)}
+              size="sm"
+              radius={9999}
+              inset={2}
+              trackColor="rgba(255, 255, 255, 0.06)"
+              thumbColor="#ffffff"
+              textColor="rgba(255, 255, 255, 0.65)"
+              activeTextColor="#0a0a0f"
+              aria-label="Language selector"
+            />
+            <SpecularButton
+              size="sm"
+              radius={8}
+              tint="rgba(255, 255, 255, 0.05)"
+              blur={10}
+              lineColor={accentColor}
+              baseColor="#3a3a44"
+              intensity={1.3}
+              autoAnimate={true}
+              onClick={() => {
+                window.open(`${base}${t.personalInfo.links.cv.replace(/^\/?(Portfolio\/)?/, "")}`, "_blank");
+              }}
+            >
+              <Icons.Cv />
+              {t.nav.cv}
+            </SpecularButton>
+          </div>
+        </div>
+      </header>
+
+      {/* Ruler Scroller */}
+      <RulerScroller label="HERO" heroHeight={heroHeight} />
+
+      {/* Main Page Layout Layer */}
+      <div className="background-layer">
+        {/* Spacer reserving the hero section's exact height in document flow */}
+        <div
+          className="hero-scroll-spacer"
+          style={{ height: heroHeight > 0 ? `${heroHeight}px` : undefined }}
+          aria-hidden="true"
+        />
+
+        {/* Subsequent Content Layer that scrolls on top and occludes the fixed hero stage */}
+        <div className="subsequent-content-layer">
+          <div className="foreground-layer">
+            <main className="main-content sections-main animate-in">
+              {/* Trajectory / Experience Section */}
+              <motion.section id="experience" className="section" {...sectionAnimation}>
+                <SectionDivider label={t.sections.trajectory} targetGridY={heroHeight} />
+                <div className="timeline-container">
+                  <div className="timeline-track" />
+                  <div className="timeline-items">
+                    {t.trajectory.map((item, idx) => (
+                      <motion.div
+                        key={idx}
+                        className="timeline-item"
+                        initial={{ opacity: 0, y: 16 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.15 }}
+                        transition={{ duration: 0.35, delay: idx * 0.08 }}
+                      >
+                        <div className="timeline-marker">
+                          <span className="timeline-dot" />
+                          <span className="timeline-connector" />
+                        </div>
+                        <div className="timeline-card">
+                          <div className="timeline-inner">
+                            <div className="timeline-content">
+                              <div className="timeline-header">
+                                <h3 className="timeline-role">{item.role}</h3>
+                                <span className="timeline-period">{item.period}</span>
+                              </div>
+                              {item.institution && (
+                                <p className="timeline-institution">
+                                  {item.link ? (
+                                    <a href={item.link} target="_blank" rel="noreferrer" className="timeline-link">
+                                      {item.institution}
+                                    </a>
+                                  ) : (
+                                    item.institution
+                                  )}
+                                </p>
+                              )}
+                              {item.description && <p className="timeline-desc">{item.description}</p>}
                             </div>
-                            {item.institution && (
-                              <p className="timeline-institution">
-                                {item.link ? (
-                                  <a href={item.link} target="_blank" rel="noreferrer" className="timeline-link">
-                                    {item.institution}
-                                  </a>
-                                ) : (
-                                  item.institution
-                                )}
-                              </p>
-                            )}
-                            {item.description && <p className="timeline-desc">{item.description}</p>}
-                          </div>
-                          {item.logo && (
-                            item.link ? (
-                              <a href={item.link} target="_blank" rel="noreferrer" className="timeline-logo-link" style={{ display: 'flex' }}>
+                            {item.logo && (
+                              item.link ? (
+                                <a href={item.link} target="_blank" rel="noreferrer" className="timeline-logo-link" style={{ display: 'flex' }}>
+                                  <img
+                                    src={`${base}${item.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
+                                    alt={`${item.institution} logo`}
+                                    className="timeline-logo"
+                                  />
+                                </a>
+                              ) : (
                                 <img
                                   src={`${base}${item.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
                                   alt={`${item.institution} logo`}
                                   className="timeline-logo"
                                 />
-                              </a>
-                            ) : (
+                              )
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </motion.section>
+
+              {/* Projects Section */}
+              <motion.section id="projects" className="section" {...sectionAnimation}>
+                <SectionDivider label={t.sections.projects} />
+                <div className="projects-grid">
+                  {t.projects.map((proj, idx) => (
+                    <AnimatedCard
+                      key={proj.id}
+                      className="project-card"
+                      style={{
+                        '--project-accent': proj.accentColor || 'var(--accent-color)'
+                      }}
+                      delay={(idx % 4) * 0.15}
+                    >
+                      {proj.video && (
+                        <div className="project-media">
+                          <video
+                            src={`${base}${proj.video.replace(/^\/?(Portfolio\/)?/, "")}`}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="project-video"
+                          />
+                        </div>
+                      )}
+                      {proj.logo && (
+                        <div className="project-seam-logo-anchor">
+                          {proj.link ? (
+                            <a
+                              href={proj.link}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="project-seam-logo-link"
+                              title={`${proj.title} logo`}
+                            >
                               <img
-                                src={`${base}${item.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
-                                alt={`${item.institution} logo`}
-                                className="timeline-logo"
+                                src={`${base}${proj.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
+                                alt={`${proj.title} logo`}
+                                className="project-seam-logo"
                               />
-                            )
+                            </a>
+                          ) : (
+                            <div className="project-seam-logo-container">
+                              <img
+                                src={`${base}${proj.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
+                                alt={`${proj.title} logo`}
+                                className="project-seam-logo"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <div className="project-body">
+                        <div className="project-top">
+                          <div className="project-heading-group">
+                            <div className="project-title-row">
+                              {proj.accentColor && (
+                                <span
+                                  className="project-accent-indicator"
+                                  style={{ backgroundColor: proj.accentColor }}
+                                  aria-hidden="true"
+                                />
+                              )}
+                              <h3 className="project-title">{proj.title}</h3>
+                            </div>
+                            <p className="project-subtitle">{proj.subtitle}</p>
+                          </div>
+                        </div>
+                        <p className="project-desc">{proj.description}</p>
+                        <div className="project-tags">
+                          {proj.tags.map((tag, i) => {
+                            const iconUrl = getTechIconUrl(tag);
+                            return (
+                              <span key={i} className="project-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                {iconUrl && (
+                                  <img
+                                    src={iconUrl}
+                                    alt={tag}
+                                    style={{ width: '16px', height: '16px' }}
+                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                  />
+                                )}
+                                {tag}
+                              </span>
+                            );
+                          })}
+                        </div>
+                        <div className="project-links">
+                          {proj.link && (
+                            <a href={proj.link} target="_blank" rel="noreferrer" className="project-link-btn">
+                              <Icons.External /> Live App
+                            </a>
+                          )}
+                          {proj.github && (
+                            <a href={proj.github} target="_blank" rel="noreferrer" className="project-link-btn">
+                              <Icons.Github /> Source
+                            </a>
                           )}
                         </div>
                       </div>
-                    </motion.div>
+                    </AnimatedCard>
                   ))}
                 </div>
-              </div>
-            </motion.section>
+              </motion.section>
 
-            {/* Projects Section */}
-            <motion.section id="projects" className="section" {...sectionAnimation}>
-              <SectionDivider label={t.sections.projects} />
-              <div className="projects-grid">
-                {t.projects.map((proj, idx) => (
-                  <AnimatedCard
-                    key={proj.id}
-                    className="project-card"
-                    delay={(idx % 4) * 0.15}
-                  >
-                    {proj.video && (
-                      <div className="project-media">
-                        <video
-                          src={`${base}${proj.video.replace(/^\/?(Portfolio\/)?/, "")}`}
-                          autoPlay
-                          loop
-                          muted
-                          playsInline
-                          className="project-video"
-                        />
-                      </div>
-                    )}
-                    <div className="project-body">
-                      <div className="project-top">
-                        <div>
-                          <h3 className="project-title">{proj.title}</h3>
-                          <p className="project-subtitle">{proj.subtitle}</p>
+              {/* Publications Section */}
+              <motion.section id="publications" className="section" {...sectionAnimation}>
+                <SectionDivider label={t.sections.publications || "Publications"} />
+                <div className="publications-list" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {t.publications && t.publications.map((pub, idx) => (
+                    <AnimatedCard
+                      key={idx}
+                      className="project-card"
+                      style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}
+                      delay={idx * 0.15}
+                    >
+                      <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                        <div style={{ flexGrow: 1 }}>
+                          <h3 className="project-title" style={{ margin: 0, color: 'var(--text-main)' }}>{pub.title}</h3>
+                          {pub.authors && (
+                            <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.55)', fontStyle: 'italic' }}>
+                              {pub.authors}
+                            </p>
+                          )}
                         </div>
+                        {pub.logo && (
+                          <img
+                            src={`${base}${pub.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
+                            alt="Publication logo"
+                            style={{ width: '64px', height: 'auto', flexShrink: 0, filter: 'invert(1)', opacity: 0.8 }}
+                          />
+                        )}
                       </div>
-                      <p className="project-desc">{proj.description}</p>
-                      <div className="project-tags">
-                        {proj.tags.map((tag, i) => {
-                          const iconUrl = getTechIconUrl(tag);
+                      <p className="project-desc" style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6' }}>
+                        <strong>Abstract:</strong> {pub.abstract}
+                      </p>
+                      {pub.images && pub.images.length > 0 && (
+                        <div style={{ marginTop: '16px' }}>
+                          <ImageCarousel images={pub.images} base={base} />
+                        </div>
+                      )}
+                      <div>
+                        <a href={pub.link} target="_blank" rel="noreferrer" className="project-link-btn" style={{ display: 'inline-flex', width: 'max-content' }}>
+                          <Icons.External /> View Paper
+                        </a>
+                      </div>
+                    </AnimatedCard>
+                  ))}
+                </div>
+              </motion.section>
+              {/* Skills Section */}
+              <motion.section id="skills" className="section" {...sectionAnimation}>
+                <SectionDivider label={t.sections.skills} />
+                <div className="skills-grid">
+                  {t.skillCategories.map((cat, idx) => (
+                    <AnimatedCard
+                      key={idx}
+                      className="skill-category-card"
+                      delay={(idx % 4) * 0.15}
+                    >
+                      <h3 className="skill-category-name">{cat.name}</h3>
+                      <div className="skill-pill-container">
+                        {cat.skills.map((skill, i) => {
+                          const iconUrl = getTechIconUrl(skill);
                           return (
-                            <span key={i} className="project-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            <span key={i} className="skill-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
                               {iconUrl && (
                                 <img
                                   src={iconUrl}
-                                  alt={tag}
-                                  style={{ width: '16px', height: '16px' }}
+                                  alt={skill}
+                                  style={{ width: '20px', height: '20px' }}
                                   onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                 />
                               )}
-                              {tag}
+                              {skill}
                             </span>
                           );
                         })}
                       </div>
-                      <div className="project-links">
-                        {proj.link && (
-                          <a href={proj.link} target="_blank" rel="noreferrer" className="project-link-btn">
-                            <Icons.External /> Live App
-                          </a>
-                        )}
-                        {proj.github && (
-                          <a href={proj.github} target="_blank" rel="noreferrer" className="project-link-btn">
-                            <Icons.Github /> Source
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </AnimatedCard>
-                ))}
-              </div>
-            </motion.section>
-
-            {/* Publications Section */}
-            <motion.section id="publications" className="section" {...sectionAnimation}>
-              <SectionDivider label={t.sections.publications || "Publications"} />
-              <div className="publications-list" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {t.publications && t.publications.map((pub, idx) => (
-                  <AnimatedCard
-                    key={idx}
-                    className="project-card"
-                    style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}
-                    delay={idx * 0.15}
-                  >
-                    <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                      <div style={{ flexGrow: 1 }}>
-                        <h3 className="project-title" style={{ margin: 0, color: 'var(--text-main)' }}>{pub.title}</h3>
-                        {pub.authors && (
-                          <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.55)', fontStyle: 'italic' }}>
-                            {pub.authors}
-                          </p>
-                        )}
-                      </div>
-                      {pub.logo && (
-                        <img
-                          src={`${base}${pub.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
-                          alt="Publication logo"
-                          style={{ width: '64px', height: 'auto', flexShrink: 0, filter: 'invert(1)', opacity: 0.8 }}
-                        />
-                      )}
-                    </div>
-                    <p className="project-desc" style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6' }}>
-                      <strong>Abstract:</strong> {pub.abstract}
-                    </p>
-                    {pub.images && pub.images.length > 0 && (
-                      <div style={{ marginTop: '16px' }}>
-                        <ImageCarousel images={pub.images} base={base} />
-                      </div>
-                    )}
-                    <div>
-                      <a href={pub.link} target="_blank" rel="noreferrer" className="project-link-btn" style={{ display: 'inline-flex', width: 'max-content' }}>
-                        <Icons.External /> View Paper
-                      </a>
-                    </div>
-                  </AnimatedCard>
-                ))}
-              </div>
-            </motion.section>
-            {/* Skills Section */}
-            <motion.section id="skills" className="section" {...sectionAnimation}>
-              <SectionDivider label={t.sections.skills} />
-              <div className="skills-grid">
-                {t.skillCategories.map((cat, idx) => (
-                  <AnimatedCard
-                    key={idx}
-                    className="skill-category-card"
-                    delay={(idx % 4) * 0.15}
-                  >
-                    <h3 className="skill-category-name">{cat.name}</h3>
-                    <div className="skill-pill-container">
-                      {cat.skills.map((skill, i) => {
-                        const iconUrl = getTechIconUrl(skill);
-                        return (
-                          <span key={i} className="skill-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
-                            {iconUrl && (
-                              <img
-                                src={iconUrl}
-                                alt={skill}
-                                style={{ width: '20px', height: '20px' }}
-                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                              />
-                            )}
-                            {skill}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </AnimatedCard>
-                ))}
-              </div>
-            </motion.section>
-
-            {/* Contact Section */}
-            <motion.section id="contact" className="section" {...sectionAnimation}>
-              <SectionDivider label={t.sections.contact} />
-              <div className="contact-card">
-                <h3 className="contact-card-title">{t.contact.title}</h3>
-                <p className="contact-card-desc">{t.contact.desc}</p>
-                <div className="contact-actions">
-                  <CopyEmailButton
-                    email={t.personalInfo.email}
-                    copiedText={t.contact.copiedBtn}
-                    Icons={Icons}
-                  />
-                  <SpecularButton
-                    size="md"
-                    radius={10}
-                    tint="rgba(255, 255, 255, 0.06)"
-                    blur={14}
-                    lineColor={accentColor}
-                    baseColor="#40404c"
-                    intensity={1.5}
-                    autoAnimate={true}
-                    onClick={() => {
-                      window.location.href = t.personalInfo.links.email;
-                    }}
-                  >
-                    <Icons.Mail />
-                    {t.contact.clientBtn}
-                  </SpecularButton>
+                    </AnimatedCard>
+                  ))}
                 </div>
-              </div>
-            </motion.section>
-          </main>
+              </motion.section>
 
-          {/* Footer */}
-          <footer className="footer">
-            <p className="footer-text">
-              © {new Date().getFullYear()} {t.personalInfo.name}. {t.footer.text}
-            </p>
-          </footer>
+              {/* Contact Section */}
+              <motion.section id="contact" className="section" {...sectionAnimation}>
+                <SectionDivider label={t.sections.contact} />
+                <div className="contact-card">
+                  <h3 className="contact-card-title">{t.contact.title}</h3>
+                  <p className="contact-card-desc">{t.contact.desc}</p>
+                  <div className="contact-actions">
+                    <CopyEmailButton
+                      email={t.personalInfo.email}
+                      copiedText={t.contact.copiedBtn}
+                      Icons={Icons}
+                    />
+                    <SpecularButton
+                      size="md"
+                      radius={10}
+                      tint="rgba(255, 255, 255, 0.06)"
+                      blur={14}
+                      lineColor={accentColor}
+                      baseColor="#40404c"
+                      intensity={1.5}
+                      autoAnimate={true}
+                      onClick={() => {
+                        window.location.href = t.personalInfo.links.email;
+                      }}
+                    >
+                      <Icons.Mail />
+                      {t.contact.clientBtn}
+                    </SpecularButton>
+                  </div>
+                </div>
+              </motion.section>
+            </main>
+
+            {/* Footer */}
+            <footer className="footer">
+              <p className="footer-text">
+                © {new Date().getFullYear()} {t.personalInfo.name}. {t.footer.text}
+              </p>
+            </footer>
+          </div>
         </div>
       </div>
     </>

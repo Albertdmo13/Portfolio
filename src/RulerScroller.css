@@ -66,14 +66,23 @@
   font-weight: 600;
   letter-spacing: 0.1em;
   white-space: nowrap;
-  transition: all 0.3s ease;
+  transition: color 0.2s ease, transform 0.2s ease, text-shadow 0.2s ease;
   user-select: none;
   font-family: "Space Grotesk", sans-serif;
   z-index: 15;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.ruler-section-marker:hover {
+  color: #cccccc;
+  transform: translateY(-50%) translateX(-2px);
 }
 
 .ruler-section-marker.active {
   color: var(--accent-color);
+  font-weight: 700;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--accent-color) 35%, transparent);
 }
 
 .ruler-line.major {

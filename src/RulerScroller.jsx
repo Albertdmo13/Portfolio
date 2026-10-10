@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import './RulerScroller.css';
 
-const RulerScroller = ({ label = "PORTFOLIO" }) => {
-  const [activeSectionName, setActiveSectionName] = useState(label);
-  
+const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
+  const [activeSectionName, setActiveSectionName] = useState((label || "HERO").toUpperCase());
+  const [sectionsData, setSectionsData] = useState([]);
+
   // Butter-smooth scroll tracking with Framer Motion
   const { scrollYProgress } = useScroll();
   const smoothProgress = useSpring(scrollYProgress, {
@@ -12,120 +13,202 @@ const RulerScroller = ({ label = "PORTFOLIO" }) => {
     damping: 40,
     restDelta: 0.001
   });
-  
+
   const activeTop = useTransform(smoothProgress, [0, 1], ["0%", "100%"]);
-  
   const [percentString, setPercentString] = useState("000%");
 
+  // Update percent readout as scroll progresses
   useEffect(() => {
-    // Update the text percentage efficiently
     const unsubscribe = smoothProgress.onChange((v) => {
       setPercentString(Math.round(v * 100).toString().padStart(3, '0') + '%');
     });
     return unsubscribe;
   }, [smoothProgress]);
 
-  useEffect(() => {
-    const visibilityMap = new Map();
+  // Robust calculation of section coordinates
+  const calculateSections = useCallback(() => {
+    const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+    const totalScrollable = scrollHeight - window.innerHeight;
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        visibilityMap.set(entry.target, entry.intersectionRatio);
+    if (totalScrollable <= 0) return;
+
+    const sections = Array.from(document.querySelectorAll('.section'));
+    const heroName = (label || "HERO").toUpperCase();
+
+    // Top section is always the HERO starting at 0%
+    const data = [
+      { id: 'hero', name: heroName, percentage: 0 }
+    ];
+
+    sections.forEach((sec) => {
+      const rect = sec.getBoundingClientRect();
+      const absoluteTop = window.scrollY + rect.top;
+
+      let percentage = (absoluteTop / totalScrollable) * 100;
+      percentage = Math.max(0, Math.min(100, percentage));
+
+      const titleEl = sec.querySelector('.section-label');
+      const name = titleEl ? titleEl.textContent.trim() : sec.id;
+      data.push({
+        id: sec.id,
+        name: name.toUpperCase(),
+        percentage
       });
-      
-      let mostVisible = null;
-      let maxRatio = 0;
-      
-      visibilityMap.forEach((ratio, target) => {
-        if (ratio > maxRatio) {
-          maxRatio = ratio;
-          mostVisible = target;
-        }
-      });
-      
-      if (mostVisible && maxRatio > 0) {
-        const titleEl = mostVisible.querySelector('.section-label');
-        const name = titleEl ? titleEl.textContent : mostVisible.id;
-        setActiveSectionName(name.toUpperCase());
-      } else if (window.scrollY < 200) {
-        setActiveSectionName(label.toUpperCase());
+    });
+
+    // Sort sections by percentage
+    data.sort((a, b) => a.percentage - b.percentage);
+
+    // Prevent visual label overlaps with a clean spacing buffer
+    const MIN_DIST = 3.5;
+    for (let i = 1; i < data.length; i++) {
+      if (data[i].percentage - data[i - 1].percentage < MIN_DIST) {
+        data[i].percentage = data[i - 1].percentage + MIN_DIST;
       }
-    }, {
-      root: null,
-      rootMargin: '-20% 0px -40% 0px', // Trigger when well into the screen
-      threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
-    });
+    }
 
-    const sections = document.querySelectorAll('.section');
-    sections.forEach(sec => {
-      visibilityMap.set(sec, 0);
-      observer.observe(sec);
-    });
+    // Push back gently if the last items overflow 100%
+    if (data[data.length - 1].percentage > 100) {
+      let overflow = data[data.length - 1].percentage - 100;
+      for (let i = data.length - 1; i >= 0; i--) {
+        data[i].percentage = Math.max(0, data[i].percentage - overflow);
+        if (i > 0 && data[i].percentage - data[i - 1].percentage < MIN_DIST) {
+          overflow = MIN_DIST - (data[i].percentage - data[i - 1].percentage);
+        } else {
+          break;
+        }
+      }
+    }
 
-    return () => observer.disconnect();
+    setSectionsData(data);
   }, [label]);
 
-  const [sectionsData, setSectionsData] = useState([]);
+  // Accurate Active Section Detection based on current scroll position
+  const updateActiveSection = useCallback(() => {
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    const heroThreshold = heroHeight > 0 ? heroHeight * 0.55 : 300;
 
-  useEffect(() => {
-    const calculateSections = () => {
-      const sections = Array.from(document.querySelectorAll('.section'));
-      const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
-      const totalScrollable = scrollHeight - window.innerHeight;
-      
-      if (totalScrollable <= 0) return;
+    // Inside the Hero section
+    if (scrollY < heroThreshold) {
+      setActiveSectionName((label || "HERO").toUpperCase());
+      return;
+    }
 
-      const data = sections.map((sec) => {
-        const rect = sec.getBoundingClientRect();
-        const absoluteTop = window.scrollY + rect.top;
-        
-        let percentage = (absoluteTop / totalScrollable) * 100;
-        percentage = Math.max(0, Math.min(100, percentage));
-
-        const titleEl = sec.querySelector('.section-label');
-        const name = titleEl ? titleEl.textContent : sec.id;
-        return { id: sec.id, name: name.toUpperCase(), percentage };
-      });
-      
-      // Also add the hero as the first section at 0%
-      data.unshift({ id: 'hero', name: label.toUpperCase(), percentage: 0 });
-
-      // Sort by percentage
-      data.sort((a, b) => a.percentage - b.percentage);
-
-      // Resolve overlaps (minimum 6% distance to prevent text overlap)
-      const MIN_DIST = 6;
-      for (let i = 1; i < data.length; i++) {
-        if (data[i].percentage - data[i - 1].percentage < MIN_DIST) {
-          data[i].percentage = data[i - 1].percentage + MIN_DIST;
-        }
+    const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+    // When user reached the bottom of the page, activate the last section
+    if (window.innerHeight + scrollY >= scrollHeight - 60) {
+      const sections = document.querySelectorAll('.section');
+      if (sections.length > 0) {
+        const lastSec = sections[sections.length - 1];
+        const titleEl = lastSec.querySelector('.section-label');
+        const name = titleEl ? titleEl.textContent.trim() : lastSec.id;
+        setActiveSectionName(name.toUpperCase());
+        return;
       }
+    }
 
-      // If the last ones were pushed past 100, push them back up
-      if (data[data.length - 1].percentage > 100) {
-        let diff = data[data.length - 1].percentage - 100;
-        for (let i = data.length - 1; i >= 0; i--) {
-          data[i].percentage -= diff;
-          if (i > 0 && data[i].percentage - data[i - 1].percentage < MIN_DIST) {
-            diff += (MIN_DIST - (data[i].percentage - data[i - 1].percentage));
-          } else {
-            break; // resolved
+    // Section at reading focus line (35% from viewport top)
+    const focusY = window.innerHeight * 0.35;
+    const sections = Array.from(document.querySelectorAll('.section'));
+    let currentActive = null;
+
+    for (const sec of sections) {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top <= focusY && rect.bottom > focusY) {
+        currentActive = sec;
+        break;
+      }
+    }
+
+    if (!currentActive) {
+      let closestDist = Infinity;
+      for (const sec of sections) {
+        const rect = sec.getBoundingClientRect();
+        if (rect.top <= focusY) {
+          const dist = focusY - rect.top;
+          if (dist < closestDist) {
+            closestDist = dist;
+            currentActive = sec;
           }
         }
       }
-      
-      setSectionsData(data);
-    };
+    }
 
+    if (currentActive) {
+      const titleEl = currentActive.querySelector('.section-label');
+      const name = titleEl ? titleEl.textContent.trim() : currentActive.id;
+      setActiveSectionName(name.toUpperCase());
+    }
+  }, [label, heroHeight]);
+
+  // Recalculate coordinates whenever layout changes or hero expands
+  useEffect(() => {
     calculateSections();
-    const timeout = setTimeout(calculateSections, 800);
+    updateActiveSection();
+
+    // Staggered timers to ensure coordinates are accurate as images, fonts, and loader resolve
+    const t1 = setTimeout(() => { calculateSections(); updateActiveSection(); }, 200);
+    const t2 = setTimeout(() => { calculateSections(); updateActiveSection(); }, 600);
+    const t3 = setTimeout(() => { calculateSections(); updateActiveSection(); }, 1300);
+    const t4 = setTimeout(() => { calculateSections(); updateActiveSection(); }, 2200);
+
+    // Watch for document body resize shifts (images loading, content expanding)
+    const resizeObserver = new ResizeObserver(() => {
+      calculateSections();
+      updateActiveSection();
+    });
+
+    if (document.body) {
+      resizeObserver.observe(document.body);
+    }
+
     window.addEventListener('resize', calculateSections);
-    
+    window.addEventListener('scroll', updateActiveSection, { passive: true });
+
+    if (window.lenis) {
+      window.lenis.on('scroll', updateActiveSection);
+    }
+
+    // Listen to document font loading
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        calculateSections();
+        updateActiveSection();
+      });
+    }
+
     return () => {
-      clearTimeout(timeout);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+      resizeObserver.disconnect();
       window.removeEventListener('resize', calculateSections);
+      window.removeEventListener('scroll', updateActiveSection);
+      if (window.lenis) {
+        window.lenis.off('scroll', updateActiveSection);
+      }
     };
-  }, [label]);
+  }, [calculateSections, updateActiveSection, heroHeight]);
+
+  const handleSectionClick = (secId) => {
+    if (secId === 'hero') {
+      if (window.lenis) {
+        window.lenis.scrollTo(0);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } else {
+      const el = document.getElementById(secId);
+      if (el) {
+        if (window.lenis) {
+          window.lenis.scrollTo(el);
+        } else {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    }
+  };
 
   const totalTicks = 101; // 0 to 100
 
@@ -159,6 +242,15 @@ const RulerScroller = ({ label = "PORTFOLIO" }) => {
               key={sec.id}
               className={`ruler-section-marker ${isActive ? 'active' : ''}`}
               style={{ top: `${sec.percentage}%` }}
+              onClick={() => handleSectionClick(sec.id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  handleSectionClick(sec.id);
+                }
+              }}
+              title={`Scroll to ${sec.name}`}
             >
               {sec.name}
             </div>

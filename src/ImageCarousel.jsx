@@ -61,24 +61,29 @@ export default function ImageCarousel({ images, base }) {
     if (isHovered) return;
 
     let animationId;
-    let scrollAmount = 1;
     let exactScroll = el.scrollLeft;
+    let lastTime = performance.now();
+    const speed = 25; // Slower, elegant glide speed (pixels per second)
 
-    const step = () => {
+    const step = (time) => {
       if (!isHovered) {
-        exactScroll += scrollAmount;
-        el.scrollLeft = exactScroll;
+        const delta = (time - lastTime) / 1000;
+        if (delta > 0 && delta < 0.1) {
+          exactScroll += speed * delta;
+          el.scrollLeft = exactScroll;
 
-        const oneSetWidth = el.scrollWidth / K;
+          const oneSetWidth = el.scrollWidth / K;
 
-        // Infinite loop seamless snapping
-        while (exactScroll >= oneSetWidth * 2) {
-          exactScroll -= oneSetWidth;
-        }
-        while (exactScroll <= oneSetWidth) {
-          exactScroll += oneSetWidth;
+          // Infinite loop seamless snapping
+          while (exactScroll >= oneSetWidth * 2) {
+            exactScroll -= oneSetWidth;
+          }
+          while (exactScroll <= oneSetWidth) {
+            exactScroll += oneSetWidth;
+          }
         }
       }
+      lastTime = time;
       animationId = requestAnimationFrame(step);
     };
 
@@ -100,9 +105,13 @@ export default function ImageCarousel({ images, base }) {
         onTouchEnd={() => setIsHovered(false)}
         style={{ 
           display: 'flex', 
+          alignItems: 'center',
           overflowX: 'auto', 
           gap: '16px', 
-          paddingBottom: '8px', 
+          paddingTop: '14px', 
+          paddingBottom: '14px', 
+          paddingLeft: '4px',
+          paddingRight: '4px',
           WebkitOverflowScrolling: 'touch', 
           width: '100%',
           scrollbarWidth: 'none', /* Firefox */
