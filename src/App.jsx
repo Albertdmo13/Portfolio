@@ -94,13 +94,7 @@ function GridSnappedSection({
       {isLast && <div className="section-divider-line" style={{ top: '100%' }} />}
       {label && (
         <div className="section-label-track">
-          <h2
-            className="section-label"
-            style={{
-              position: 'sticky',
-              top: '100px'
-            }}
-          >
+          <h2 className="section-label">
             {label}
           </h2>
         </div>
@@ -226,13 +220,43 @@ const getTechIconUrl = (techName) => {
   return iconName ? `https://cdn.simpleicons.org/${iconName}/white` : null;
 };
 
+// Polished variants for project detail showcase
+// Quick opacity dissolve (0.22s) prevents clipped inner cards during collapse;
+// Balanced ease-in-out height transition (0.65s) avoids violent deceleration snaps.
+const projectDetailVariants = {
+  initial: {
+    opacity: 0,
+    height: 0,
+    overflow: "hidden",
+  },
+  animate: {
+    opacity: 1,
+    height: "auto",
+    transition: {
+      height: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+      opacity: { duration: 0.35, ease: "easeOut" },
+    },
+    transitionEnd: { overflow: "visible" },
+  },
+  exit: {
+    opacity: 0,
+    height: 0,
+    overflow: "hidden",
+    transition: {
+      opacity: { duration: 0.22, ease: "easeOut" },
+      height: { duration: 0.65, ease: [0.4, 0, 0.2, 1] },
+    },
+  },
+};
+
 export default function App() {
   const [lang, setLang] = useState("en");
   const [isLoading, setIsLoading] = useState(true);
   const [loaderStatus, setLoaderStatus] = useState("working");
   const [accentColor, setAccentColor] = useState("#60a5fa");
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 768 : false));
+  const [windowHeight, setWindowHeight] = useState(() => (typeof window !== "undefined" ? window.innerHeight : 800));
   const [heroHeight, setHeroHeight] = useState(0);
   const [isHeroOccluded, setIsHeroOccluded] = useState(false);
   const [activeHoveredCluster, setActiveHoveredCluster] = useState(null);
@@ -257,6 +281,45 @@ export default function App() {
       }
     }, 120);
   };
+
+  const handleCloseProjectDetail = () => {
+    const currentId = activeProjectDetail;
+    const projectCardEl = currentId ? document.getElementById(`project-card-${currentId}`) : null;
+    const projectsEl = document.getElementById("projects");
+    const targetEl = projectCardEl || projectsEl;
+
+    if (targetEl) {
+      const rect = targetEl.getBoundingClientRect();
+      // If the user has scrolled past/down into the project detail section,
+      // smoothly glide viewport back up to the card in tandem with the collapse.
+      if (rect.top < 60 || rect.bottom < 120) {
+        if (window.lenis) {
+          window.lenis.scrollTo(targetEl, { offset: -70, duration: 0.7 });
+        } else {
+          targetEl.scrollIntoView({ behavior: "smooth" });
+        }
+      }
+    }
+
+    if (window.location.hash.toLowerCase().includes("flowdip")) {
+      history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+
+    setActiveProjectDetail(null);
+    setSuppressedSideButtonsProject(null);
+  };
+
+  // Close project detail smoothly on Escape key press
+  useEffect(() => {
+    if (!activeProjectDetail) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        handleCloseProjectDetail();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeProjectDetail]);
 
   // Close expanded project cluster when tapping outside on mobile/touch screens
   useEffect(() => {
@@ -300,7 +363,21 @@ export default function App() {
   const heroCardRef = useRef(null);
   const navHeaderRef = useRef(null);
   const uncompressedNavHeightRef = useRef(110);
+  const compressedNavHeightRef = useRef(48);
   const base = import.meta.env.BASE_URL;
+
+  // Snapped nav difference between uncompressed and compressed states (snapped to 32px grid: ~64px)
+  const uncompressedNavHeight = uncompressedNavHeightRef.current || 110;
+  const compressedNavHeight = compressedNavHeightRef.current || 48;
+  const rawNavDiff = Math.max(0, uncompressedNavHeight - compressedNavHeight);
+  const snappedNavDiff = Math.round(rawNavDiff / 32) * 32 || 64;
+
+  const baseExtra = heroHeight > 0 && windowHeight > 0 ? Math.max(0, heroHeight - windowHeight) : 0;
+  const needsHeroScroll = isMobile && baseExtra > 0;
+  // In mobile view, since the nav bar compresses early (~24px) when the hero section needs scrolling,
+  // the scrollable hero section can scroll higher by snappedNavDiff before becoming fixed.
+  // The total hero spacer height accounts for this extra scroll room.
+  const effectiveHeroHeight = heroHeight + (needsHeroScroll ? snappedNavDiff : 0);
 
   useEffect(() => {
     if (!heroContainerRef.current) return;
@@ -326,14 +403,28 @@ export default function App() {
 
     const updateScrollLogic = () => {
       const scrollY = window.scrollY || window.pageYOffset || 0;
-      const windowHeight = window.innerHeight;
+      const currentWindowHeight = window.innerHeight;
+
+      const uncompressedNav = uncompressedNavHeightRef.current || 110;
+      const compressedNav = compressedNavHeightRef.current || 48;
+      const navDiff = Math.max(0, uncompressedNav - compressedNav);
+      const navSnappedDiff = Math.round(navDiff / 32) * 32 || 64;
 
       // Excess height when hero is taller than screen (2-stage scroll on mobile)
-      const extraScroll = Math.max(0, heroHeight - windowHeight);
+      const curBaseExtra = Math.max(0, heroHeight - currentWindowHeight);
+      const needsScroll = isMobile && curBaseExtra > 0;
 
-      // Subtract the uncompressed bar size from the scroll distance threshold
-      const uncompressedNavHeight = uncompressedNavHeightRef.current || 110;
-      const compressThreshold = Math.max(0, heroHeight - uncompressedNavHeight);
+      // In mobile view, since the nav bar compresses early (~24px) when hero needs scrolling,
+      // the scrollable hero section can scroll higher by navSnappedDiff before becoming fixed.
+      const extraScroll = needsScroll ? Math.max(0, curBaseExtra + navSnappedDiff) : Math.max(0, curBaseExtra);
+      const curEffectiveHeroHeight = heroHeight + (needsScroll ? navSnappedDiff : 0);
+
+      // When the hero section is too big and needs scrolling, sit way higher (early scroll ~24px)
+      // so the navigation bar compresses and collapses its links row, maximizing visible hero content.
+      // Otherwise, normally compress when the user scrolls past the hero section.
+      const compressThreshold = needsScroll
+        ? 24
+        : Math.max(0, heroHeight - uncompressedNav);
       setIsScrolled(scrollY >= compressThreshold);
 
       if (!heroStageRef.current || !heroHeight) {
@@ -342,14 +433,23 @@ export default function App() {
       }
 
       // 2-stage scroll:
-      // Stage 1: Scroll down to the bottom of the hero (scrollY from 0 to extraScroll)
-      // Stage 2: Hero becomes fixed at -(extraScroll), and scrolling reveals subsequent sections
-      const stageOffset = Math.min(Math.max(0, scrollY), extraScroll);
-      heroStageRef.current.style.transform = `translate3d(0, -${stageOffset}px, 0)`;
+      // Stage 1: When scrollY < extraScroll, the hero is positioned absolute at top: 0,
+      //          scrolling natively with the page on the GPU compositor thread without JS transform lag!
+      // Stage 2: When scrollY >= extraScroll, the hero is fixed at top: -extraScroll,
+      //          holding stationary while subsequent sections slide up over it.
+      if (needsScroll && scrollY < extraScroll) {
+        heroStageRef.current.style.position = 'absolute';
+        heroStageRef.current.style.top = '0px';
+        heroStageRef.current.style.transform = 'none';
+      } else {
+        heroStageRef.current.style.position = 'fixed';
+        heroStageRef.current.style.top = needsScroll ? `-${extraScroll}px` : '0px';
+        heroStageRef.current.style.transform = 'none';
+      }
 
       if (heroCardRef.current) {
         const stage2Scroll = Math.max(0, scrollY - extraScroll);
-        const stage2Range = Math.max(1, (heroHeight - extraScroll) * 0.55);
+        const stage2Range = Math.max(1, currentWindowHeight * 0.55);
         const progress = Math.min(1, stage2Scroll / stage2Range);
         const opacity = 1 - progress;
 
@@ -364,7 +464,7 @@ export default function App() {
         }
       }
 
-      const occluded = scrollY >= heroHeight;
+      const occluded = scrollY >= curEffectiveHeroHeight;
       setIsHeroOccluded(prev => (prev !== occluded ? occluded : prev));
 
       if (occluded) {
@@ -397,14 +497,21 @@ export default function App() {
         window.lenis.off('scroll', handleScroll);
       }
     };
-  }, [heroHeight]);
+  }, [heroHeight, isMobile, windowHeight]);
 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
-      if (navHeaderRef.current && !navHeaderRef.current.classList.contains('nav-compressed')) {
+      setWindowHeight(window.innerHeight);
+      if (navHeaderRef.current) {
         const h = navHeaderRef.current.offsetHeight;
-        if (h > 0) uncompressedNavHeightRef.current = h;
+        if (h > 0) {
+          if (navHeaderRef.current.classList.contains('nav-compressed')) {
+            compressedNavHeightRef.current = h;
+          } else {
+            uncompressedNavHeightRef.current = h;
+          }
+        }
       }
     };
     window.addEventListener("resize", handleResize);
@@ -414,6 +521,19 @@ export default function App() {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  useEffect(() => {
+    if (navHeaderRef.current) {
+      const h = navHeaderRef.current.offsetHeight;
+      if (h > 0) {
+        if (isScrolled) {
+          compressedNavHeightRef.current = h;
+        } else {
+          uncompressedNavHeightRef.current = h;
+        }
+      }
+    }
+  }, [isScrolled]);
 
   // Simulate hover for grid elements (projects, publications, skills) on mobile based on scroll coordinates
   useEffect(() => {
@@ -618,11 +738,11 @@ export default function App() {
       </AnimatePresence>
 
       {/* Fixed Hero Stage (Background + Business Card) */}
-          <div
-            id="hero"
-            className="hero-fixed-stage"
+      <div
+        id="hero"
+        className="hero-fixed-stage"
         ref={heroStageRef}
-        style={{ height: heroHeight > 0 ? `${heroHeight}px` : undefined }}
+        style={{ height: effectiveHeroHeight > 0 ? `${effectiveHeroHeight}px` : undefined }}
       >
         <div className="hero-background-grainient" aria-hidden="true">
           <Grainient
@@ -640,8 +760,8 @@ export default function App() {
             blendSoftness={0.58}
             rotationAmount={500}
             noiseScale={1.65}
-            grainAmount={0.04}
-            grainScale={8}
+            grainAmount={isMobile ? 0.032 : 0.04}
+            grainScale={isMobile ? 12 : 8}
             grainAnimated={true}
             grainSpeed={0.35}
             contrast={1.5}
@@ -724,7 +844,7 @@ export default function App() {
       {/* Ruler Scroller */}
       <RulerScroller
         label="HERO"
-        heroHeight={heroHeight}
+        heroHeight={effectiveHeroHeight}
         activeProjectDetail={activeProjectDetail}
         activeProjectAccent={
           activeProjectDetail
@@ -743,7 +863,7 @@ export default function App() {
         {/* Spacer reserving the hero section's exact height in document flow */}
         <div
           className="hero-scroll-spacer"
-          style={{ height: heroHeight > 0 ? `${heroHeight}px` : undefined }}
+          style={{ height: effectiveHeroHeight > 0 ? `${effectiveHeroHeight}px` : undefined }}
           aria-hidden="true"
         />
 
@@ -836,6 +956,7 @@ export default function App() {
                   {t.projects.map((proj, idx) => (
                     <AnimatedCard
                       key={proj.id}
+                      id={`project-card-${proj.id}`}
                       className={`project-card ${suppressedSideButtonsProject === proj.id ? "side-buttons-suppressed" : ""}`}
                       style={{
                         '--project-accent': proj.accentColor || 'var(--accent-color)'
@@ -881,10 +1002,14 @@ export default function App() {
                                     title={`${proj.title} ${t.projectLinks?.info || "Info"}`}
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setSuppressedSideButtonsProject(proj.id);
-                                      setHoveredProjectIconId(null);
-                                      setActiveHoveredCluster(null);
-                                      handleOpenProjectDetail(proj.id);
+                                      if (activeProjectDetail === proj.id) {
+                                        handleCloseProjectDetail();
+                                      } else {
+                                        setSuppressedSideButtonsProject(proj.id);
+                                        setHoveredProjectIconId(null);
+                                        setActiveHoveredCluster(null);
+                                        handleOpenProjectDetail(proj.id);
+                                      }
                                     }}
                                   >
                                     <Icons.Info />
@@ -1046,10 +1171,13 @@ export default function App() {
                     id={activeProjectDetail}
                     key={`project-detail-section-${activeProjectDetail}`}
                     className="project-detail-motion-wrapper"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                    variants={projectDetailVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    onUpdate={() => {
+                      if (window.lenis) window.lenis.resize();
+                    }}
                     onAnimationComplete={() => {
                       window.dispatchEvent(new Event('resize'));
                       if (window.lenis) window.lenis.resize();
@@ -1058,10 +1186,7 @@ export default function App() {
                     <ProjectDetailSection
                       projectId={activeProjectDetail}
                       project={t.projects.find((p) => p.id === activeProjectDetail)}
-                      onClose={() => {
-                        setActiveProjectDetail(null);
-                        setSuppressedSideButtonsProject(null);
-                      }}
+                      onClose={handleCloseProjectDetail}
                       lang={lang}
                       Icons={Icons}
                       getTechIconUrl={getTechIconUrl}

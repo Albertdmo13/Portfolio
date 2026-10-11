@@ -46,6 +46,7 @@
 
 html {
   background-color: var(--bg-backdrop);
+  overflow-anchor: none;
 }
 
 body {
@@ -53,6 +54,7 @@ body {
   background-color: var(--bg-backdrop);
   color: var(--text-main);
   overflow-x: hidden;
+  overflow-anchor: none;
 }
 
 a {

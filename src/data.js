@@ -136,9 +136,9 @@ export const portfolioData = {
           "/Portfolio/media/Publication1_Figures/electronics-14-00930-g004.png",
           "/Portfolio/media/Publication1_Figures/electronics-14-00930-g006.png",
           "/Portfolio/media/Publication1_Figures/electronics-14-00930-g009.png",
-          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g010.png",
-          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g011.png",
-          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g013.png"
+          "/Portfolio/media/Publication1_Figures/model_usage_comparison.svg",
+          "/Portfolio/media/Publication1_Figures/pipeline1_power_consumption.svg",
+          "/Portfolio/media/Publication1_Figures/pipeline2_power_consumption.svg"
         ]
       }
     ],
@@ -309,9 +309,9 @@ export const portfolioData = {
           "/Portfolio/media/Publication1_Figures/electronics-14-00930-g004.png",
           "/Portfolio/media/Publication1_Figures/electronics-14-00930-g006.png",
           "/Portfolio/media/Publication1_Figures/electronics-14-00930-g009.png",
-          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g010.png",
-          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g011.png",
-          "/Portfolio/media/Publication1_Figures/electronics-14-00930-g013.png"
+          "/Portfolio/media/Publication1_Figures/model_usage_comparison.svg",
+          "/Portfolio/media/Publication1_Figures/pipeline1_power_consumption.svg",
+          "/Portfolio/media/Publication1_Figures/pipeline2_power_consumption.svg"
         ]
       }
     ],

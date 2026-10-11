@@ -52,10 +52,22 @@ const RulerScroller = ({
         ? (sec.querySelector('.project-detail-section') || sec)
         : sec;
       const secId = targetSec.id || sec.id;
-      if (secId && !seenIds.has(secId)) {
-        seenIds.add(secId);
-        uniqueSections.push(targetSec);
+      if (!secId || seenIds.has(secId)) return;
+
+      const isProject =
+        targetSec.classList.contains('project-detail-section') ||
+        targetSec.classList.contains('project-detail-motion-wrapper') ||
+        secId === activeProjectDetail;
+
+      // Only include a project detail section when it is actively open and visible
+      if (isProject) {
+        if (!activeProjectDetail || secId !== activeProjectDetail) return;
+        const h = targetSec.offsetHeight || targetSec.getBoundingClientRect().height;
+        if (h <= 0) return;
       }
+
+      seenIds.add(secId);
+      uniqueSections.push(targetSec);
     });
 
     // Top section is always the HERO starting at 0%
@@ -139,24 +151,25 @@ const RulerScroller = ({
     const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
     // When user reached the bottom of the page, activate the last section
     if (window.innerHeight + scrollY >= scrollHeight - 60) {
-      const sections = document.querySelectorAll('.section, .project-detail-section');
-      if (sections.length > 0) {
-        const lastSec = sections[sections.length - 1];
-        const titleEl = lastSec.querySelector('.section-label') || lastSec.querySelector('.pds-top-title');
-        const name = titleEl ? titleEl.textContent.trim() : lastSec.id;
-        const isProject =
-          lastSec.classList.contains('project-detail-section') ||
-          lastSec.id === activeProjectDetail;
-
-        setActiveSectionName(name.toUpperCase());
-        setActiveSectionAccent(isProject ? (activeProjectAccent || lastSec.dataset.accentColor || '#2CC091') : null);
+      if (sectionsData.length > 0) {
+        const lastSec = sectionsData[sectionsData.length - 1];
+        setActiveSectionName(lastSec.name);
+        setActiveSectionAccent(lastSec.accentColor);
         return;
       }
     }
 
     // Section at reading focus line (35% from viewport top)
     const focusY = window.innerHeight * 0.35;
-    const rawSections = Array.from(document.querySelectorAll('.section, .project-detail-section'));
+    const rawSections = Array.from(document.querySelectorAll('.section, .project-detail-section'))
+      .filter((sec) => {
+        if (sec.classList.contains('project-detail-section')) {
+          if (!activeProjectDetail || sec.id !== activeProjectDetail) return false;
+          const h = sec.offsetHeight || sec.getBoundingClientRect().height;
+          return h > 0;
+        }
+        return true;
+      });
     let currentActive = null;
 
     for (const sec of rawSections) {
@@ -195,7 +208,7 @@ const RulerScroller = ({
       setActiveSectionName(name.toUpperCase());
       setActiveSectionAccent(isProject ? (activeProjectAccent || currentActive.dataset.accentColor || '#2CC091') : null);
     }
-  }, [label, heroHeight, activeProjectDetail, activeProjectAccent, activeProjectTitle]);
+  }, [label, heroHeight, activeProjectDetail, activeProjectAccent, activeProjectTitle, sectionsData]);
 
   // Recalculate coordinates whenever layout changes or hero expands
   useEffect(() => {
@@ -317,11 +330,6 @@ const RulerScroller = ({
                   ? {
                       color: markerColor,
                       fontWeight: 700
-                    }
-                  : sec.accentColor
-                  ? {
-                      color: markerColor,
-                      opacity: 0.88
                     }
                   : {})
               }}

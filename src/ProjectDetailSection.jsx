@@ -186,10 +186,6 @@ export default function ProjectDetailSection({
       <div className="section-label-track">
         <h2
           className={`section-label ${projectId?.toLowerCase() === "flowdip" ? "section-label--logo" : ""}`}
-          style={{
-            position: "sticky",
-            top: "100px",
-          }}
         >
           {projectId?.toLowerCase() === "flowdip" ? (
             <>

@@ -34,6 +34,8 @@
 }
 
 .project-detail-section .section-label {
+  position: sticky;
+  top: 100px;
   margin: 0;
   margin-left: 0;
   pointer-events: auto;
@@ -581,6 +583,33 @@
    Responsive
    -------------------------------------------------------- */
 @media (max-width: 768px) {
+  .project-detail-section .section-label-track {
+    left: 20px !important;
+    z-index: 20 !important;
+  }
+
+  .project-detail-section .section-label {
+    top: 60px !important;
+  }
+
+  .section-label--logo {
+    padding: 6px 14px !important;
+    background: rgba(12, 12, 16, 0.85) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .section-label-logo-img {
+    height: 28px !important;
+    min-height: 28px !important;
+    width: auto !important;
+    min-width: 80px !important;
+    max-width: 110px !important;
+  }
+
   .pds-frame {
     padding-left: 20px;
     padding-right: 20px;

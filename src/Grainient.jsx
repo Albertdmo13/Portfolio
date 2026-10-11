@@ -149,7 +149,8 @@ void mainImage(out vec4 o, vec2 C){
 
   // Moving noise: clearly visible motion, smooth & progressive, zero erratic flicker
   if(uGrainAmount > 0.0005){
-    vec2 grainCoord = vec2(uv.x * ratio, uv.y) * max(uGrainScale * 25.0, 40.0);
+    float minRes = min(iResolution.x, iResolution.y);
+    vec2 grainCoord = (C.xy / minRes) * max(uGrainScale * 35.0, 50.0);
     float gSpeed = max(uGrainSpeed, 0.05);
     float grainTime = (uGrainAnimated > 0.5) ? (iTime * gSpeed) : 0.0;
 
