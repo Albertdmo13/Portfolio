@@ -11,10 +11,10 @@ import ImageCarousel from "./ImageCarousel";
 import RulerScroller from "./RulerScroller";
 import CopyEmailButton from "./CopyEmailButton";
 import Grainient from "./Grainient";
+import FlowDiPPage from "./FlowDiPPage";
 import "./App.css";
 
 function AnimatedCard({ children, className, style, delay = 0 }) {
-  const [isEntered, setIsEntered] = useState(false);
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, amount: 0.05 });
 
@@ -23,65 +23,89 @@ function AnimatedCard({ children, className, style, delay = 0 }) {
       ref={ref}
       className={className}
       style={style}
-      initial={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
-      animate={inView ? { opacity: 1, scale: 1, filter: "blur(0px)" } : {}}
-      transition={
-        isEntered
-          ? { duration: 0.05, ease: "easeOut" }
-          : { duration: 0.6, delay: delay, ease: "easeOut" }
-      }
-      onAnimationComplete={() => setIsEntered(true)}
-      whileHover={{ scale: 1.02, transition: { duration: 0.05, ease: "easeOut" } }}
+      initial={{ opacity: 0 }}
+      animate={inView ? { opacity: 1 } : {}}
+      transition={{ duration: 0.35, delay: delay, ease: "easeOut" }}
     >
       {children}
     </motion.article>
   );
 }
 
-function SectionDivider({ label, targetGridY }) {
-  const [topOffset, setTopOffset] = useState(-40);
-  const ref = useRef(null);
+function GridSnappedSection({
+  id,
+  label,
+  isLast = false,
+  sectionAnimation,
+  children
+}) {
+  const contentRef = useRef(null);
+  const [padding, setPadding] = useState({ top: 48, bottom: 48, minHeight: 0 });
 
   useEffect(() => {
-    const updateOffset = () => {
-      if (!ref.current) return;
-      const absoluteY = window.scrollY + ref.current.getBoundingClientRect().top;
+    const el = contentRef.current;
+    if (!el) return;
 
-      // If targetGridY is provided, snap directly to that dotted-grid coordinate;
-      // otherwise, snap targetY (absoluteY - 40) to the 20px background dot grid (dots at 10, 30, 50...)
-      const snappedY = targetGridY !== undefined && targetGridY > 0
-        ? targetGridY
-        : Math.round(((absoluteY - 40) - 10) / 20) * 20 + 10;
-
-      setTopOffset(snappedY - absoluteY);
+    const measure = () => {
+      const h = el.offsetHeight;
+      if (!h) return;
+      const minPadding = 80; // Minimum 80px total vertical breathing space (~40px top, ~40px bottom)
+      const targetHeight = Math.ceil((h + minPadding) / 32) * 32;
+      const extra = targetHeight - h;
+      const top = Math.floor(extra / 2);
+      const bottom = extra - top;
+      setPadding({ top, bottom, minHeight: targetHeight });
     };
 
-    updateOffset();
-    const timeout = setTimeout(updateOffset, 800);
-    window.addEventListener('resize', updateOffset);
+    measure();
+    const t1 = setTimeout(measure, 150);
+    const t2 = setTimeout(measure, 600);
+
+    let ro;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(measure);
+      ro.observe(el);
+    }
+    window.addEventListener('resize', measure);
+
     return () => {
-      clearTimeout(timeout);
-      window.removeEventListener('resize', updateOffset);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      if (ro) ro.disconnect();
+      window.removeEventListener('resize', measure);
     };
-  }, [targetGridY]);
+  }, []);
 
   return (
-    <div ref={ref} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, pointerEvents: 'none', zIndex: 10 }}>
-      <div
-        className="section-divider-line"
-        style={{ top: `${topOffset}px` }}
-      />
-      <h2
-        className="section-label"
-        style={{
-          position: 'sticky',
-          top: '100px', // distance from top of viewport
-          marginTop: `${topOffset + 16}px` // starting offset
-        }}
-      >
-        {label}
-      </h2>
-    </div>
+    <motion.section
+      id={id}
+      className="section"
+      style={{
+        minHeight: padding.minHeight ? `${padding.minHeight}px` : undefined,
+        paddingTop: `${padding.top}px`,
+        paddingBottom: `${padding.bottom}px`,
+        boxSizing: 'border-box'
+      }}
+      {...sectionAnimation}
+    >
+      <div className="section-divider-line" style={{ top: 0 }} />
+      {isLast && <div className="section-divider-line" style={{ bottom: 0 }} />}
+      {label && (
+        <h2
+          className="section-label"
+          style={{
+            position: 'sticky',
+            top: '100px',
+            marginTop: '16px'
+          }}
+        >
+          {label}
+        </h2>
+      )}
+      <div ref={contentRef} className="section-content-wrapper">
+        {children}
+      </div>
+    </motion.section>
   );
 }
 
@@ -184,7 +208,45 @@ export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [heroHeight, setHeroHeight] = useState(0);
+  const [isHeroOccluded, setIsHeroOccluded] = useState(false);
   const [activeHoveredCluster, setActiveHoveredCluster] = useState(null);
+  const [currentRoute, setCurrentRoute] = useState(() => {
+    return window.location.hash.toLowerCase().startsWith("#/flowdip") ? "flowdip" : "home";
+  });
+
+  // Close expanded project cluster when tapping outside on mobile/touch screens
+  useEffect(() => {
+    if (!activeHoveredCluster) return;
+    const handleOutsideTap = (e) => {
+      if (!e.target.closest('.project-seam-action-cluster')) {
+        setActiveHoveredCluster(null);
+      }
+    };
+    document.addEventListener('touchstart', handleOutsideTap, { passive: true });
+    document.addEventListener('click', handleOutsideTap);
+    return () => {
+      document.removeEventListener('touchstart', handleOutsideTap);
+      document.removeEventListener('click', handleOutsideTap);
+    };
+  }, [activeHoveredCluster]);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (hash.startsWith("#/flowdip")) {
+        setCurrentRoute("flowdip");
+        window.scrollTo({ top: 0, behavior: "instant" });
+        if (window.lenis) {
+          window.lenis.scrollTo(0, { immediate: true });
+        }
+      } else {
+        setCurrentRoute("home");
+      }
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
   const heroStageRef = useRef(null);
   const heroContainerRef = useRef(null);
   const heroCardRef = useRef(null);
@@ -198,9 +260,9 @@ export default function App() {
       if (heroContainerRef.current) {
         const rawHeight = heroContainerRef.current.offsetHeight;
         if (rawHeight > 0) {
-          // Snap the hero height to the 20px background dot grid (dots at 10, 30, 50, 70...)
-          // Exactly matching the section divider grid snapping formula: Math.round((target - 10) / 20) * 20 + 10
-          const snappedHeight = Math.round((rawHeight - 10) / 20) * 20 + 10;
+          // Snap the hero height to the 32px background square grid (lines at 0, 32, 64, 96...)
+          // Clamped to at least 512px so spacer is always an exact multiple of 32
+          const snappedHeight = Math.ceil(Math.max(512, rawHeight) / 32) * 32;
           setHeroHeight(snappedHeight);
         }
       }
@@ -212,15 +274,11 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
+    let ticking = false;
+
+    const updateScrollLogic = () => {
       const scrollY = window.scrollY || window.pageYOffset || 0;
       const windowHeight = window.innerHeight;
-
-      // Keep uncompressed nav height updated whenever nav is in uncompressed state
-      if (navHeaderRef.current && !navHeaderRef.current.classList.contains('nav-compressed')) {
-        const h = navHeaderRef.current.offsetHeight;
-        if (h > 0) uncompressedNavHeightRef.current = h;
-      }
 
       // Excess height when hero is taller than screen (2-stage scroll on mobile)
       const extraScroll = Math.max(0, heroHeight - windowHeight);
@@ -230,7 +288,10 @@ export default function App() {
       const compressThreshold = Math.max(0, heroHeight - uncompressedNavHeight);
       setIsScrolled(scrollY >= compressThreshold);
 
-      if (!heroStageRef.current || !heroHeight) return;
+      if (!heroStageRef.current || !heroHeight) {
+        ticking = false;
+        return;
+      }
 
       // 2-stage scroll:
       // Stage 1: Scroll down to the bottom of the hero (scrollY from 0 to extraScroll)
@@ -239,8 +300,6 @@ export default function App() {
       heroStageRef.current.style.transform = `translate3d(0, -${stageOffset}px, 0)`;
 
       if (heroCardRef.current) {
-        // Hero card stays fully opaque (1.0) while scrolling to the bottom of the hero.
-        // Once the bottom is reached and subsequent sections scroll up (Stage 2), fade out smoothly.
         const stage2Scroll = Math.max(0, scrollY - extraScroll);
         const stage2Range = Math.max(1, (heroHeight - extraScroll) * 0.55);
         const progress = Math.min(1, stage2Scroll / stage2Range);
@@ -257,10 +316,22 @@ export default function App() {
         }
       }
 
-      if (scrollY >= heroHeight) {
+      const occluded = scrollY >= heroHeight;
+      setIsHeroOccluded(prev => (prev !== occluded ? occluded : prev));
+
+      if (occluded) {
         heroStageRef.current.style.visibility = 'hidden';
       } else {
         heroStageRef.current.style.visibility = 'visible';
+      }
+
+      ticking = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(updateScrollLogic);
       }
     };
 
@@ -269,7 +340,7 @@ export default function App() {
     if (window.lenis) {
       window.lenis.on('scroll', handleScroll);
     }
-    handleScroll();
+    updateScrollLogic();
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -299,32 +370,36 @@ export default function App() {
   // Simulate hover for grid elements (projects, publications, skills) on mobile based on scroll coordinates
   useEffect(() => {
     let activeCards = new Set();
+    let ticking = false;
 
-    const updateMobileHover = () => {
+    const runMobileHover = () => {
       // Only active on mobile viewports (<= 768px)
       if (window.innerWidth > 768) {
         if (activeCards.size > 0) {
           activeCards.forEach((card) => card.classList.remove('is-hovered'));
           activeCards.clear();
         }
+        ticking = false;
         return;
       }
 
       // Focal reading line: central region of mobile viewport (~48% of screen height)
       const focusY = window.innerHeight * 0.48;
-      const targetCards = Array.from(
-        document.querySelectorAll(
-          '.projects-grid .project-card, .publications-list .project-card, .skills-grid .skill-category-card'
-        )
+      const targetCards = document.querySelectorAll(
+        '.projects-grid .project-card, .publications-list .project-card, .skills-grid .skill-category-card'
       );
 
-      if (targetCards.length === 0) return;
+      if (targetCards.length === 0) {
+        ticking = false;
+        return;
+      }
 
       const newActiveCards = new Set();
       let closestCard = null;
       let minDistance = Infinity;
 
-      for (const card of targetCards) {
+      for (let i = 0; i < targetCards.length; i++) {
+        const card = targetCards[i];
         const rect = card.getBoundingClientRect();
 
         // Card strictly encompasses the focal line
@@ -368,6 +443,21 @@ export default function App() {
           }
         });
         activeCards = newActiveCards;
+      }
+      ticking = false;
+    };
+
+    const updateMobileHover = () => {
+      if (window.innerWidth > 768) {
+        if (activeCards.size > 0) {
+          activeCards.forEach((card) => card.classList.remove('is-hovered'));
+          activeCards.clear();
+        }
+        return;
+      }
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(runMobileHover);
       }
     };
 
@@ -421,11 +511,12 @@ export default function App() {
     });
     window.lenis = lenis;
 
+    let rafId = 0;
     function raf(time) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
     const handleAnchorClick = (e) => {
       const target = e.target.closest('a[href^="#"]');
@@ -442,6 +533,7 @@ export default function App() {
     document.addEventListener('click', handleAnchorClick);
 
     return () => {
+      cancelAnimationFrame(rafId);
       document.removeEventListener('click', handleAnchorClick);
       lenis.destroy();
       window.lenis = null;
@@ -466,18 +558,6 @@ export default function App() {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8 }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              backgroundColor: '#08080a',
-              zIndex: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
           >
             <LatticeLoader
               status={loaderStatus}
@@ -488,15 +568,32 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
-      {/* Fixed Hero Stage (Background + Business Card) */}
-      <div
-        id="hero"
-        className="hero-fixed-stage"
+
+      {currentRoute === "flowdip" ? (
+        <FlowDiPPage
+          lang={lang}
+          setLang={setLang}
+          Icons={Icons}
+          onBack={() => {
+            window.location.hash = "#/";
+            window.scrollTo({ top: 0, behavior: "instant" });
+            if (window.lenis) {
+              window.lenis.scrollTo(0, { immediate: true });
+            }
+          }}
+        />
+      ) : (
+        <>
+          {/* Fixed Hero Stage (Background + Business Card) */}
+          <div
+            id="hero"
+            className="hero-fixed-stage"
         ref={heroStageRef}
         style={{ height: heroHeight > 0 ? `${heroHeight}px` : undefined }}
       >
         <div className="hero-background-grainient" aria-hidden="true">
           <Grainient
+            paused={isLoading || isHeroOccluded}
             color1="#343343"
             color2="#0d0d0e"
             color3="#565972"
@@ -510,9 +607,10 @@ export default function App() {
             blendSoftness={0.58}
             rotationAmount={500}
             noiseScale={1.65}
-            grainAmount={0.02}
+            grainAmount={0.04}
             grainScale={8}
-            grainAnimated={false}
+            grainAnimated={true}
+            grainSpeed={0.35}
             contrast={1.5}
             gamma={1}
             saturation={0.75}
@@ -607,8 +705,11 @@ export default function App() {
           <div className="foreground-layer">
             <main className="main-content sections-main animate-in">
               {/* Trajectory / Experience Section */}
-              <motion.section id="experience" className="section" {...sectionAnimation}>
-                <SectionDivider label={t.sections.trajectory} targetGridY={heroHeight} />
+              <GridSnappedSection
+                id="experience"
+                label={t.sections.trajectory}
+                sectionAnimation={sectionAnimation}
+              >
                 <div className="timeline-container">
                   <div className="timeline-track" />
                   <div className="timeline-items">
@@ -651,6 +752,10 @@ export default function App() {
                                   <img
                                     src={`${base}${item.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
                                     alt={`${item.institution} logo`}
+                                    width={72}
+                                    height={72}
+                                    loading="lazy"
+                                    decoding="async"
                                     className="timeline-logo"
                                   />
                                 </a>
@@ -658,6 +763,10 @@ export default function App() {
                                 <img
                                   src={`${base}${item.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
                                   alt={`${item.institution} logo`}
+                                  width={72}
+                                  height={72}
+                                  loading="lazy"
+                                  decoding="async"
                                   className="timeline-logo"
                                 />
                               )
@@ -668,11 +777,14 @@ export default function App() {
                     ))}
                   </div>
                 </div>
-              </motion.section>
+              </GridSnappedSection>
 
               {/* Projects Section */}
-              <motion.section id="projects" className="section" {...sectionAnimation}>
-                <SectionDivider label={t.sections.projects} />
+              <GridSnappedSection
+                id="projects"
+                label={t.sections.projects}
+                sectionAnimation={sectionAnimation}
+              >
                 <div className="projects-grid">
                   {t.projects.map((proj, idx) => (
                     <AnimatedCard
@@ -691,7 +803,9 @@ export default function App() {
                             loop
                             muted
                             playsInline
+                            preload="metadata"
                             className="project-video"
+                            style={{ aspectRatio: '16 / 9' }}
                           />
                         </div>
                       )}
@@ -699,22 +813,25 @@ export default function App() {
                         <div className="project-seam-logo-anchor">
                           <div
                             className={`project-seam-action-cluster ${(proj.liveAppUrl || proj.websiteUrl) ? "has-expanded-links" : ""} ${activeHoveredCluster === proj.id ? "is-expanded" : ""}`}
-                            onMouseEnter={() => setActiveHoveredCluster(proj.id)}
-                            onMouseLeave={() => setActiveHoveredCluster(null)}
-                            onTouchStart={() => setActiveHoveredCluster(prev => prev === proj.id ? null : proj.id)}
+                            onMouseEnter={() => {
+                              if (!isMobile) setActiveHoveredCluster(proj.id);
+                            }}
+                            onMouseLeave={() => {
+                              if (!isMobile) setActiveHoveredCluster(null);
+                            }}
                           >
                             {(proj.websiteUrl || proj.liveAppUrl) && (
                               <div className="project-seam-expanded-buttons" aria-label={`${proj.title} links`}>
                                 {proj.websiteUrl && (
                                   <a
-                                    href={`${base}${proj.websiteUrl.replace(/^\/?(Portfolio\/)?/, "")}`}
-                                    target="_blank"
-                                    rel="noreferrer"
+                                    href={proj.websiteUrl.startsWith("#") ? proj.websiteUrl : `${base}${proj.websiteUrl.replace(/^\/?(Portfolio\/)?/, "")}`}
+                                    {...(!proj.websiteUrl.startsWith("#") ? { target: "_blank", rel: "noreferrer" } : {})}
                                     className="project-seam-action-btn project-seam-action-btn--subpage"
                                     title={`${proj.title} ${t.projectLinks?.website || "Website"}`}
+                                    onClick={(e) => e.stopPropagation()}
                                   >
                                     <Icons.Globe />
-                                    <span>{t.projectLinks?.website || "Website"}</span>
+                                    <span>{t.projectLinks?.shortWebsite || "WEB"}</span>
                                   </a>
                                 )}
                                 {proj.liveAppUrl && (
@@ -724,9 +841,10 @@ export default function App() {
                                     rel="noreferrer"
                                     className="project-seam-action-btn project-seam-action-btn--live"
                                     title={`${proj.title} ${t.projectLinks?.liveApp || "Live App"}`}
+                                    onClick={(e) => e.stopPropagation()}
                                   >
                                     <Icons.External />
-                                    <span>{t.projectLinks?.liveApp || "Live App"}</span>
+                                    <span>{t.projectLinks?.shortLiveApp || "APP"}</span>
                                   </a>
                                 )}
                               </div>
@@ -739,18 +857,43 @@ export default function App() {
                                 rel="noreferrer"
                                 className="project-seam-logo-link"
                                 title={`${proj.title} logo`}
+                                onClick={(e) => {
+                                  const hasExpandedLinks = Boolean(proj.websiteUrl || proj.liveAppUrl);
+                                  const isTouchOrMobile = isMobile || (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: none)").matches);
+                                  if (hasExpandedLinks && isTouchOrMobile) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setActiveHoveredCluster(prev => prev === proj.id ? null : proj.id);
+                                  }
+                                }}
                               >
                                 <img
                                   src={`${base}${proj.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
                                   alt={`${proj.title} logo`}
+                                  width={64}
+                                  height={64}
+                                  loading="lazy"
+                                  decoding="async"
                                   className="project-seam-logo"
                                 />
                               </a>
                             ) : (
-                              <div className="project-seam-logo-container">
+                              <div
+                                className="project-seam-logo-container"
+                                onClick={(e) => {
+                                  if (proj.websiteUrl || proj.liveAppUrl) {
+                                    e.stopPropagation();
+                                    setActiveHoveredCluster(prev => prev === proj.id ? null : proj.id);
+                                  }
+                                }}
+                              >
                                 <img
                                   src={`${base}${proj.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
                                   alt={`${proj.title} logo`}
+                                  width={64}
+                                  height={64}
+                                  loading="lazy"
+                                  decoding="async"
                                   className="project-seam-logo"
                                 />
                               </div>
@@ -784,7 +927,9 @@ export default function App() {
                                   <img
                                     src={iconUrl}
                                     alt={tag}
-                                    style={{ width: '16px', height: '16px' }}
+                                    width={16}
+                                    height={16}
+                                    style={{ width: '16px', height: '16px', flexShrink: 0 }}
                                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                   />
                                 )}
@@ -809,11 +954,14 @@ export default function App() {
                     </AnimatedCard>
                   ))}
                 </div>
-              </motion.section>
+              </GridSnappedSection>
 
               {/* Publications Section */}
-              <motion.section id="publications" className="section" {...sectionAnimation}>
-                <SectionDivider label={t.sections.publications || "Publications"} />
+              <GridSnappedSection
+                id="publications"
+                label={t.sections.publications || "Publications"}
+                sectionAnimation={sectionAnimation}
+              >
                 <div className="publications-list" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                   {t.publications && t.publications.map((pub, idx) => (
                     <AnimatedCard
@@ -835,7 +983,11 @@ export default function App() {
                           <img
                             src={`${base}${pub.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
                             alt="Publication logo"
-                            style={{ width: '64px', height: 'auto', flexShrink: 0, filter: 'invert(1)', opacity: 0.8 }}
+                            width={64}
+                            height={42}
+                            loading="lazy"
+                            decoding="async"
+                            style={{ width: '64px', height: '42px', aspectRatio: '598.7 / 394.9', objectFit: 'contain', flexShrink: 0, filter: 'invert(1)', opacity: 0.8 }}
                           />
                         )}
                       </div>
@@ -855,10 +1007,14 @@ export default function App() {
                     </AnimatedCard>
                   ))}
                 </div>
-              </motion.section>
+              </GridSnappedSection>
+
               {/* Skills Section */}
-              <motion.section id="skills" className="section" {...sectionAnimation}>
-                <SectionDivider label={t.sections.skills} />
+              <GridSnappedSection
+                id="skills"
+                label={t.sections.skills}
+                sectionAnimation={sectionAnimation}
+              >
                 <div className="skills-grid">
                   {t.skillCategories.map((cat, idx) => (
                     <AnimatedCard
@@ -871,16 +1027,20 @@ export default function App() {
                         {cat.skills.map((skill, i) => {
                           const iconUrl = getTechIconUrl(skill);
                           return (
-                            <span key={i} className="skill-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                            <span key={i} className="skill-pill">
                               {iconUrl && (
                                 <img
                                   src={iconUrl}
                                   alt={skill}
-                                  style={{ width: '20px', height: '20px' }}
-                                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                  width={20}
+                                  height={20}
+                                  loading="lazy"
+                                  decoding="async"
+                                  className="skill-pill-icon"
+                                  onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                                 />
                               )}
-                              {skill}
+                              <span>{skill}</span>
                             </span>
                           );
                         })}
@@ -888,11 +1048,15 @@ export default function App() {
                     </AnimatedCard>
                   ))}
                 </div>
-              </motion.section>
+              </GridSnappedSection>
 
               {/* Contact Section */}
-              <motion.section id="contact" className="section" {...sectionAnimation}>
-                <SectionDivider label={t.sections.contact} />
+              <GridSnappedSection
+                id="contact"
+                label={t.sections.contact}
+                isLast={true}
+                sectionAnimation={sectionAnimation}
+              >
                 <div className="contact-card">
                   <h3 className="contact-card-title">{t.contact.title}</h3>
                   <p className="contact-card-desc">{t.contact.desc}</p>
@@ -920,7 +1084,7 @@ export default function App() {
                     </SpecularButton>
                   </div>
                 </div>
-              </motion.section>
+              </GridSnappedSection>
             </main>
 
             {/* Footer */}
@@ -932,6 +1096,8 @@ export default function App() {
           </div>
         </div>
       </div>
+        </>
+      )}
     </>
   );
 }

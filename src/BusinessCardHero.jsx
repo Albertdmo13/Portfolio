@@ -15,8 +15,10 @@ export default function BusinessCardHero({ t, lang, onContactClick, Icons }) {
             <div className="card-chip">
               <div className="card-chip-emblem">
                 <img
-                  src={`${base}media/Albertdmo_logo.png`}
+                  src={`${base}media/Albertdmo_logo.svg`}
                   alt="Alberto Díaz Monogram Logo"
+                  width={24}
+                  height={24}
                   className="card-chip-logo"
                 />
               </div>
@@ -74,7 +76,7 @@ export default function BusinessCardHero({ t, lang, onContactClick, Icons }) {
 
               <CopyEmailButton 
                 email={t.personalInfo.email} 
-                copiedText={t.contact?.copiedBtn || "Copied!"} 
+                copiedText={t.contact?.copiedBtn || "Copied to clipboard"} 
                 Icons={Icons} 
               />
             </div>

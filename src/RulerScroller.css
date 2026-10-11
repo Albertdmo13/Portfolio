@@ -45,7 +45,7 @@
 .active-label {
   color: var(--accent-color);
   font-weight: 700;
-  background-color: #080808; /* occlude static numbers */
+  background-color: var(--bg-backdrop, #080808); /* occlude static numbers */
   padding: 4px 0;
 }
 

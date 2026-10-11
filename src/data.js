@@ -35,6 +35,8 @@ export const portfolioData = {
     projectLinks: {
       liveApp: "Live App",
       website: "Website",
+      shortLiveApp: "APP",
+      shortWebsite: "WEB",
     },
     sections: {
       trajectory: "Trajectory & Education",
@@ -77,11 +79,11 @@ export const portfolioData = {
         description: "A node-based web application that empowers users to visually build, connect, and execute real-time video and audio processing graphs directly in the browser.",
         tags: ["React", "JavaScript", "Audio / Video", "Web APIs"],
         video: "/Portfolio/media/flowdip.mp4",
-        logo: "/Portfolio/media/FlowDiP_Logo.png",
+        logo: "/Portfolio/media/FlowDiP_Logo.svg",
         accentColor: "#2CC091",
         link: "https://albertdmo13.github.io/FlowDiP/",
         liveAppUrl: "https://albertdmo13.github.io/FlowDiP/",
-        websiteUrl: "/Portfolio/flowdip",
+        websiteUrl: "#/flowdip",
         github: "https://github.com/Albertdmo13",
       },
       {
@@ -156,7 +158,7 @@ export const portfolioData = {
       desc: "I'm always open to discussing new projects, software engineering roles, or research collaborations. Feel free to reach out via email or connect on LinkedIn.",
       emailBtn: "Get in touch",
       copyBtn: "Copy email",
-      copiedBtn: "Copied to clipboard!",
+      copiedBtn: "Copied to clipboard",
       clientBtn: "Open Email Client",
     },
     footer: {
@@ -199,6 +201,8 @@ export const portfolioData = {
     projectLinks: {
       liveApp: "App en vivo",
       website: "Sitio web",
+      shortLiveApp: "APP",
+      shortWebsite: "WEB",
     },
     sections: {
       trajectory: "Trayectoria y Educación",
@@ -241,11 +245,11 @@ export const portfolioData = {
         description: "Aplicación web basada en nodos que permite a los usuarios construir, conectar y ejecutar gráficos de procesamiento de vídeo y audio en tiempo real directamente en el navegador.",
         tags: ["React", "JavaScript", "Audio / Vídeo", "Web APIs"],
         video: "/Portfolio/media/flowdip.mp4",
-        logo: "/Portfolio/media/FlowDiP_Logo.png",
+        logo: "/Portfolio/media/FlowDiP_Logo.svg",
         accentColor: "#2CC091",
         link: "https://albertdmo13.github.io/FlowDiP/",
         liveAppUrl: "https://albertdmo13.github.io/FlowDiP/",
-        websiteUrl: "/Portfolio/flowdip",
+        websiteUrl: "#/flowdip",
         github: "https://github.com/Albertdmo13",
       },
       {

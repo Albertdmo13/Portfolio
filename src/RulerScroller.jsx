@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import './RulerScroller.css';
 
@@ -165,11 +165,22 @@ const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
       resizeObserver.observe(document.body);
     }
 
+    let ticking = false;
+    const throttledUpdate = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(() => {
+          updateActiveSection();
+          ticking = false;
+        });
+      }
+    };
+
     window.addEventListener('resize', calculateSections);
-    window.addEventListener('scroll', updateActiveSection, { passive: true });
+    window.addEventListener('scroll', throttledUpdate, { passive: true });
 
     if (window.lenis) {
-      window.lenis.on('scroll', updateActiveSection);
+      window.lenis.on('scroll', throttledUpdate);
     }
 
     // Listen to document font loading
@@ -187,9 +198,9 @@ const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
       clearTimeout(t4);
       resizeObserver.disconnect();
       window.removeEventListener('resize', calculateSections);
-      window.removeEventListener('scroll', updateActiveSection);
+      window.removeEventListener('scroll', throttledUpdate);
       if (window.lenis) {
-        window.lenis.off('scroll', updateActiveSection);
+        window.lenis.off('scroll', throttledUpdate);
       }
     };
   }, [calculateSections, updateActiveSection, heroHeight]);
@@ -215,27 +226,31 @@ const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
 
   const totalTicks = 101; // 0 to 100
 
+  const staticTicks = useMemo(() => {
+    return Array.from({ length: totalTicks }).map((_, index) => {
+      const isMajor = index % 10 === 0;
+      return (
+        <div 
+          key={index} 
+          className="ruler-tick-container"
+          style={{ top: `${index}%` }}
+        >
+          {isMajor && (
+            <span className="ruler-label major-label">
+              {index.toString().padStart(2, '0')}
+            </span>
+          )}
+          <div className={`ruler-line ${isMajor ? 'major' : 'minor'}`} />
+        </div>
+      );
+    });
+  }, [totalTicks]);
+
   return (
     <div className="ruler-scroller">
       <div className="ruler-ticks">
         {/* Background Static Ticks */}
-        {Array.from({ length: totalTicks }).map((_, index) => {
-          const isMajor = index % 10 === 0;
-          return (
-            <div 
-              key={index} 
-              className="ruler-tick-container"
-              style={{ top: `${index}%` }}
-            >
-              {isMajor && (
-                <span className="ruler-label major-label">
-                  {index.toString().padStart(2, '0')}
-                </span>
-              )}
-              <div className={`ruler-line ${isMajor ? 'major' : 'minor'}`} />
-            </div>
-          );
-        })}
+        {staticTicks}
 
         {/* Section Title Markers */}
         {sectionsData.map((sec) => {

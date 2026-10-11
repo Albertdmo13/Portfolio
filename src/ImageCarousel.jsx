@@ -11,8 +11,8 @@ export default function ImageCarousel({ images, base }) {
   const [scrollLeftState, setScrollLeftState] = useState(0);
   const [dragged, setDragged] = useState(false);
 
-  // Duplicate the images enough times to ensure seamless infinite looping without hitting scrollbar limits
-  const K = 20;
+  // Duplicate the images enough times to ensure seamless infinite looping without excessive DOM nodes
+  const K = 4;
   const extendedImages = Array(K).fill(images).flat();
 
   const handleMouseDown = (e) => {
@@ -58,15 +58,14 @@ export default function ImageCarousel({ images, base }) {
       el.scrollLeft = el.scrollWidth / K;
     }
 
-    if (isHovered) return;
-
-    let animationId;
+    let animationId = 0;
+    let isVisible = false;
     let exactScroll = el.scrollLeft;
     let lastTime = performance.now();
     const speed = 25; // Slower, elegant glide speed (pixels per second)
 
     const step = (time) => {
-      if (!isHovered) {
+      if (!isHovered && isVisible) {
         const delta = (time - lastTime) / 1000;
         if (delta > 0 && delta < 0.1) {
           exactScroll += speed * delta;
@@ -84,12 +83,44 @@ export default function ImageCarousel({ images, base }) {
         }
       }
       lastTime = time;
-      animationId = requestAnimationFrame(step);
+      if (isVisible && !isHovered) {
+        animationId = requestAnimationFrame(step);
+      }
     };
 
-    animationId = requestAnimationFrame(step);
-    
-    return () => cancelAnimationFrame(animationId);
+    const startAnimation = () => {
+      if (animationId === 0) {
+        lastTime = performance.now();
+        animationId = requestAnimationFrame(step);
+      }
+    };
+
+    const stopAnimation = () => {
+      if (animationId !== 0) {
+        cancelAnimationFrame(animationId);
+        animationId = 0;
+      }
+    };
+
+    const io = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting;
+      if (isVisible && !isHovered) {
+        startAnimation();
+      } else {
+        stopAnimation();
+      }
+    }, { threshold: 0.05 });
+
+    io.observe(el);
+
+    if (!isHovered && isVisible) {
+      startAnimation();
+    }
+
+    return () => {
+      stopAnimation();
+      io.disconnect();
+    };
   }, [isHovered]);
 
   return (
@@ -114,6 +145,9 @@ export default function ImageCarousel({ images, base }) {
           paddingRight: '4px',
           WebkitOverflowScrolling: 'touch', 
           width: '100%',
+          height: '208px',
+          minHeight: '208px',
+          boxSizing: 'border-box',
           scrollbarWidth: 'none', /* Firefox */
         }}
       >
@@ -122,23 +156,27 @@ export default function ImageCarousel({ images, base }) {
             key={i}
             src={`${base}${imgUrl.replace(/^\/?(Portfolio\/)?/, "")}`}
             alt={`Publication figure ${i + 1}`}
+            loading="lazy"
+            decoding="async"
             draggable={false}
+            height={180}
             onClick={(e) => handleImageClick(e, `${base}${imgUrl.replace(/^\/?(Portfolio\/)?/, "")}`)}
             style={{ 
               height: '180px', 
               width: 'auto', 
+              minWidth: '120px',
               borderRadius: '8px', 
               flexShrink: 0, 
               backgroundColor: 'rgba(255,255,255,0.02)', 
               objectFit: 'contain', 
               border: '1px solid var(--glass-border)',
               cursor: 'grab',
-              transition: 'transform 0.2s ease, border-color 0.2s ease',
+              transition: 'border-color 0.2s ease',
               WebkitUserDrag: 'none',
               userSelect: 'none'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.borderColor = 'var(--accent-color)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.borderColor = 'var(--glass-border)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent-color)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--glass-border)'; }}
             onMouseDown={(e) => e.currentTarget.style.cursor = 'grabbing'}
             onMouseUp={(e) => e.currentTarget.style.cursor = 'grab'}
           />

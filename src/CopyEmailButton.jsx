@@ -1,24 +1,49 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export default function CopyEmailButton({ email, copiedText, Icons, className = "" }) {
   const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleCopyEmail = (e) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(email);
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(email);
+    }
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      setCopied(false);
+    }, 2400);
   };
+
+  const displayText = copiedText || "Copied to clipboard";
 
   return (
     <button
       type="button"
       onClick={handleCopyEmail}
-      className={`email-copy-btn ${className}`.trim()}
+      className={`email-copy-btn ${copied ? "is-copied" : ""} ${className}`.trim()}
       title="Copy email to clipboard"
     >
-      {copied ? <Icons.Check /> : <Icons.Copy />}
-      <span>{copied ? (copiedText || "Copied!") : email}</span>
+      <span className="email-copy-base" aria-hidden={copied}>
+        {Icons?.Copy && <Icons.Copy />}
+        <span>{email}</span>
+      </span>
+
+      <span className="email-copy-slide" aria-hidden={!copied}>
+        {Icons?.Check && <Icons.Check />}
+        <span>{displayText}</span>
+      </span>
     </button>
   );
 }
