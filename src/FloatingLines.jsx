@@ -329,8 +329,12 @@ export default function FloatingLines({
     const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
     camera.position.z = 1;
 
-    const renderer = new WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    const renderer = new WebGLRenderer({
+      antialias: false,
+      alpha: false,
+      powerPreference: 'high-performance'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
     container.appendChild(renderer.domElement);
@@ -413,10 +417,16 @@ export default function FloatingLines({
 
     const clock = new Clock();
 
+    let lastW = 0;
+    let lastH = 0;
     const setSize = () => {
       if (!active) return;
       const width = container.clientWidth || 1;
       const height = container.clientHeight || 1;
+
+      if (Math.abs(width - lastW) < 2 && Math.abs(height - lastH) < 2) return;
+      lastW = width;
+      lastH = height;
 
       renderer.setSize(width, height, false);
 
@@ -427,11 +437,13 @@ export default function FloatingLines({
 
     setSize();
 
+    let resizeRaf = 0;
     const ro =
       typeof ResizeObserver !== 'undefined'
         ? new ResizeObserver(() => {
             if (!active) return;
-            setSize();
+            if (resizeRaf) cancelAnimationFrame(resizeRaf);
+            resizeRaf = requestAnimationFrame(setSize);
           })
         : null;
 
@@ -530,6 +542,7 @@ export default function FloatingLines({
 
       if (io) io.disconnect();
 
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
       if (ro) ro.disconnect();
 
       if (interactive) {

@@ -123,6 +123,24 @@
   z-index: 0;
 }
 
+.pds-floating-lines-fadein {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: pdsFadeIn 0.75s ease forwards;
+}
+
+@keyframes pdsFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* Centered content frame aligning with portfolio 1088px grid (padding controlled dynamically by grid-snapping) */
 .pds-frame {
   position: relative;

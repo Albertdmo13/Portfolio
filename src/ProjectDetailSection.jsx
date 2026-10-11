@@ -1,4 +1,4 @@
-import { useState, useRef, useLayoutEffect, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import FloatingLines from "./FloatingLines";
 import ImageCarousel from "./ImageCarousel";
 import "./ProjectDetailSection.css";
@@ -19,7 +19,18 @@ export default function ProjectDetailSection({
   const contentRef = useRef(null);
   const [padding, setPadding] = useState({ top: 48, bottom: 48, targetHeight: 0 });
 
-  useLayoutEffect(() => {
+  // Deferred background state: allows instant 60fps opening slide without blocking on WebGL context/shader compilation
+  const [isBgActive, setIsBgActive] = useState(false);
+
+  useEffect(() => {
+    // Delay mounting heavy Three.js canvas by 400ms until the opening slide animation is underway/settled
+    const timer = setTimeout(() => {
+      setIsBgActive(true);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
 
@@ -31,16 +42,30 @@ export default function ProjectDetailSection({
       const extra = targetHeight - h;
       const top = Math.floor(extra / 2);
       const bottom = extra - top;
-      setPadding({ top, bottom, targetHeight });
+      setPadding((prev) => {
+        if (prev.top === top && prev.bottom === bottom && prev.targetHeight === targetHeight) {
+          return prev;
+        }
+        return { top, bottom, targetHeight };
+      });
     };
 
     measure();
-    const t1 = setTimeout(measure, 100);
-    const t2 = setTimeout(measure, 400);
+    const t1 = setTimeout(measure, 150);
+    const t2 = setTimeout(measure, 500);
 
+    let roRaf = 0;
+    let lastH = 0;
     let ro;
     if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(measure);
+      ro = new ResizeObserver((entries) => {
+        const entry = entries[0];
+        const currentH = entry ? entry.contentRect.height : 0;
+        if (Math.abs(currentH - lastH) < 2) return;
+        lastH = currentH;
+        if (roRaf) cancelAnimationFrame(roRaf);
+        roRaf = requestAnimationFrame(measure);
+      });
       ro.observe(el);
     }
     window.addEventListener('resize', measure);
@@ -48,6 +73,7 @@ export default function ProjectDetailSection({
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
+      if (roRaf) cancelAnimationFrame(roRaf);
       if (ro) ro.disconnect();
       window.removeEventListener('resize', measure);
     };
@@ -62,11 +88,16 @@ export default function ProjectDetailSection({
   const [duration, setDuration] = useState(0);
 
   useEffect(() => {
-    if (videoRef.current && project?.video) {
-      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {
-        setIsPlaying(false);
-      });
-    }
+    if (!project?.video) return;
+    // Defer play slightly so video decoding does not contend with the initial slide frame
+    const timer = setTimeout(() => {
+      if (videoRef.current) {
+        videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {
+          setIsPlaying(false);
+        });
+      }
+    }, 350);
+    return () => clearTimeout(timer);
   }, [project?.video]);
 
   const toggleVideoPlay = () => {
@@ -129,27 +160,30 @@ export default function ProjectDetailSection({
 
   // Unique background dispatcher per project (full 100vw, rendered only when visible)
   const renderProjectBackground = () => {
+    if (!isBgActive) return null;
     switch (projectId) {
       case "flowdip":
         return (
-          <FloatingLines
-            enabledWaves={["middle", "top", "bottom"]}
-            lineCount={2}
-            lineDistance={93}
-            bendRadius={1}
-            bendStrength={-0.5}
-            interactive={false}
-            parallax={true}
-            animationSpeed={0.8}
-            lineIntensity={0.9}
-            bloomSize={0}
-            gradientStart="#2CC091"
-            gradientMid="#158055"
-            gradientEnd="#22d3ee"
-            linesGradient={["#2CC091", "#158055", "#22d3ee"]}
-            mixBlendMode="normal"
-            backgroundColor="#08080a"
-          />
+          <div className="pds-floating-lines-fadein">
+            <FloatingLines
+              enabledWaves={["middle", "top", "bottom"]}
+              lineCount={2}
+              lineDistance={93}
+              bendRadius={1}
+              bendStrength={-0.5}
+              interactive={false}
+              parallax={true}
+              animationSpeed={0.8}
+              lineIntensity={0.9}
+              bloomSize={0}
+              gradientStart="#2CC091"
+              gradientMid="#158055"
+              gradientEnd="#22d3ee"
+              linesGradient={["#2CC091", "#158055", "#22d3ee"]}
+              mixBlendMode="normal"
+              backgroundColor="#08080a"
+            />
+          </div>
         );
       default:
         return null;

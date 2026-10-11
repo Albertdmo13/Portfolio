@@ -1175,9 +1175,6 @@ export default function App() {
                     initial="initial"
                     animate="animate"
                     exit="exit"
-                    onUpdate={() => {
-                      if (window.lenis) window.lenis.resize();
-                    }}
                     onAnimationComplete={() => {
                       window.dispatchEvent(new Event('resize'));
                       if (window.lenis) window.lenis.resize();
