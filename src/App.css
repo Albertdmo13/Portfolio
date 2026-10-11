@@ -27,6 +27,7 @@
   display: flex;
   justify-content: center;
   overflow: hidden;
+  will-change: transform;
   transition: visibility 0.15s ease;
 }
 
@@ -677,7 +678,7 @@
   display: block;
 }
 
-/* Project Seam Logo (Positioned on the right, Overlapping Video & Text Div) */
+/* Project Seam Logo & Action Cluster (Positioned on the right, Overlapping Video & Text Div) */
 .project-seam-logo-anchor {
   position: relative;
   width: 100%;
@@ -688,16 +689,130 @@
   z-index: 10;
 }
 
-.project-seam-logo-link,
-.project-seam-logo-container {
+.project-seam-action-cluster {
   position: absolute;
   top: 0;
   right: 28px;
   transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
+  justify-content: flex-end;
+  z-index: 10;
+}
+
+.project-seam-expanded-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateX(18px) scale(0.96);
+  margin-right: 0;
+  transition: max-width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              margin-right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.project-seam-action-cluster:hover .project-seam-expanded-buttons,
+.project-seam-action-cluster:focus-within .project-seam-expanded-buttons,
+.project-seam-action-cluster.is-expanded .project-seam-expanded-buttons {
+  max-width: 300px;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0) scale(1);
+  margin-right: 12px;
+}
+
+.project-seam-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px;
+  height: 38px;
+  border-radius: 8px;
+  font-family: "Space Grotesk", -apple-system, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1),
+              background 0.2s ease,
+              border-color 0.2s ease,
+              box-shadow 0.2s ease,
+              color 0.2s ease;
+  user-select: none;
+}
+
+.project-seam-action-btn:active {
+  transform: scale(0.97);
+}
+
+.project-seam-action-btn--subpage {
+  background: rgba(16, 20, 24, 0.88);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  color: #e2e8f0;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.project-seam-action-btn--subpage:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6), 0 0 14px rgba(255, 255, 255, 0.15);
+}
+
+.project-seam-action-btn--subpage svg {
+  color: rgba(255, 255, 255, 0.8);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.project-seam-action-btn--subpage:hover svg {
+  color: #ffffff;
+  transform: rotate(20deg);
+}
+
+.project-seam-action-btn--live {
+  background: rgba(10, 24, 18, 0.9);
+  border: 1.5px solid rgba(44, 192, 145, 0.45);
+  color: #86efac;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.project-seam-action-btn--live:hover {
+  background: rgba(44, 192, 145, 0.22);
+  border-color: #2CC091;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6), 0 0 18px rgba(44, 192, 145, 0.45);
+}
+
+.project-seam-action-btn--live svg {
+  color: #2CC091;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.project-seam-action-btn--live:hover svg {
+  color: #ffffff;
+  transform: translate(1px, -1px);
+}
+
+.project-seam-logo-link,
+.project-seam-logo-container {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .project-seam-logo {
@@ -708,16 +823,43 @@
   background-color: #08120e;
   border: 1.5px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.25s ease, border-width 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.25s ease,
+              border-width 0.25s ease,
+              box-shadow 0.25s ease;
   cursor: pointer;
   display: block;
 }
 
 .project-seam-logo-link:hover .project-seam-logo,
 .project-seam-logo:hover,
+.project-seam-action-cluster:hover .project-seam-logo,
+.project-seam-action-cluster.is-expanded .project-seam-logo,
 .project-card.is-hovered .project-seam-logo {
-  transform: scale(1.07);
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.65);
+  transform: scale(1.06);
+  border-color: rgba(44, 192, 145, 0.6);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.65), 0 0 18px rgba(44, 192, 145, 0.3);
+}
+
+@media (max-width: 480px) {
+  .project-seam-action-cluster {
+    right: 18px;
+  }
+  .project-seam-action-btn {
+    padding: 0 10px;
+    height: 34px;
+    font-size: 0.74rem;
+    gap: 5px;
+  }
+  .project-seam-logo {
+    width: 52px;
+    height: 52px;
+  }
+  .project-seam-action-cluster:hover .project-seam-expanded-buttons,
+  .project-seam-action-cluster.is-expanded .project-seam-expanded-buttons {
+    margin-right: 8px;
+    gap: 6px;
+  }
 }
 
 .publications-list .project-card:hover img[alt="Publication logo"],

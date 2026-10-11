@@ -32,6 +32,10 @@ export const portfolioData = {
     hero: {
       getInTouch: "Get in touch",
     },
+    projectLinks: {
+      liveApp: "Live App",
+      website: "Website",
+    },
     sections: {
       trajectory: "Trajectory & Education",
       projects: "Featured Projects",
@@ -76,6 +80,8 @@ export const portfolioData = {
         logo: "/Portfolio/media/FlowDiP_Logo.png",
         accentColor: "#2CC091",
         link: "https://albertdmo13.github.io/FlowDiP/",
+        liveAppUrl: "https://albertdmo13.github.io/FlowDiP/",
+        websiteUrl: "/Portfolio/flowdip",
         github: "https://github.com/Albertdmo13",
       },
       {
@@ -190,6 +196,10 @@ export const portfolioData = {
     hero: {
       getInTouch: "Contactar",
     },
+    projectLinks: {
+      liveApp: "App en vivo",
+      website: "Sitio web",
+    },
     sections: {
       trajectory: "Trayectoria y Educación",
       projects: "Proyectos Destacados",
@@ -234,6 +244,8 @@ export const portfolioData = {
         logo: "/Portfolio/media/FlowDiP_Logo.png",
         accentColor: "#2CC091",
         link: "https://albertdmo13.github.io/FlowDiP/",
+        liveAppUrl: "https://albertdmo13.github.io/FlowDiP/",
+        websiteUrl: "/Portfolio/flowdip",
         github: "https://github.com/Albertdmo13",
       },
       {

@@ -5,6 +5,7 @@ import "./BusinessCardHero.css";
 
 export default function BusinessCardHero({ t, lang, onContactClick, Icons }) {
   const { Mail, Github, Linkedin } = Icons;
+  const base = import.meta.env.BASE_URL;
 
   return (
     <section className="hero-section">
@@ -13,8 +14,11 @@ export default function BusinessCardHero({ t, lang, onContactClick, Icons }) {
         <div className="card-top-row">
             <div className="card-chip">
               <div className="card-chip-emblem">
-                <span className="card-chip-initials">AD</span>
-                <span className="card-chip-line" />
+                <img
+                  src={`${base}media/Albertdmo_logo.png`}
+                  alt="Alberto Díaz Monogram Logo"
+                  className="card-chip-logo"
+                />
               </div>
               <div className="card-chip-meta">
                 <span className="card-chip-id">ALBERTO DÍAZ</span>

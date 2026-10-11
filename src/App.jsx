@@ -121,6 +121,13 @@ const Icons = {
       <line x1="10" y1="14" x2="21" y2="3" />
     </svg>
   ),
+  Globe: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  ),
   Copy: () => (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
@@ -177,6 +184,7 @@ export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [heroHeight, setHeroHeight] = useState(0);
+  const [activeHoveredCluster, setActiveHoveredCluster] = useState(null);
   const heroStageRef = useRef(null);
   const heroContainerRef = useRef(null);
   const heroCardRef = useRef(null);
@@ -205,7 +213,8 @@ export default function App() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollY = window.scrollY || window.pageYOffset;
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+      const windowHeight = window.innerHeight;
 
       // Keep uncompressed nav height updated whenever nav is in uncompressed state
       if (navHeaderRef.current && !navHeaderRef.current.classList.contains('nav-compressed')) {
@@ -213,37 +222,50 @@ export default function App() {
         if (h > 0) uncompressedNavHeightRef.current = h;
       }
 
+      // Excess height when hero is taller than screen (2-stage scroll on mobile)
+      const extraScroll = Math.max(0, heroHeight - windowHeight);
+
       // Subtract the uncompressed bar size from the scroll distance threshold
       const uncompressedNavHeight = uncompressedNavHeightRef.current || 110;
       const compressThreshold = Math.max(0, heroHeight - uncompressedNavHeight);
       setIsScrolled(scrollY >= compressThreshold);
 
-      if (!heroCardRef.current || !heroHeight) return;
+      if (!heroStageRef.current || !heroHeight) return;
 
-      const fadeEnd = Math.max(1, heroHeight * 0.55);
-      const progress = Math.min(1, Math.max(0, scrollY / fadeEnd));
-      const opacity = 1 - progress;
+      // 2-stage scroll:
+      // Stage 1: Scroll down to the bottom of the hero (scrollY from 0 to extraScroll)
+      // Stage 2: Hero becomes fixed at -(extraScroll), and scrolling reveals subsequent sections
+      const stageOffset = Math.min(Math.max(0, scrollY), extraScroll);
+      heroStageRef.current.style.transform = `translate3d(0, -${stageOffset}px, 0)`;
 
-      heroCardRef.current.style.opacity = opacity.toFixed(3);
+      if (heroCardRef.current) {
+        // Hero card stays fully opaque (1.0) while scrolling to the bottom of the hero.
+        // Once the bottom is reached and subsequent sections scroll up (Stage 2), fade out smoothly.
+        const stage2Scroll = Math.max(0, scrollY - extraScroll);
+        const stage2Range = Math.max(1, (heroHeight - extraScroll) * 0.55);
+        const progress = Math.min(1, stage2Scroll / stage2Range);
+        const opacity = 1 - progress;
 
-      if (opacity <= 0.01) {
-        heroCardRef.current.style.pointerEvents = 'none';
-        heroCardRef.current.style.visibility = 'hidden';
-      } else {
-        heroCardRef.current.style.pointerEvents = 'auto';
-        heroCardRef.current.style.visibility = 'visible';
+        heroCardRef.current.style.opacity = opacity.toFixed(3);
+
+        if (opacity <= 0.01) {
+          heroCardRef.current.style.pointerEvents = 'none';
+          heroCardRef.current.style.visibility = 'hidden';
+        } else {
+          heroCardRef.current.style.pointerEvents = 'auto';
+          heroCardRef.current.style.visibility = 'visible';
+        }
       }
 
-      if (heroStageRef.current) {
-        if (scrollY >= heroHeight) {
-          heroStageRef.current.style.visibility = 'hidden';
-        } else {
-          heroStageRef.current.style.visibility = 'visible';
-        }
+      if (scrollY >= heroHeight) {
+        heroStageRef.current.style.visibility = 'hidden';
+      } else {
+        heroStageRef.current.style.visibility = 'visible';
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
     if (window.lenis) {
       window.lenis.on('scroll', handleScroll);
     }
@@ -251,6 +273,7 @@ export default function App() {
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
       if (window.lenis) {
         window.lenis.off('scroll', handleScroll);
       }
@@ -674,29 +697,65 @@ export default function App() {
                       )}
                       {proj.logo && (
                         <div className="project-seam-logo-anchor">
-                          {proj.link ? (
-                            <a
-                              href={proj.link}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="project-seam-logo-link"
-                              title={`${proj.title} logo`}
-                            >
-                              <img
-                                src={`${base}${proj.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
-                                alt={`${proj.title} logo`}
-                                className="project-seam-logo"
-                              />
-                            </a>
-                          ) : (
-                            <div className="project-seam-logo-container">
-                              <img
-                                src={`${base}${proj.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
-                                alt={`${proj.title} logo`}
-                                className="project-seam-logo"
-                              />
-                            </div>
-                          )}
+                          <div
+                            className={`project-seam-action-cluster ${(proj.liveAppUrl || proj.websiteUrl) ? "has-expanded-links" : ""} ${activeHoveredCluster === proj.id ? "is-expanded" : ""}`}
+                            onMouseEnter={() => setActiveHoveredCluster(proj.id)}
+                            onMouseLeave={() => setActiveHoveredCluster(null)}
+                            onTouchStart={() => setActiveHoveredCluster(prev => prev === proj.id ? null : proj.id)}
+                          >
+                            {(proj.websiteUrl || proj.liveAppUrl) && (
+                              <div className="project-seam-expanded-buttons" aria-label={`${proj.title} links`}>
+                                {proj.websiteUrl && (
+                                  <a
+                                    href={`${base}${proj.websiteUrl.replace(/^\/?(Portfolio\/)?/, "")}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="project-seam-action-btn project-seam-action-btn--subpage"
+                                    title={`${proj.title} ${t.projectLinks?.website || "Website"}`}
+                                  >
+                                    <Icons.Globe />
+                                    <span>{t.projectLinks?.website || "Website"}</span>
+                                  </a>
+                                )}
+                                {proj.liveAppUrl && (
+                                  <a
+                                    href={proj.liveAppUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="project-seam-action-btn project-seam-action-btn--live"
+                                    title={`${proj.title} ${t.projectLinks?.liveApp || "Live App"}`}
+                                  >
+                                    <Icons.External />
+                                    <span>{t.projectLinks?.liveApp || "Live App"}</span>
+                                  </a>
+                                )}
+                              </div>
+                            )}
+
+                            {proj.link ? (
+                              <a
+                                href={proj.link}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="project-seam-logo-link"
+                                title={`${proj.title} logo`}
+                              >
+                                <img
+                                  src={`${base}${proj.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
+                                  alt={`${proj.title} logo`}
+                                  className="project-seam-logo"
+                                />
+                              </a>
+                            ) : (
+                              <div className="project-seam-logo-container">
+                                <img
+                                  src={`${base}${proj.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
+                                  alt={`${proj.title} logo`}
+                                  className="project-seam-logo"
+                                />
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
                       <div className="project-body">

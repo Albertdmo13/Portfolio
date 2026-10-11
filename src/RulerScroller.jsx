@@ -86,7 +86,10 @@ const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
   // Accurate Active Section Detection based on current scroll position
   const updateActiveSection = useCallback(() => {
     const scrollY = window.scrollY || window.pageYOffset || 0;
-    const heroThreshold = heroHeight > 0 ? heroHeight * 0.55 : 300;
+    const extraScroll = Math.max(0, heroHeight - window.innerHeight);
+    const heroThreshold = heroHeight > 0
+      ? extraScroll + (heroHeight - extraScroll) * 0.55
+      : 300;
 
     // Inside the Hero section
     if (scrollY < heroThreshold) {
