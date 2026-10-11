@@ -1,0 +1,618 @@
+/* ========================================================
+   Project Detail Showcase Section
+   Spacious, crystal glass aesthetic matching portfolio style
+   Page-wide background with vertical lines on top
+   ======================================================== */
+
+.project-detail-section {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.project-detail-section .section-divider-line {
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+}
+
+/* Sticky section label / FlowDiP logo track positioned cleanly in left margin */
+.project-detail-section .section-label-track {
+  position: absolute;
+  top: 0;
+  left: 40px;
+  width: auto;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.project-detail-section .section-label {
+  margin: 0;
+  margin-left: 0;
+  pointer-events: auto;
+}
+
+/* Left margin sticky FlowDiP logo */
+.section-label--logo {
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.section-label-logo-img {
+  height: 96px;
+  min-height: 52px;
+  width: auto;
+  min-width: 150px;
+  max-width: 310px;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  filter: none;
+  transition: transform 0.2s ease;
+}
+
+@media (max-width: 1600px) {
+  .section-label-logo-img {
+    height: 80px;
+    max-width: 260px;
+  }
+}
+
+@media (max-width: 1440px) {
+  .section-label-logo-img {
+    height: 64px;
+    max-width: 205px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .section-label-logo-img {
+    height: 50px;
+    max-width: 160px;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Page-wide background layer spanning 100vw to occlude background grid lines */
+.pds-page-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #08080a;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Three.js FloatingLines container inside page-wide background (fully opaque) */
+.pds-page-background .floating-lines-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 1; /* Fully opaque - not transparent! */
+  mix-blend-mode: normal;
+  z-index: 0;
+}
+
+/* Centered content frame aligning with portfolio 1088px grid (padding controlled dynamically by grid-snapping) */
+.pds-frame {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 1088px;
+  margin: 0 auto;
+  padding-left: 40px;
+  padding-right: 40px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.pds-content-inner {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========================================================
+   Unified Crystal Glass Showcase Card matching portfolio style
+   ======================================================== */
+.pds-card {
+  position: relative;
+  width: 100%;
+  background: var(--glass-card);
+  border: 1px solid var(--glass-border);
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+
+/* Signature accent indicator bar matching .project-card::before */
+.pds-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--project-accent, #2CC091);
+  opacity: 0.85;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------
+   Top Control Bar - Integrated Card Header
+   -------------------------------------------------------- */
+.pds-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  background: rgba(0, 0, 0, 0.25);
+  border-bottom: 1px solid var(--glass-border);
+  border-radius: 0;
+}
+
+.pds-top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pds-accent-pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--project-accent, #2CC091);
+  flex-shrink: 0;
+}
+
+.pds-top-title {
+  margin: 0;
+  font-size: 1.12rem;
+  font-weight: 600;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.pds-top-subtitle {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+.pds-top-bar-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pds-control-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--glass-card);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  border-radius: 0;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+  box-shadow: none;
+}
+
+.pds-control-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+}
+
+.pds-control-btn--close:hover {
+  background: #16161a;
+  border-color: rgba(239, 68, 68, 0.7);
+  color: #ef4444;
+}
+
+/* --------------------------------------------------------
+   1. Wide Video Player on Top
+   -------------------------------------------------------- */
+.pds-video-wrapper {
+  position: relative;
+  width: 100%;
+  background: #000000;
+  border-bottom: 1px solid var(--glass-border);
+  overflow: hidden;
+}
+
+.pds-video-player-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 520px;
+  background: #000000;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pds-video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  cursor: pointer;
+}
+
+.pds-video-center-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: rgba(10, 10, 14, 0.72);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 4;
+  color: #ffffff;
+}
+
+.pds-video-center-play:hover {
+  background: var(--project-accent, #2CC091);
+  color: #000000;
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: none;
+}
+
+.pds-video-play-triangle {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 11px 0 11px 18px;
+  border-color: transparent transparent transparent currentColor;
+  margin-left: 4px;
+}
+
+.pds-video-controls-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(8, 8, 12, 0.92) 0%, rgba(8, 8, 12, 0.5) 65%, transparent 100%);
+  padding: 16px 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 5;
+  transition: opacity 0.2s ease;
+}
+
+.pds-video-progress-track {
+  position: relative;
+  width: 100%;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: height 0.15s ease;
+}
+
+.pds-video-progress-track:hover {
+  height: 8px;
+}
+
+.pds-video-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 2px;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.pds-video-progress-thumb {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+}
+
+.pds-video-progress-track:hover .pds-video-progress-thumb {
+  opacity: 1;
+}
+
+.pds-video-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.pds-video-controls-left,
+.pds-video-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pds-video-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease, transform 0.15s ease;
+  border-radius: 4px;
+}
+
+.pds-video-btn:hover {
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+.pds-video-time {
+  font-size: 0.8rem;
+  font-family: monospace;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.04em;
+  user-select: none;
+}
+
+.pds-video-placeholder {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 380px;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+.pds-slot-hint {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+.pds-slot-subhint {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  opacity: 0.65;
+}
+
+/* --------------------------------------------------------
+   2. Carousel Right Below Video
+   -------------------------------------------------------- */
+.pds-carousel-wrapper {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.22);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 4px 8px;
+}
+
+/* --------------------------------------------------------
+   3. Description Block
+   -------------------------------------------------------- */
+.pds-description-block {
+  padding: 24px 28px;
+  background: rgba(255, 255, 255, 0.015);
+  border-bottom: 1px solid var(--glass-border);
+  box-sizing: border-box;
+}
+
+.pds-description-text {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+}
+
+/* --------------------------------------------------------
+   4. Footer Block: Technologies & Buttons
+   -------------------------------------------------------- */
+.pds-footer-block {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 28px;
+  background: rgba(0, 0, 0, 0.2);
+  flex-wrap: wrap;
+  box-sizing: border-box;
+}
+
+/* Tags Row (Matching .project-tag) */
+.pds-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.pds-tag-pill {
+  font-size: 0.88rem;
+  padding: 6px 14px;
+  border-radius: 0;
+  background: var(--glass-pill);
+  border: 1px solid var(--glass-border);
+  color: var(--text-muted);
+  transition: border-color 0.2s ease, color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.pds-tag-pill:hover {
+  border-color: color-mix(in srgb, var(--project-accent, var(--accent-color)) 40%, var(--glass-border));
+  color: var(--text-main);
+}
+
+/* Action Buttons Row */
+.pds-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.pds-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: 0;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-card);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  box-shadow: none;
+}
+
+.pds-action-btn svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  transition: color 0.2s ease, stroke 0.2s ease;
+}
+
+.pds-action-btn:hover {
+  background: var(--glass-card-hover);
+  border-color: var(--glass-border-hover);
+  color: #ffffff;
+}
+
+.pds-action-btn--primary {
+  background: var(--glass-card);
+  border-color: var(--project-accent, #2CC091);
+  color: var(--project-accent, #2CC091);
+}
+
+.pds-action-btn--primary svg {
+  color: var(--project-accent, #2CC091);
+  stroke: var(--project-accent, #2CC091);
+}
+
+.pds-action-btn--primary:hover {
+  background: var(--project-accent, #2CC091) !important;
+  color: #000000 !important;
+  font-weight: 700 !important;
+  outline: 3px solid var(--project-accent, #2CC091);
+  outline-offset: -3px;
+}
+
+.pds-action-btn--primary:hover svg {
+  color: #000000 !important;
+  stroke: #000000 !important;
+}
+
+/* --------------------------------------------------------
+   Responsive
+   -------------------------------------------------------- */
+@media (max-width: 768px) {
+  .pds-frame {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .pds-top-bar {
+    padding: 12px 18px;
+  }
+
+  .pds-video-player-container {
+    max-height: 280px;
+  }
+
+  .pds-description-block {
+    padding: 18px 20px;
+  }
+
+  .pds-footer-block {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px 20px;
+  }
+
+  .pds-actions-row {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .pds-action-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+

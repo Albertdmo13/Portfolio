@@ -2,8 +2,15 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import './RulerScroller.css';
 
-const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
+const RulerScroller = ({
+  label = "HERO",
+  heroHeight = 0,
+  activeProjectDetail = null,
+  activeProjectAccent = null,
+  activeProjectTitle = null
+}) => {
   const [activeSectionName, setActiveSectionName] = useState((label || "HERO").toUpperCase());
+  const [activeSectionAccent, setActiveSectionAccent] = useState(null);
   const [sectionsData, setSectionsData] = useState([]);
 
   // Butter-smooth scroll tracking with Framer Motion
@@ -25,34 +32,65 @@ const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
     return unsubscribe;
   }, [smoothProgress]);
 
-  // Robust calculation of section coordinates
+  // Robust calculation of section coordinates (including project detail sections)
   const calculateSections = useCallback(() => {
     const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
     const totalScrollable = scrollHeight - window.innerHeight;
 
     if (totalScrollable <= 0) return;
 
-    const sections = Array.from(document.querySelectorAll('.section'));
+    // Query standard sections and project detail sections
+    const rawSections = Array.from(document.querySelectorAll('.section, .project-detail-section, .project-detail-motion-wrapper'));
     const heroName = (label || "HERO").toUpperCase();
+
+    // Deduplicate in case a wrapper contains the inner section
+    const uniqueSections = [];
+    const seenIds = new Set();
+
+    rawSections.forEach((sec) => {
+      const targetSec = sec.classList.contains('project-detail-motion-wrapper')
+        ? (sec.querySelector('.project-detail-section') || sec)
+        : sec;
+      const secId = targetSec.id || sec.id;
+      if (secId && !seenIds.has(secId)) {
+        seenIds.add(secId);
+        uniqueSections.push(targetSec);
+      }
+    });
 
     // Top section is always the HERO starting at 0%
     const data = [
-      { id: 'hero', name: heroName, percentage: 0 }
+      { id: 'hero', name: heroName, percentage: 0, accentColor: null, isProject: false }
     ];
 
-    sections.forEach((sec) => {
+    uniqueSections.forEach((sec) => {
       const rect = sec.getBoundingClientRect();
       const absoluteTop = window.scrollY + rect.top;
 
       let percentage = (absoluteTop / totalScrollable) * 100;
       percentage = Math.max(0, Math.min(100, percentage));
 
-      const titleEl = sec.querySelector('.section-label');
-      const name = titleEl ? titleEl.textContent.trim() : sec.id;
+      const titleEl = sec.querySelector('.section-label') || sec.querySelector('.pds-top-title');
+      const isProject =
+        sec.classList.contains('project-detail-section') ||
+        sec.classList.contains('project-detail-motion-wrapper') ||
+        sec.id === activeProjectDetail;
+
+      let name = titleEl ? titleEl.textContent.trim() : sec.id;
+      if (isProject && activeProjectTitle) {
+        name = activeProjectTitle;
+      }
+
+      const accentColor = isProject
+        ? (activeProjectAccent || sec.dataset.accentColor || sec.style.getPropertyValue('--project-accent')?.trim() || '#2CC091')
+        : null;
+
       data.push({
         id: sec.id,
         name: name.toUpperCase(),
-        percentage
+        percentage,
+        isProject,
+        accentColor
       });
     });
 
@@ -81,7 +119,7 @@ const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
     }
 
     setSectionsData(data);
-  }, [label]);
+  }, [label, activeProjectDetail, activeProjectAccent, activeProjectTitle]);
 
   // Accurate Active Section Detection based on current scroll position
   const updateActiveSection = useCallback(() => {
@@ -94,28 +132,34 @@ const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
     // Inside the Hero section
     if (scrollY < heroThreshold) {
       setActiveSectionName((label || "HERO").toUpperCase());
+      setActiveSectionAccent(null);
       return;
     }
 
     const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
     // When user reached the bottom of the page, activate the last section
     if (window.innerHeight + scrollY >= scrollHeight - 60) {
-      const sections = document.querySelectorAll('.section');
+      const sections = document.querySelectorAll('.section, .project-detail-section');
       if (sections.length > 0) {
         const lastSec = sections[sections.length - 1];
-        const titleEl = lastSec.querySelector('.section-label');
+        const titleEl = lastSec.querySelector('.section-label') || lastSec.querySelector('.pds-top-title');
         const name = titleEl ? titleEl.textContent.trim() : lastSec.id;
+        const isProject =
+          lastSec.classList.contains('project-detail-section') ||
+          lastSec.id === activeProjectDetail;
+
         setActiveSectionName(name.toUpperCase());
+        setActiveSectionAccent(isProject ? (activeProjectAccent || lastSec.dataset.accentColor || '#2CC091') : null);
         return;
       }
     }
 
     // Section at reading focus line (35% from viewport top)
     const focusY = window.innerHeight * 0.35;
-    const sections = Array.from(document.querySelectorAll('.section'));
+    const rawSections = Array.from(document.querySelectorAll('.section, .project-detail-section'));
     let currentActive = null;
 
-    for (const sec of sections) {
+    for (const sec of rawSections) {
       const rect = sec.getBoundingClientRect();
       if (rect.top <= focusY && rect.bottom > focusY) {
         currentActive = sec;
@@ -125,7 +169,7 @@ const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
 
     if (!currentActive) {
       let closestDist = Infinity;
-      for (const sec of sections) {
+      for (const sec of rawSections) {
         const rect = sec.getBoundingClientRect();
         if (rect.top <= focusY) {
           const dist = focusY - rect.top;
@@ -138,24 +182,32 @@ const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
     }
 
     if (currentActive) {
-      const titleEl = currentActive.querySelector('.section-label');
-      const name = titleEl ? titleEl.textContent.trim() : currentActive.id;
+      const titleEl = currentActive.querySelector('.section-label') || currentActive.querySelector('.pds-top-title');
+      const isProject =
+        currentActive.classList.contains('project-detail-section') ||
+        currentActive.id === activeProjectDetail;
+
+      let name = titleEl ? titleEl.textContent.trim() : currentActive.id;
+      if (isProject && activeProjectTitle) {
+        name = activeProjectTitle;
+      }
+
       setActiveSectionName(name.toUpperCase());
+      setActiveSectionAccent(isProject ? (activeProjectAccent || currentActive.dataset.accentColor || '#2CC091') : null);
     }
-  }, [label, heroHeight]);
+  }, [label, heroHeight, activeProjectDetail, activeProjectAccent, activeProjectTitle]);
 
   // Recalculate coordinates whenever layout changes or hero expands
   useEffect(() => {
     calculateSections();
     updateActiveSection();
 
-    // Staggered timers to ensure coordinates are accurate as images, fonts, and loader resolve
+    // Staggered timers to ensure coordinates are accurate as layout and animations resolve
     const t1 = setTimeout(() => { calculateSections(); updateActiveSection(); }, 200);
     const t2 = setTimeout(() => { calculateSections(); updateActiveSection(); }, 600);
-    const t3 = setTimeout(() => { calculateSections(); updateActiveSection(); }, 1300);
-    const t4 = setTimeout(() => { calculateSections(); updateActiveSection(); }, 2200);
+    const t3 = setTimeout(() => { calculateSections(); updateActiveSection(); }, 1200);
 
-    // Watch for document body resize shifts (images loading, content expanding)
+    // Watch for document body resize shifts (sections opening, collapsing)
     const resizeObserver = new ResizeObserver(() => {
       calculateSections();
       updateActiveSection();
@@ -195,7 +247,6 @@ const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
-      clearTimeout(t4);
       resizeObserver.disconnect();
       window.removeEventListener('resize', calculateSections);
       window.removeEventListener('scroll', throttledUpdate);
@@ -203,7 +254,7 @@ const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
         window.lenis.off('scroll', throttledUpdate);
       }
     };
-  }, [calculateSections, updateActiveSection, heroHeight]);
+  }, [calculateSections, updateActiveSection, heroHeight, activeProjectDetail]);
 
   const handleSectionClick = (secId) => {
     if (secId === 'hero') {
@@ -213,10 +264,10 @@ const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } else {
-      const el = document.getElementById(secId);
+      const el = document.getElementById(secId) || document.getElementById(`${secId}-section`);
       if (el) {
         if (window.lenis) {
-          window.lenis.scrollTo(el);
+          window.lenis.scrollTo(el, { offset: -40 });
         } else {
           el.scrollIntoView({ behavior: 'smooth' });
         }
@@ -255,11 +306,25 @@ const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
         {/* Section Title Markers */}
         {sectionsData.map((sec) => {
           const isActive = activeSectionName === sec.name;
+          const markerColor = sec.accentColor || 'var(--accent-color)';
           return (
             <div
               key={sec.id}
-              className={`ruler-section-marker ${isActive ? 'active' : ''}`}
-              style={{ top: `${sec.percentage}%` }}
+              className={`ruler-section-marker ${isActive ? 'active' : ''} ${sec.isProject ? 'is-project-marker' : ''}`}
+              style={{
+                top: `${sec.percentage}%`,
+                ...(isActive
+                  ? {
+                      color: markerColor,
+                      fontWeight: 700
+                    }
+                  : sec.accentColor
+                  ? {
+                      color: markerColor,
+                      opacity: 0.88
+                    }
+                  : {})
+              }}
               onClick={() => handleSectionClick(sec.id)}
               role="button"
               tabIndex={0}
@@ -280,10 +345,22 @@ const RulerScroller = ({ label = "HERO", heroHeight = 0 }) => {
           className="ruler-tick-container active-indicator"
           style={{ top: activeTop }}
         >
-          <span className="ruler-label active-label">
+          <span
+            className="ruler-label active-label"
+            style={{
+              color: activeSectionAccent || 'var(--accent-color)',
+              transition: 'color 0.25s ease'
+            }}
+          >
             {percentString}
           </span>
-          <div className="ruler-line active-line" />
+          <div
+            className="ruler-line active-line"
+            style={{
+              backgroundColor: activeSectionAccent || 'var(--accent-color)',
+              transition: 'background-color 0.25s ease, width 0.2s ease'
+            }}
+          />
         </motion.div>
       </div>
     </div>

@@ -2,7 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
-export default function ImageCarousel({ images, base }) {
+export default function ImageCarousel({
+  images = [],
+  base,
+  accentColor = 'var(--accent-color)',
+  altPrefix = 'Figure',
+}) {
   const scrollRef = useRef(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -12,8 +17,9 @@ export default function ImageCarousel({ images, base }) {
   const [dragged, setDragged] = useState(false);
 
   // Duplicate the images enough times to ensure seamless infinite looping without excessive DOM nodes
+  const safeImages = Array.isArray(images) ? images : [];
   const K = 4;
-  const extendedImages = Array(K).fill(images).flat();
+  const extendedImages = safeImages.length > 0 ? Array(K).fill(safeImages).flat() : [];
 
   const handleMouseDown = (e) => {
     setIsDragging(true);
@@ -123,6 +129,8 @@ export default function ImageCarousel({ images, base }) {
     };
   }, [isHovered]);
 
+  if (safeImages.length === 0) return null;
+
   return (
     <>
       <div 
@@ -149,13 +157,14 @@ export default function ImageCarousel({ images, base }) {
           minHeight: '208px',
           boxSizing: 'border-box',
           scrollbarWidth: 'none', /* Firefox */
+          '--accent-color': accentColor,
         }}
       >
         {extendedImages.map((imgUrl, i) => (
           <img 
             key={i}
             src={`${base}${imgUrl.replace(/^\/?(Portfolio\/)?/, "")}`}
-            alt={`Publication figure ${i + 1}`}
+            alt={`${altPrefix} ${i + 1}`}
             loading="lazy"
             decoding="async"
             draggable={false}
@@ -175,7 +184,7 @@ export default function ImageCarousel({ images, base }) {
               WebkitUserDrag: 'none',
               userSelect: 'none'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent-color)'; }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = accentColor; }}
             onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--glass-border)'; }}
             onMouseDown={(e) => e.currentTarget.style.cursor = 'grabbing'}
             onMouseUp={(e) => e.currentTarget.style.cursor = 'grab'}

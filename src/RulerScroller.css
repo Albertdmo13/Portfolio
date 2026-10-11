@@ -10,8 +10,6 @@
   pointer-events: none; /* Let clicks pass through if needed */
 }
 
-
-
 .ruler-ticks {
   position: relative;
   height: 65vh;
@@ -66,7 +64,7 @@
   font-weight: 600;
   letter-spacing: 0.1em;
   white-space: nowrap;
-  transition: color 0.2s ease, transform 0.2s ease, text-shadow 0.2s ease;
+  transition: color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
   user-select: none;
   font-family: "Space Grotesk", sans-serif;
   z-index: 15;
@@ -82,7 +80,12 @@
 .ruler-section-marker.active {
   color: var(--accent-color);
   font-weight: 700;
-  text-shadow: 0 0 10px color-mix(in srgb, var(--accent-color) 35%, transparent);
+}
+
+.ruler-section-marker.is-project-marker {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
 }
 
 .ruler-line.major {

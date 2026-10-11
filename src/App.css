@@ -461,6 +461,7 @@
 .section {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   position: relative;
   box-sizing: border-box;
   width: 100%;
@@ -482,8 +483,18 @@
   pointer-events: none;
 }
 
+.section-label-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 4;
+}
+
 .section-label {
-  /* Using sticky requires a width limit and positioning handled mostly in inline styles for dynamic offset */
+  margin: 0;
   margin-left: calc(-50vw + 50% + 40px);
   width: fit-content;
   font-size: 0.82rem;
@@ -491,18 +502,12 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
-  height: 0;
-  overflow: visible;
   pointer-events: none;
 }
 
-@media (max-width: 1200px) {
-  .section-label {
-    position: static !important;
-    margin-top: 0 !important;
-    margin-bottom: 16px !important;
-    margin-left: 0;
-    height: auto;
+@media (max-width: 768px) {
+  .section-label-track {
+    display: none;
   }
 }
 
@@ -743,6 +748,20 @@
   z-index: 1;
 }
 
+.publication-card {
+  cursor: pointer;
+  user-select: none;
+}
+
+.publication-card:focus-visible {
+  outline: 2px solid var(--accent-color) !important;
+  outline-offset: -2px;
+}
+
+.publication-card:hover .project-title {
+  color: #ffffff;
+}
+
 .project-media {
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -807,15 +826,25 @@
   white-space: nowrap;
 }
 
-.project-seam-action-cluster:hover .project-seam-expanded-buttons,
-.project-seam-action-cluster:focus-within .project-seam-expanded-buttons,
-.project-seam-action-cluster.is-expanded .project-seam-expanded-buttons {
+/* Side buttons slide out when hovering anywhere on the project card */
+.project-card:hover:not(.side-buttons-suppressed) .project-seam-expanded-buttons,
+.project-card:focus-within:not(.side-buttons-suppressed) .project-seam-expanded-buttons,
+.project-card:not(.side-buttons-suppressed) .project-seam-action-cluster.is-expanded .project-seam-expanded-buttons {
   max-width: 280px;
   opacity: 1;
   pointer-events: auto;
   transform: translateX(0);
   margin-right: -1px; /* border-collapse with logo, zero air space */
   border: none;
+}
+
+/* Explicit suppression when info button is clicked: side buttons slide back in and disappear immediately */
+.project-card.side-buttons-suppressed .project-seam-expanded-buttons {
+  max-width: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateX(10px) !important;
+  margin-right: 0 !important;
 }
 
 .project-seam-action-btn {
@@ -891,21 +920,70 @@
   stroke: #ffffff;
 }
 
-.project-seam-action-btn--live:hover {
-  background: color-mix(in srgb, var(--project-accent, #2CC091) 22%, var(--glass-card));
+.project-seam-action-btn--info:hover {
+  background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
-  border-color: var(--project-accent, #2CC091);
-  outline: 3px solid var(--project-accent, #2CC091);
+  border-color: rgba(255, 255, 255, 0.4);
+  border-right: 1px solid rgba(255, 255, 255, 0.4);
+  outline: 3px solid rgba(255, 255, 255, 0.2);
   outline-offset: -3px;
   z-index: 3;
 }
 
+.project-seam-action-btn--info:hover svg {
+  color: #ffffff;
+  stroke: #ffffff;
+}
+
+.project-seam-action-btn--info:hover span {
+  color: #ffffff;
+}
+
+.project-seam-action-btn--live:hover {
+  background: var(--project-accent, #2CC091) !important;
+  color: #000000 !important;
+  border-color: var(--project-accent, #2CC091) !important;
+  outline: 3px solid var(--project-accent, #2CC091) !important;
+  outline-offset: -3px !important;
+  z-index: 3 !important;
+  opacity: 1 !important;
+}
+
 .project-seam-action-btn--live:hover svg {
+  color: #000000 !important;
+  stroke: #000000 !important;
+}
+
+.project-seam-action-btn--live:hover span {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+.project-seam-action-btn--info.is-active {
+  background: color-mix(in srgb, var(--project-accent, #2CC091) 22%, var(--glass-card));
+  color: #ffffff;
+  border-color: var(--project-accent, #2CC091);
+  border-right: 1px solid var(--project-accent, #2CC091);
+  outline: 3px solid var(--project-accent, #2CC091);
+  outline-offset: -3px;
+  z-index: 2;
+}
+
+.project-seam-action-btn--info.is-active:hover {
+  background: color-mix(in srgb, var(--project-accent, #2CC091) 32%, var(--glass-card));
+  border-color: var(--project-accent, #2CC091);
+  border-right: 1px solid var(--project-accent, #2CC091);
+  outline: 3px solid var(--project-accent, #2CC091);
+  outline-offset: -3px;
+  z-index: 4;
+}
+
+.project-seam-action-btn--info.is-active svg {
   color: var(--project-accent, #2CC091);
   stroke: var(--project-accent, #2CC091);
 }
 
-.project-seam-action-btn--live:hover span {
+.project-seam-action-btn--info.is-active span {
   color: #ffffff;
 }
 
@@ -946,15 +1024,14 @@
   transform: none;
 }
 
-.project-seam-logo-link:hover .project-seam-logo,
 .project-seam-logo:hover,
-.project-seam-action-cluster:hover .project-seam-logo,
-.project-seam-action-cluster.is-expanded .project-seam-logo {
-  outline: 3px solid var(--project-accent, #2CC091);
-  outline-offset: -3px;
-  border-color: var(--project-accent, #2CC091);
-  box-shadow: none;
-  transform: none;
+.project-seam-logo.is-hovered,
+.project-card:has(.project-seam-action-btn--live:hover) .project-seam-logo {
+  outline: 3px solid var(--project-accent, #2CC091) !important;
+  outline-offset: -3px !important;
+  border-color: var(--project-accent, #2CC091) !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 @media (max-width: 480px) {
@@ -964,8 +1041,8 @@
   .project-seam-expanded-buttons {
     height: 52px;
   }
-  .project-seam-action-cluster:hover .project-seam-expanded-buttons,
-  .project-seam-action-cluster.is-expanded .project-seam-expanded-buttons {
+  .project-card:hover:not(.side-buttons-suppressed) .project-seam-expanded-buttons,
+  .project-card:not(.side-buttons-suppressed) .project-seam-action-cluster.is-expanded .project-seam-expanded-buttons {
     max-width: 220px;
   }
   .project-seam-action-btn {
@@ -1094,11 +1171,65 @@
   gap: 6px;
   font-size: 0.84rem;
   color: var(--text-secondary);
-  transition: color 0.2s ease, text-shadow 0.2s ease;
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
 
-.project-link-btn:hover {
+.project-link-btn:hover,
+.project-link-btn.is-hovered {
   color: var(--project-accent, #ffffff);
+}
+
+.project-link-btn svg {
+  transition: color 0.2s ease, stroke 0.2s ease, transform 0.2s ease;
+}
+
+.project-link-btn:hover svg,
+.project-link-btn.is-hovered svg {
+  color: var(--project-accent, #ffffff);
+  stroke: var(--project-accent, #ffffff);
+}
+
+/* Synchronized Live App button & Logo hover state */
+.project-seam-action-btn--live:hover,
+.project-seam-action-btn--live.is-hovered,
+.project-card:has(.project-seam-logo:hover) .project-seam-action-btn--live {
+  background: var(--project-accent, #2CC091) !important;
+  color: #000000 !important;
+  border-color: var(--project-accent, #2CC091) !important;
+  outline: 3px solid var(--project-accent, #2CC091) !important;
+  outline-offset: -3px !important;
+  z-index: 3 !important;
+  opacity: 1 !important;
+}
+
+.project-seam-action-btn--live:hover svg,
+.project-seam-action-btn--live.is-hovered svg,
+.project-card:has(.project-seam-logo:hover) .project-seam-action-btn--live svg {
+  color: #000000 !important;
+  stroke: #000000 !important;
+}
+
+.project-seam-action-btn--live:hover span,
+.project-seam-action-btn--live.is-hovered span,
+.project-card:has(.project-seam-logo:hover) .project-seam-action-btn--live span {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+/* Footer app link hover state */
+.project-link-btn--app:hover,
+.project-link-btn--app.is-hovered,
+.project-card:has(.project-seam-logo:hover) .project-link-btn--app {
+  color: var(--project-accent, #ffffff);
+}
+
+.project-link-btn--app:hover svg,
+.project-link-btn--app.is-hovered svg,
+.project-card:has(.project-seam-logo:hover) .project-link-btn--app svg {
+  color: var(--project-accent, #ffffff);
+  stroke: var(--project-accent, #ffffff);
+  transform: translateX(2px) translateY(-1px);
 }
 
 /* Crystal Skills Grid (4 Columns on Desktop) */
@@ -1536,4 +1667,15 @@
     transform: scale(1.15);
     margin: 4px 0;
   }
+}
+
+/* ========================================================
+   Project Detail Showcase Slide Wrapper (100vw Bleed)
+   ======================================================== */
+.project-detail-motion-wrapper {
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  overflow: hidden;
+  position: relative;
+  z-index: 5;
 }

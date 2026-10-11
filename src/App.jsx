@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import Lenis from 'lenis';
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { portfolioData } from "./data";
@@ -11,10 +11,10 @@ import ImageCarousel from "./ImageCarousel";
 import RulerScroller from "./RulerScroller";
 import CopyEmailButton from "./CopyEmailButton";
 import Grainient from "./Grainient";
-import FlowDiPPage from "./FlowDiPPage";
+import ProjectDetailSection from "./ProjectDetailSection";
 import "./App.css";
 
-function AnimatedCard({ children, className, style, delay = 0 }) {
+function AnimatedCard({ children, className, style, delay = 0, ...props }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, amount: 0.05 });
 
@@ -26,6 +26,7 @@ function AnimatedCard({ children, className, style, delay = 0 }) {
       initial={{ opacity: 0 }}
       animate={inView ? { opacity: 1 } : {}}
       transition={{ duration: 0.35, delay: delay, ease: "easeOut" }}
+      {...props}
     >
       {children}
     </motion.article>
@@ -40,9 +41,9 @@ function GridSnappedSection({
   children
 }) {
   const contentRef = useRef(null);
-  const [padding, setPadding] = useState({ top: 48, bottom: 48, minHeight: 0 });
+  const [padding, setPadding] = useState({ top: 48, bottom: 48, targetHeight: 0 });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = contentRef.current;
     if (!el) return;
 
@@ -54,12 +55,12 @@ function GridSnappedSection({
       const extra = targetHeight - h;
       const top = Math.floor(extra / 2);
       const bottom = extra - top;
-      setPadding({ top, bottom, minHeight: targetHeight });
+      setPadding({ top, bottom, targetHeight });
     };
 
     measure();
-    const t1 = setTimeout(measure, 150);
-    const t2 = setTimeout(measure, 600);
+    const t1 = setTimeout(measure, 100);
+    const t2 = setTimeout(measure, 400);
 
     let ro;
     if (typeof ResizeObserver !== 'undefined') {
@@ -81,7 +82,8 @@ function GridSnappedSection({
       id={id}
       className="section"
       style={{
-        minHeight: padding.minHeight ? `${padding.minHeight}px` : undefined,
+        height: padding.targetHeight ? `${padding.targetHeight}px` : undefined,
+        minHeight: padding.targetHeight ? `${padding.targetHeight}px` : undefined,
         paddingTop: `${padding.top}px`,
         paddingBottom: `${padding.bottom}px`,
         boxSizing: 'border-box'
@@ -89,18 +91,19 @@ function GridSnappedSection({
       {...sectionAnimation}
     >
       <div className="section-divider-line" style={{ top: 0 }} />
-      {isLast && <div className="section-divider-line" style={{ bottom: 0 }} />}
+      {isLast && <div className="section-divider-line" style={{ top: '100%' }} />}
       {label && (
-        <h2
-          className="section-label"
-          style={{
-            position: 'sticky',
-            top: '100px',
-            marginTop: '16px'
-          }}
-        >
-          {label}
-        </h2>
+        <div className="section-label-track">
+          <h2
+            className="section-label"
+            style={{
+              position: 'sticky',
+              top: '100px'
+            }}
+          >
+            {label}
+          </h2>
+        </div>
       )}
       <div ref={contentRef} className="section-content-wrapper">
         {children}
@@ -163,6 +166,29 @@ const Icons = {
       <polyline points="20 6 9 17 4 12" />
     </svg>
   ),
+  Info: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+  ),
+  ChevronUp: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="18 15 12 9 6 15" />
+    </svg>
+  ),
+  ChevronDown: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  ),
+  Close: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  ),
 };
 
 const JAVA_ICON_DATA_URL = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Cpath fill='%23ffffff' d='M47.617 98.12c-19.192 5.362 11.677 16.439 36.115 5.969-4.003-1.556-6.874-3.351-6.874-3.351-10.897 2.06-15.952 2.222-25.844 1.092-8.164-.935-3.397-3.71-3.397-3.71zm33.189-10.46c-14.444 2.779-22.787 2.69-33.354 1.6-8.171-.845-2.822-4.805-2.822-4.805-21.137 7.016 11.767 14.977 41.309 6.336-3.14-1.106-5.133-3.131-5.133-3.131zm11.319-60.575c.001 0-42.731 10.669-22.323 34.187 6.024 6.935-1.58 13.17-1.58 13.17s15.289-7.891 8.269-17.777c-6.559-9.215-11.587-13.793 15.634-29.58zm9.998 81.144s3.529 2.91-3.888 5.159c-14.102 4.272-58.706 5.56-71.095.171-4.45-1.938 3.899-4.625 6.526-5.192 2.739-.593 4.303-.485 4.303-.485-4.952-3.487-32.013 6.85-13.742 9.815 49.821 8.076 90.817-3.637 77.896-9.468zM85 77.896c2.395-1.634 5.703-3.053 5.703-3.053s-9.424 1.685-18.813 2.474c-11.494.964-23.823 1.154-30.012.326-14.652-1.959 8.033-7.348 8.033-7.348s-8.812-.596-19.644 4.644C17.455 81.134 61.958 83.958 85 77.896zm5.609 15.145c-.108.29-.468.616-.468.616 31.273-8.221 19.775-28.979 4.822-23.725-1.312.464-2 1.543-2 1.543s.829-.334 2.678-.72c7.559-1.575 18.389 10.119-5.032 22.286zM64.181 70.069c-4.614-10.429-20.26-19.553.007-35.559C89.459 14.563 76.492 1.587 76.492 1.587c5.23 20.608-18.451 26.833-26.999 39.667-5.821 8.745 2.857 18.142 14.688 28.815zm27.274 51.748c-19.187 3.612-42.854 3.191-56.887.874 0 0 2.874 2.38 17.646 3.331 22.476 1.437 57-.8 57.816-11.436.001 0-1.57 4.032-18.575 7.231z'/%3E%3C/svg%3E";
@@ -210,9 +236,27 @@ export default function App() {
   const [heroHeight, setHeroHeight] = useState(0);
   const [isHeroOccluded, setIsHeroOccluded] = useState(false);
   const [activeHoveredCluster, setActiveHoveredCluster] = useState(null);
-  const [currentRoute, setCurrentRoute] = useState(() => {
-    return window.location.hash.toLowerCase().startsWith("#/flowdip") ? "flowdip" : "home";
+  const [activeProjectDetail, setActiveProjectDetail] = useState(() => {
+    return window.location.hash.toLowerCase().includes("flowdip") ? "flowdip" : null;
   });
+  const [hoveredProjectIconId, setHoveredProjectIconId] = useState(null);
+  const [suppressedSideButtonsProject, setSuppressedSideButtonsProject] = useState(null);
+
+  const handleOpenProjectDetail = (projectId) => {
+    setActiveProjectDetail(projectId);
+
+    // Scroll down to the project detail section with smooth Lenis animation
+    setTimeout(() => {
+      const el = document.getElementById(`${projectId}-section`) || document.getElementById(projectId);
+      if (el) {
+        if (window.lenis) {
+          window.lenis.scrollTo(el, { offset: -60, duration: 1.2 });
+        } else {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    }, 120);
+  };
 
   // Close expanded project cluster when tapping outside on mobile/touch screens
   useEffect(() => {
@@ -233,14 +277,18 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.toLowerCase();
-      if (hash.startsWith("#/flowdip")) {
-        setCurrentRoute("flowdip");
-        window.scrollTo({ top: 0, behavior: "instant" });
-        if (window.lenis) {
-          window.lenis.scrollTo(0, { immediate: true });
-        }
-      } else {
-        setCurrentRoute("home");
+      if (hash.includes("flowdip")) {
+        setActiveProjectDetail("flowdip");
+        setTimeout(() => {
+          const el = document.getElementById("flowdip-section") || document.getElementById("flowdip");
+          if (el) {
+            if (window.lenis) {
+              window.lenis.scrollTo(el, { offset: -60, duration: 1.2 });
+            } else {
+              el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          }
+        }, 150);
       }
     };
 
@@ -569,22 +617,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {currentRoute === "flowdip" ? (
-        <FlowDiPPage
-          lang={lang}
-          setLang={setLang}
-          Icons={Icons}
-          onBack={() => {
-            window.location.hash = "#/";
-            window.scrollTo({ top: 0, behavior: "instant" });
-            if (window.lenis) {
-              window.lenis.scrollTo(0, { immediate: true });
-            }
-          }}
-        />
-      ) : (
-        <>
-          {/* Fixed Hero Stage (Background + Business Card) */}
+      {/* Fixed Hero Stage (Background + Business Card) */}
           <div
             id="hero"
             className="hero-fixed-stage"
@@ -689,7 +722,21 @@ export default function App() {
       </header>
 
       {/* Ruler Scroller */}
-      <RulerScroller label="HERO" heroHeight={heroHeight} />
+      <RulerScroller
+        label="HERO"
+        heroHeight={heroHeight}
+        activeProjectDetail={activeProjectDetail}
+        activeProjectAccent={
+          activeProjectDetail
+            ? t.projects.find((p) => p.id === activeProjectDetail)?.accentColor || "#2CC091"
+            : null
+        }
+        activeProjectTitle={
+          activeProjectDetail
+            ? t.projects.find((p) => p.id === activeProjectDetail)?.title || "FlowDiP"
+            : null
+        }
+      />
 
       {/* Main Page Layout Layer */}
       <div className="background-layer">
@@ -789,11 +836,16 @@ export default function App() {
                   {t.projects.map((proj, idx) => (
                     <AnimatedCard
                       key={proj.id}
-                      className="project-card"
+                      className={`project-card ${suppressedSideButtonsProject === proj.id ? "side-buttons-suppressed" : ""}`}
                       style={{
                         '--project-accent': proj.accentColor || 'var(--accent-color)'
                       }}
                       delay={(idx % 4) * 0.15}
+                      onMouseLeave={() => {
+                        if (suppressedSideButtonsProject === proj.id) {
+                          setSuppressedSideButtonsProject(null);
+                        }
+                      }}
                     >
                       {proj.video && (
                         <div className="project-media">
@@ -812,7 +864,7 @@ export default function App() {
                       {proj.logo && (
                         <div className="project-seam-logo-anchor">
                           <div
-                            className={`project-seam-action-cluster ${(proj.liveAppUrl || proj.websiteUrl) ? "has-expanded-links" : ""} ${activeHoveredCluster === proj.id ? "is-expanded" : ""}`}
+                            className={`project-seam-action-cluster ${(proj.hasDetails || proj.id === "flowdip" || proj.liveAppUrl) ? "has-expanded-links" : ""} ${activeHoveredCluster === proj.id ? "is-expanded" : ""}`}
                             onMouseEnter={() => {
                               if (!isMobile) setActiveHoveredCluster(proj.id);
                             }}
@@ -820,27 +872,34 @@ export default function App() {
                               if (!isMobile) setActiveHoveredCluster(null);
                             }}
                           >
-                            {(proj.websiteUrl || proj.liveAppUrl) && (
-                              <div className="project-seam-expanded-buttons" aria-label={`${proj.title} links`}>
-                                {proj.websiteUrl && (
-                                  <a
-                                    href={proj.websiteUrl.startsWith("#") ? proj.websiteUrl : `${base}${proj.websiteUrl.replace(/^\/?(Portfolio\/)?/, "")}`}
-                                    {...(!proj.websiteUrl.startsWith("#") ? { target: "_blank", rel: "noreferrer" } : {})}
-                                    className="project-seam-action-btn project-seam-action-btn--subpage"
-                                    title={`${proj.title} ${t.projectLinks?.website || "Website"}`}
-                                    onClick={(e) => e.stopPropagation()}
+                            {(proj.hasDetails || proj.id === "flowdip" || proj.liveAppUrl || proj.link) && (
+                              <div className="project-seam-expanded-buttons" aria-label={`${proj.title} actions`}>
+                                {(proj.hasDetails || proj.id === "flowdip") && (
+                                  <button
+                                    type="button"
+                                    className={`project-seam-action-btn project-seam-action-btn--info ${activeProjectDetail === proj.id ? "is-active" : ""}`}
+                                    title={`${proj.title} ${t.projectLinks?.info || "Info"}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSuppressedSideButtonsProject(proj.id);
+                                      setHoveredProjectIconId(null);
+                                      setActiveHoveredCluster(null);
+                                      handleOpenProjectDetail(proj.id);
+                                    }}
                                   >
-                                    <Icons.Globe />
-                                    <span>{t.projectLinks?.shortWebsite || "WEB"}</span>
-                                  </a>
+                                    <Icons.Info />
+                                    <span>{t.projectLinks?.shortInfo || "INFO"}</span>
+                                  </button>
                                 )}
-                                {proj.liveAppUrl && (
+                                {(proj.liveAppUrl || proj.link) && (
                                   <a
-                                    href={proj.liveAppUrl}
+                                    href={proj.liveAppUrl || proj.link}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="project-seam-action-btn project-seam-action-btn--live"
+                                    className={`project-seam-action-btn project-seam-action-btn--live ${hoveredProjectIconId === proj.id ? "is-hovered" : ""}`}
                                     title={`${proj.title} ${t.projectLinks?.liveApp || "Live App"}`}
+                                    onMouseEnter={() => setHoveredProjectIconId(proj.id)}
+                                    onMouseLeave={() => setHoveredProjectIconId(null)}
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     <Icons.External />
@@ -855,10 +914,12 @@ export default function App() {
                                 href={proj.link}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="project-seam-logo-link"
+                                className={`project-seam-logo-link ${hoveredProjectIconId === proj.id ? "is-hovered" : ""}`}
                                 title={`${proj.title} logo`}
+                                onMouseEnter={() => setHoveredProjectIconId(proj.id)}
+                                onMouseLeave={() => setHoveredProjectIconId(null)}
                                 onClick={(e) => {
-                                  const hasExpandedLinks = Boolean(proj.websiteUrl || proj.liveAppUrl);
+                                  const hasExpandedLinks = Boolean(proj.hasDetails || proj.id === "flowdip" || proj.liveAppUrl || proj.link);
                                   const isTouchOrMobile = isMobile || (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: none)").matches);
                                   if (hasExpandedLinks && isTouchOrMobile) {
                                     e.preventDefault();
@@ -874,14 +935,16 @@ export default function App() {
                                   height={64}
                                   loading="lazy"
                                   decoding="async"
-                                  className="project-seam-logo"
+                                  className={`project-seam-logo ${hoveredProjectIconId === proj.id ? "is-hovered" : ""}`}
                                 />
                               </a>
                             ) : (
                               <div
-                                className="project-seam-logo-container"
+                                className={`project-seam-logo-container ${hoveredProjectIconId === proj.id ? "is-hovered" : ""}`}
+                                onMouseEnter={() => setHoveredProjectIconId(proj.id)}
+                                onMouseLeave={() => setHoveredProjectIconId(null)}
                                 onClick={(e) => {
-                                  if (proj.websiteUrl || proj.liveAppUrl) {
+                                  if (proj.websiteUrl || proj.liveAppUrl || proj.link || proj.hasDetails) {
                                     e.stopPropagation();
                                     setActiveHoveredCluster(prev => prev === proj.id ? null : proj.id);
                                   }
@@ -894,7 +957,7 @@ export default function App() {
                                   height={64}
                                   loading="lazy"
                                   decoding="async"
-                                  className="project-seam-logo"
+                                  className={`project-seam-logo ${hoveredProjectIconId === proj.id ? "is-hovered" : ""}`}
                                 />
                               </div>
                             )}
@@ -939,9 +1002,24 @@ export default function App() {
                           })}
                         </div>
                         <div className="project-links">
+                          {(proj.hasDetails || proj.id === "flowdip") && (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenProjectDetail(proj.id)}
+                              className="project-link-btn"
+                              style={{ cursor: "pointer", background: "none", border: "1px solid var(--glass-border)" }}
+                            >
+                              <Icons.Info /> {t.projectLinks?.info || "Info"}
+                            </button>
+                          )}
                           {proj.link && (
-                            <a href={proj.link} target="_blank" rel="noreferrer" className="project-link-btn">
-                              <Icons.External /> Live App
+                            <a
+                              href={proj.link}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={`project-link-btn project-link-btn--app ${hoveredProjectIconId === proj.id ? "is-hovered" : ""}`}
+                            >
+                              <Icons.External /> {t.projectLinks?.liveApp || "Live App"}
                             </a>
                           )}
                           {proj.github && (
@@ -956,6 +1034,42 @@ export default function App() {
                 </div>
               </GridSnappedSection>
 
+              {/* Slid Project Detail Section (FlowDiP) */}
+              <AnimatePresence
+                onExitComplete={() => {
+                  window.dispatchEvent(new Event('resize'));
+                  if (window.lenis) window.lenis.resize();
+                }}
+              >
+                {activeProjectDetail && (
+                  <motion.div
+                    id={activeProjectDetail}
+                    key={`project-detail-section-${activeProjectDetail}`}
+                    className="project-detail-motion-wrapper"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                    onAnimationComplete={() => {
+                      window.dispatchEvent(new Event('resize'));
+                      if (window.lenis) window.lenis.resize();
+                    }}
+                  >
+                    <ProjectDetailSection
+                      projectId={activeProjectDetail}
+                      project={t.projects.find((p) => p.id === activeProjectDetail)}
+                      onClose={() => {
+                        setActiveProjectDetail(null);
+                        setSuppressedSideButtonsProject(null);
+                      }}
+                      lang={lang}
+                      Icons={Icons}
+                      getTechIconUrl={getTechIconUrl}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {/* Publications Section */}
               <GridSnappedSection
                 id="publications"
@@ -966,9 +1080,28 @@ export default function App() {
                   {t.publications && t.publications.map((pub, idx) => (
                     <AnimatedCard
                       key={idx}
-                      className="project-card"
-                      style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}
+                      className="project-card publication-card"
+                      style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', cursor: 'pointer' }}
                       delay={idx * 0.15}
+                      onClick={() => {
+                        if (pub.link) {
+                          window.open(pub.link, "_blank", "noopener,noreferrer");
+                        }
+                      }}
+                      onAuxClick={(e) => {
+                        if (e.button === 1 && pub.link) {
+                          window.open(pub.link, "_blank", "noopener,noreferrer");
+                        }
+                      }}
+                      tabIndex={0}
+                      role="link"
+                      aria-label={`${pub.title} - View Paper`}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          if (pub.link) window.open(pub.link, "_blank", "noopener,noreferrer");
+                        }
+                      }}
                     >
                       <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                         <div style={{ flexGrow: 1 }}>
@@ -995,15 +1128,14 @@ export default function App() {
                         <strong>Abstract:</strong> {pub.abstract}
                       </p>
                       {pub.images && pub.images.length > 0 && (
-                        <div style={{ marginTop: '16px' }}>
+                        <div
+                          style={{ marginTop: '16px' }}
+                          onClick={(e) => e.stopPropagation()}
+                          onAuxClick={(e) => e.stopPropagation()}
+                        >
                           <ImageCarousel images={pub.images} base={base} />
                         </div>
                       )}
-                      <div>
-                        <a href={pub.link} target="_blank" rel="noreferrer" className="project-link-btn" style={{ display: 'inline-flex', width: 'max-content' }}>
-                          <Icons.External /> View Paper
-                        </a>
-                      </div>
                     </AnimatedCard>
                   ))}
                 </div>
@@ -1096,8 +1228,6 @@ export default function App() {
           </div>
         </div>
       </div>
-        </>
-      )}
     </>
   );
 }

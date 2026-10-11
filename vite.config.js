@@ -25,6 +25,9 @@ export default defineConfig({
             if (id.includes('ogl')) {
               return 'vendor-ogl';
             }
+            if (id.includes('three')) {
+              return 'vendor-three';
+            }
           }
         },
       },

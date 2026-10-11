@@ -37,6 +37,8 @@ export const portfolioData = {
       website: "Website",
       shortLiveApp: "APP",
       shortWebsite: "WEB",
+      info: "Info",
+      shortInfo: "INFO",
     },
     sections: {
       trajectory: "Trajectory & Education",
@@ -81,9 +83,14 @@ export const portfolioData = {
         video: "/Portfolio/media/flowdip.mp4",
         logo: "/Portfolio/media/FlowDiP_Logo.svg",
         accentColor: "#2CC091",
+        images: [
+          "/Portfolio/media/FlowDiP/flowdip_preview_1.jpg",
+          "/Portfolio/media/FlowDiP/flowdip_preview_2.jpg",
+          "/Portfolio/media/FlowDiP/flowdip_preview_3.jpg",
+        ],
         link: "https://albertdmo13.github.io/FlowDiP/",
         liveAppUrl: "https://albertdmo13.github.io/FlowDiP/",
-        websiteUrl: "#/flowdip",
+        hasDetails: true,
         github: "https://github.com/Albertdmo13",
       },
       {
@@ -203,6 +210,8 @@ export const portfolioData = {
       website: "Sitio web",
       shortLiveApp: "APP",
       shortWebsite: "WEB",
+      info: "Información",
+      shortInfo: "INFO",
     },
     sections: {
       trajectory: "Trayectoria y Educación",
@@ -247,9 +256,14 @@ export const portfolioData = {
         video: "/Portfolio/media/flowdip.mp4",
         logo: "/Portfolio/media/FlowDiP_Logo.svg",
         accentColor: "#2CC091",
+        images: [
+          "/Portfolio/media/FlowDiP/flowdip_preview_1.jpg",
+          "/Portfolio/media/FlowDiP/flowdip_preview_2.jpg",
+          "/Portfolio/media/FlowDiP/flowdip_preview_3.jpg",
+        ],
         link: "https://albertdmo13.github.io/FlowDiP/",
         liveAppUrl: "https://albertdmo13.github.io/FlowDiP/",
-        websiteUrl: "#/flowdip",
+        hasDetails: true,
         github: "https://github.com/Albertdmo13",
       },
       {
