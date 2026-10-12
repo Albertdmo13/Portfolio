@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   Clock,
   Mesh,
@@ -65,68 +65,69 @@ const vec3 BLACK = vec3(0.0);
 const vec3 PINK  = vec3(233.0, 71.0, 245.0) / 255.0;
 const vec3 BLUE  = vec3(47.0,  75.0, 162.0) / 255.0;
 
+// Optimized 2D rotation with single sin/cos evaluation
 mat2 rotate(float r) {
-  return mat2(cos(r), sin(r), -sin(r), cos(r));
+  float c = cos(r);
+  float s = sin(r);
+  return mat2(c, s, -s, c);
 }
 
 vec3 background_color(vec2 uv) {
-  vec3 col = vec3(0.0);
-
   float y = sin(uv.x - 0.2) * 0.3 - 0.1;
   float m = uv.y - y;
 
-  col += mix(BLUE, BLACK, smoothstep(0.0, 1.0, abs(m)));
-  col += mix(PINK, BLACK, smoothstep(0.0, 1.0, abs(m - 0.8)));
+  vec3 col = mix(BLUE, BLACK, smoothstep(0.0, 1.0, abs(m)))
+           + mix(PINK, BLACK, smoothstep(0.0, 1.0, abs(m - 0.8)));
   return col * 0.5;
+}
+
+// Unrolled constant-index gradient sampling for 100% GPU driver compatibility & rich colors
+vec3 sampleGradientStop(int idx) {
+  if (idx <= 0) return lineGradient[0];
+  if (idx == 1) return lineGradient[1];
+  if (idx == 2) return lineGradient[2];
+  if (idx == 3) return lineGradient[3];
+  if (idx == 4) return lineGradient[4];
+  if (idx == 5) return lineGradient[5];
+  if (idx == 6) return lineGradient[6];
+  return lineGradient[7];
 }
 
 vec3 getLineColor(float t, vec3 baseColor) {
   if (lineGradientCount <= 0) {
     return baseColor;
   }
-
-  vec3 gradientColor;
-  
   if (lineGradientCount == 1) {
-    gradientColor = lineGradient[0];
-  } else {
-    float clampedT = clamp(t, 0.0, 0.9999);
-    float scaled = clampedT * float(lineGradientCount - 1);
-    int idx = int(floor(scaled));
-    float f = fract(scaled);
-    int idx2 = min(idx + 1, lineGradientCount - 1);
-
-    vec3 c1 = lineGradient[idx];
-    vec3 c2 = lineGradient[idx2];
-    
-    gradientColor = mix(c1, c2, f);
+    return lineGradient[0];
   }
-  
-  return gradientColor * 0.5;
+
+  float clampedT = clamp(t, 0.0, 1.0);
+  float scaled = clampedT * float(lineGradientCount - 1);
+  int idx = int(floor(scaled));
+  float f = fract(scaled);
+
+  int maxIdx = lineGradientCount - 1;
+  if (idx >= maxIdx) {
+    return sampleGradientStop(maxIdx);
+  }
+
+  vec3 c1 = sampleGradientStop(idx);
+  vec3 c2 = sampleGradientStop(idx + 1);
+
+  return mix(c1, c2, f);
 }
 
-float wave(vec2 uv, float offset, vec2 screenUv, vec2 mouseUv, bool shouldBend) {
-  float time = iTime * animationSpeed;
+// Optimized wave equation with precalculated bend delta and time constants
+float wave(vec2 uv, float offset, float time, float x_movement, float bendDelta) {
+  float amp = sin(offset + time * 0.2) * 0.3;
+  float y   = sin(uv.x + offset + x_movement) * amp + bendDelta;
 
-  float x_offset   = offset;
-  float x_movement = time * 0.1;
-  float amp        = sin(offset + time * 0.2) * 0.3;
-  float y          = sin(uv.x + x_offset + x_movement) * amp;
+  float dist = abs(uv.y - y);
 
-  if (shouldBend) {
-    vec2 d = screenUv - mouseUv;
-    float influence = exp(-dot(d, d) * bendRadius); // radial falloff around cursor
-    float bendOffset = (mouseUv.y - screenUv.y) * influence * bendStrength * bendInfluence;
-    y += bendOffset;
-  }
-
-  float m = uv.y - y;
-  float dist = abs(m);
-
-  // Thicker, defined core line
+  // Defined core line
   float core = 0.016 / (dist * 14.0 + 0.008);
 
-  // Smooth, atmospheric bloom halo (completely zero when bloomSize <= 0.001)
+  // Atmospheric bloom halo
   float bloom = 0.0;
   if (bloomSize > 0.001) {
     float bSize = clamp(bloomSize, 0.05, 2.5);
@@ -145,67 +146,81 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   }
 
   vec3 col = vec3(0.0);
-
   vec3 b = lineGradientCount > 0 ? vec3(0.0) : background_color(baseUv);
 
-  vec2 mouseUv = vec2(0.0);
-  if (interactive) {
-    mouseUv = (2.0 * iMouse - iResolution.xy) / iResolution.y;
+  float time = iTime * animationSpeed;
+  float x_movement = time * 0.1;
+
+  // Hoist cursor radial falloff calculation once per fragment
+  float bendDelta = 0.0;
+  if (interactive && bendInfluence > 0.0001) {
+    vec2 mouseUv = (2.0 * iMouse - iResolution.xy) / iResolution.y;
     mouseUv.y *= -1.0;
+    vec2 d = baseUv - mouseUv;
+    bendDelta = (mouseUv.y - baseUv.y) * exp(-dot(d, d) * bendRadius) * bendStrength * bendInfluence;
   }
-  
+
+  // Hoist logarithmic distance once per fragment
+  float logDist = log(length(baseUv) + 1.0);
+
   if (enableBottom) {
+    mat2 rot = rotate(bottomWavePosition.z * logDist);
+    vec2 ruv = baseUv * rot;
+
     for (int i = 0; i < bottomLineCount; ++i) {
       float fi = float(i);
-      float t = fi / max(float(bottomLineCount - 1), 1.0);
+      float normIndex = fi / max(float(bottomLineCount - 1), 1.0);
+      float t = clamp(baseUv.x * 0.45 + 0.5 + (normIndex - 0.5) * 0.15, 0.0, 1.0);
       vec3 lineCol = getLineColor(t, b);
-      
-      float angle = bottomWavePosition.z * log(length(baseUv) + 1.0);
-      vec2 ruv = baseUv * rotate(angle);
+
       col += lineCol * wave(
         ruv + vec2(bottomLineDistance * fi + bottomWavePosition.x, bottomWavePosition.y),
         1.5 + 0.2 * fi,
-        baseUv,
-        mouseUv,
-        interactive
-      ) * 0.2;
+        time,
+        x_movement,
+        bendDelta
+      ) * 0.35;
     }
   }
 
   if (enableMiddle) {
+    mat2 rot = rotate(middleWavePosition.z * logDist);
+    vec2 ruv = baseUv * rot;
+
     for (int i = 0; i < middleLineCount; ++i) {
       float fi = float(i);
-      float t = fi / max(float(middleLineCount - 1), 1.0);
+      float normIndex = fi / max(float(middleLineCount - 1), 1.0);
+      float t = clamp(baseUv.x * 0.45 + 0.5 + (normIndex - 0.5) * 0.15, 0.0, 1.0);
       vec3 lineCol = getLineColor(t, b);
-      
-      float angle = middleWavePosition.z * log(length(baseUv) + 1.0);
-      vec2 ruv = baseUv * rotate(angle);
+
       col += lineCol * wave(
         ruv + vec2(middleLineDistance * fi + middleWavePosition.x, middleWavePosition.y),
         2.0 + 0.15 * fi,
-        baseUv,
-        mouseUv,
-        interactive
+        time,
+        x_movement,
+        bendDelta
       );
     }
   }
 
   if (enableTop) {
+    mat2 rot = rotate(topWavePosition.z * logDist);
+    vec2 ruv = baseUv * rot;
+    ruv.x *= -1.0;
+
     for (int i = 0; i < topLineCount; ++i) {
       float fi = float(i);
-      float t = fi / max(float(topLineCount - 1), 1.0);
+      float normIndex = fi / max(float(topLineCount - 1), 1.0);
+      float t = clamp(baseUv.x * 0.45 + 0.5 + (normIndex - 0.5) * 0.15, 0.0, 1.0);
       vec3 lineCol = getLineColor(t, b);
-      
-      float angle = topWavePosition.z * log(length(baseUv) + 1.0);
-      vec2 ruv = baseUv * rotate(angle);
-      ruv.x *= -1.0;
+
       col += lineCol * wave(
         ruv + vec2(topLineDistance * fi + topWavePosition.x, topWavePosition.y),
         1.0 + 0.2 * fi,
-        baseUv,
-        mouseUv,
-        interactive
-      ) * 0.1;
+        time,
+        x_movement,
+        bendDelta
+      ) * 0.25;
     }
   }
 
@@ -257,17 +272,22 @@ function hexToVec3(hex) {
   return new Vector3(r / 255, g / 255, b / 255);
 }
 
+const DEFAULT_ENABLED_WAVES = ['top', 'middle', 'bottom'];
+const DEFAULT_LINE_COUNT = [6];
+const DEFAULT_LINE_DISTANCE = [5];
+const DEFAULT_BOTTOM_WAVE_POSITION = { x: 2.0, y: -0.7, rotate: -1 };
+
 export default function FloatingLines({
   linesGradient,
   gradientStart,
   gradientMid,
   gradientEnd,
-  enabledWaves = ['top', 'middle', 'bottom'],
-  lineCount = [6],
-  lineDistance = [5],
+  enabledWaves = DEFAULT_ENABLED_WAVES,
+  lineCount = DEFAULT_LINE_COUNT,
+  lineDistance = DEFAULT_LINE_DISTANCE,
   topWavePosition,
   middleWavePosition,
-  bottomWavePosition = { x: 2.0, y: -0.7, rotate: -1 },
+  bottomWavePosition = DEFAULT_BOTTOM_WAVE_POSITION,
   animationSpeed = 1,
   interactive = true,
   bendRadius = 5.0,
@@ -289,6 +309,18 @@ export default function FloatingLines({
   const currentInfluenceRef = useRef(0);
   const targetParallaxRef = useRef(new Vector2(0, 0));
   const currentParallaxRef = useRef(new Vector2(0, 0));
+
+  const pausedRef = useRef(paused);
+  const loopControlRef = useRef({ start: () => {}, stop: () => {} });
+
+  useEffect(() => {
+    pausedRef.current = paused;
+    if (paused) {
+      loopControlRef.current.stop();
+    } else {
+      loopControlRef.current.start();
+    }
+  }, [paused]);
 
   const effectiveGradient =
     linesGradient ||
@@ -317,6 +349,14 @@ export default function FloatingLines({
   const topLineDistance = enabledWaves.includes('top') ? getLineDistance('top') * 0.01 : 0.01;
   const middleLineDistance = enabledWaves.includes('middle') ? getLineDistance('middle') * 0.01 : 0.01;
   const bottomLineDistance = enabledWaves.includes('bottom') ? getLineDistance('bottom') * 0.01 : 0.01;
+
+  const gradientKey = effectiveGradient ? effectiveGradient.join(',') : '';
+  const wavesKey = Array.isArray(enabledWaves) ? enabledWaves.join(',') : '';
+  const lineCountKey = Array.isArray(lineCount) ? lineCount.join(',') : lineCount;
+  const lineDistKey = Array.isArray(lineDistance) ? lineDistance.join(',') : lineDistance;
+  const topWaveKey = topWavePosition ? `${topWavePosition.x},${topWavePosition.y},${topWavePosition.rotate}` : '';
+  const midWaveKey = middleWavePosition ? `${middleWavePosition.x},${middleWavePosition.y},${middleWavePosition.rotate}` : '';
+  const botWaveKey = bottomWavePosition ? `${bottomWavePosition.x},${bottomWavePosition.y},${bottomWavePosition.rotate}` : '';
 
   useEffect(() => {
     const container = containerRef.current;
@@ -433,6 +473,7 @@ export default function FloatingLines({
       const canvasWidth = renderer.domElement.width;
       const canvasHeight = renderer.domElement.height;
       uniforms.iResolution.value.set(canvasWidth, canvasHeight, 1);
+      renderer.render(scene, camera);
     };
 
     setSize();
@@ -443,7 +484,10 @@ export default function FloatingLines({
         ? new ResizeObserver(() => {
             if (!active) return;
             if (resizeRaf) cancelAnimationFrame(resizeRaf);
-            resizeRaf = requestAnimationFrame(setSize);
+            resizeRaf = requestAnimationFrame(() => {
+              setSize();
+              if (isVisible && !pausedRef.current) startLoop();
+            });
           })
         : null;
 
@@ -476,13 +520,13 @@ export default function FloatingLines({
       renderer.domElement.addEventListener('pointerleave', handlePointerLeave);
     }
 
-    let isVisible = false;
+    let isVisible = true;
     let raf = 0;
 
     const tick = () => {
-      if (!active || !isVisible || paused) {
+      if (!active || !isVisible || pausedRef.current) {
         raf = 0;
-        return; // Halt RAF completely when off-screen to save 100% GPU and CPU resources
+        return; // Halt RAF completely when off-screen or paused to save 100% GPU and CPU resources
       }
 
       uniforms.iTime.value = clock.getElapsedTime();
@@ -505,7 +549,7 @@ export default function FloatingLines({
     };
 
     const startLoop = () => {
-      if (!raf && active && isVisible && !paused) {
+      if (!raf && active && isVisible && !pausedRef.current) {
         raf = requestAnimationFrame(tick);
       }
     };
@@ -515,6 +559,11 @@ export default function FloatingLines({
         cancelAnimationFrame(raf);
         raf = 0;
       }
+    };
+
+    loopControlRef.current = {
+      start: startLoop,
+      stop: stopLoop
     };
 
     const io =
@@ -535,8 +584,13 @@ export default function FloatingLines({
 
     if (io) io.observe(container);
 
+    // Initial paint and loop initiation
+    renderer.render(scene, camera);
+    startLoop();
+
     return () => {
       active = false;
+      loopControlRef.current = { start: () => {}, stop: () => {} };
 
       stopLoop();
 
@@ -560,13 +614,13 @@ export default function FloatingLines({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    effectiveGradient,
-    enabledWaves,
-    lineCount,
-    lineDistance,
-    topWavePosition,
-    middleWavePosition,
-    bottomWavePosition,
+    gradientKey,
+    wavesKey,
+    lineCountKey,
+    lineDistKey,
+    topWaveKey,
+    midWaveKey,
+    botWaveKey,
     animationSpeed,
     interactive,
     bendRadius,
@@ -577,8 +631,7 @@ export default function FloatingLines({
     backgroundColor,
     lineIntensity,
     bloomSize,
-    lightMode,
-    paused
+    lightMode
   ]);
 
   return (

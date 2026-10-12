@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'framer-motion';
 
 import './RubberSegment.css';
@@ -95,14 +95,14 @@ export default function RubberSegment({
 
   const t = seconds => seconds / speed;
 
-  const jumpTo = i => {
+  const jumpTo = useCallback(i => {
     const s = slots.current[i];
     if (!s) return;
     clearTimeout(handoff.current);
     gen.current += 1;
     edgeL.jump(s.l);
     edgeR.jump(s.r);
-  };
+  }, [edgeL, edgeR]);
 
   const measure = () => {
     const track = trackRef.current;
@@ -134,7 +134,7 @@ export default function RubberSegment({
       committed.current = index;
       jumpTo(index);
     }
-  });
+  }, [index, jumpTo]);
 
   useEffect(
     () => () => {

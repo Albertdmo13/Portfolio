@@ -320,8 +320,7 @@ const Grainient = ({
     let lastTime = 0;
 
     const loop = t => {
-      // Check if paused or hidden via computed visibility (e.g. ancestor styled visibility: hidden)
-      if (pausedRef.current || (container && window.getComputedStyle(container).visibility === 'hidden')) {
+      if (pausedRef.current) {
         tryStop();
         return;
       }

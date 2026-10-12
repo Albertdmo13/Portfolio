@@ -3,83 +3,17 @@ import FloatingLines from "./FloatingLines";
 import ImageCarousel from "./ImageCarousel";
 import "./ProjectDetailSection.css";
 
-export default function ProjectDetailSection({
-  projectId = "flowdip",
-  project,
-  onClose,
-  lang = "en",
-  Icons,
-  getTechIconUrl,
-}) {
-  const base = import.meta.env.BASE_URL;
-  const accent = project?.accentColor || "#2CC091";
+const FLOWDIP_WAVES = ["middle", "top", "bottom"];
+const FLOWDIP_GRADIENT = ["#2CC091", "#158055", "#22d3ee"];
 
-  // Grid Snapping: Snap total section height strictly to integer multiples of 32px
-  // ensuring zero coordinate disruption to any subsequent portfolio sections.
-  const contentRef = useRef(null);
-  const [padding, setPadding] = useState({ top: 48, bottom: 48, targetHeight: 0 });
+const formatTime = (secs) => {
+  if (!secs || isNaN(secs)) return "0:00";
+  const m = Math.floor(secs / 60);
+  const s = Math.floor(secs % 60);
+  return `${m}:${s < 10 ? "0" : ""}${s}`;
+};
 
-  // Deferred background state: allows instant 60fps opening slide without blocking on WebGL context/shader compilation
-  const [isBgActive, setIsBgActive] = useState(false);
-
-  useEffect(() => {
-    // Delay mounting heavy Three.js canvas by 400ms until the opening slide animation is underway/settled
-    const timer = setTimeout(() => {
-      setIsBgActive(true);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const el = contentRef.current;
-    if (!el) return;
-
-    const measure = () => {
-      const h = el.offsetHeight;
-      if (!h) return;
-      const minPadding = 80; // Minimum 80px total vertical breathing space (~40px top, ~40px bottom)
-      const targetHeight = Math.ceil((h + minPadding) / 32) * 32;
-      const extra = targetHeight - h;
-      const top = Math.floor(extra / 2);
-      const bottom = extra - top;
-      setPadding((prev) => {
-        if (prev.top === top && prev.bottom === bottom && prev.targetHeight === targetHeight) {
-          return prev;
-        }
-        return { top, bottom, targetHeight };
-      });
-    };
-
-    measure();
-    const t1 = setTimeout(measure, 150);
-    const t2 = setTimeout(measure, 500);
-
-    let roRaf = 0;
-    let lastH = 0;
-    let ro;
-    if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver((entries) => {
-        const entry = entries[0];
-        const currentH = entry ? entry.contentRect.height : 0;
-        if (Math.abs(currentH - lastH) < 2) return;
-        lastH = currentH;
-        if (roRaf) cancelAnimationFrame(roRaf);
-        roRaf = requestAnimationFrame(measure);
-      });
-      ro.observe(el);
-    }
-    window.addEventListener('resize', measure);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      if (roRaf) cancelAnimationFrame(roRaf);
-      if (ro) ro.disconnect();
-      window.removeEventListener('resize', measure);
-    };
-  }, []);
-
-  // Video playback state
+function ProjectVideoPlayer({ videoSrc, accent }) {
   const videoRef = useRef(null);
   const videoContainerRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -88,8 +22,7 @@ export default function ProjectDetailSection({
   const [duration, setDuration] = useState(0);
 
   useEffect(() => {
-    if (!project?.video) return;
-    // Defer play slightly so video decoding does not contend with the initial slide frame
+    if (!videoSrc) return;
     const timer = setTimeout(() => {
       if (videoRef.current) {
         videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {
@@ -98,7 +31,7 @@ export default function ProjectDetailSection({
       }
     }, 350);
     return () => clearTimeout(timer);
-  }, [project?.video]);
+  }, [videoSrc]);
 
   const toggleVideoPlay = () => {
     if (!videoRef.current) return;
@@ -151,43 +84,205 @@ export default function ProjectDetailSection({
     }
   };
 
-  const formatTime = (secs) => {
-    if (!secs || isNaN(secs)) return "0:00";
-    const m = Math.floor(secs / 60);
-    const s = Math.floor(secs % 60);
-    return `${m}:${s < 10 ? "0" : ""}${s}`;
-  };
+  return (
+    <div ref={videoContainerRef} className="pds-video-player-container">
+      <video
+        ref={videoRef}
+        src={videoSrc}
+        autoPlay
+        loop
+        muted={isMuted}
+        playsInline
+        preload="metadata"
+        className="pds-video-element"
+        onClick={toggleVideoPlay}
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoadedMetadata}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+      />
+
+      {!isPlaying && (
+        <button
+          type="button"
+          className="pds-video-center-play"
+          onClick={toggleVideoPlay}
+          aria-label="Play video"
+        >
+          <span className="pds-video-play-triangle" />
+        </button>
+      )}
+
+      <div className="pds-video-controls-bar">
+        <div
+          className="pds-video-progress-track"
+          onClick={handleSeek}
+          title="Seek"
+        >
+          <div
+            className="pds-video-progress-fill"
+            style={{
+              width: `${duration ? (currentTime / duration) * 100 : 0}%`,
+              backgroundColor: accent,
+            }}
+          />
+          <div
+            className="pds-video-progress-thumb"
+            style={{
+              left: `${duration ? (currentTime / duration) * 100 : 0}%`,
+              backgroundColor: accent,
+            }}
+          />
+        </div>
+
+        <div className="pds-video-controls-row">
+          <div className="pds-video-controls-left">
+            <button
+              type="button"
+              className="pds-video-btn"
+              onClick={toggleVideoPlay}
+              aria-label={isPlaying ? "Pause" : "Play"}
+              title={isPlaying ? "Pause" : "Play"}
+            >
+              {isPlaying ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="4" width="4" height="16" rx="1" />
+                  <rect x="14" y="4" width="4" height="16" rx="1" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              )}
+            </button>
+
+            <span className="pds-video-time">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </span>
+          </div>
+
+          <div className="pds-video-controls-right">
+            <button
+              type="button"
+              className="pds-video-btn"
+              onClick={toggleVideoMute}
+              aria-label={isMuted ? "Unmute" : "Mute"}
+              title={isMuted ? "Unmute" : "Mute"}
+            >
+              {isMuted ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" />
+                  <line x1="23" y1="9" x2="17" y2="15" />
+                  <line x1="17" y1="9" x2="23" y2="15" />
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" />
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                </svg>
+              )}
+            </button>
+
+            <button
+              type="button"
+              className="pds-video-btn"
+              onClick={toggleFullscreen}
+              aria-label="Toggle Fullscreen"
+              title="Fullscreen"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ProjectDetailSection({
+  projectId = "flowdip",
+  project,
+  onClose,
+  lang = "en",
+  Icons,
+  getTechIconUrl,
+}) {
+  const base = import.meta.env.BASE_URL;
+  const accent = project?.accentColor || "#2CC091";
+
+  // Grid Snapping: Snap total section height strictly to integer multiples of 32px
+  // ensuring zero coordinate disruption to any subsequent portfolio sections.
+  const contentRef = useRef(null);
+  const [padding, setPadding] = useState({ top: 48, bottom: 48, targetHeight: 0 });
+
+  // Deferred background state: allows instant 60fps opening slide without blocking on WebGL context/shader compilation
+  const [isBgActive, setIsBgActive] = useState(false);
+
+  useEffect(() => {
+    // Delay mounting heavy Three.js canvas by 350ms until the opening slide animation is settled
+    const timer = setTimeout(() => {
+      setIsBgActive(true);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!contentRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const measuredHeight = entry.contentRect.height;
+        if (measuredHeight <= 0) continue;
+        const basePadding = 96; // 48 top + 48 bottom
+        const totalHeight = measuredHeight + basePadding;
+        const targetHeight = Math.ceil(totalHeight / 32) * 32;
+        const extra = Math.max(0, targetHeight - totalHeight);
+        const topExtra = Math.floor(extra / 2);
+        const bottomExtra = extra - topExtra;
+        setPadding((prev) => {
+          if (
+            prev.top === 48 + topExtra &&
+            prev.bottom === 48 + bottomExtra &&
+            prev.targetHeight === targetHeight
+          ) {
+            return prev;
+          }
+          return {
+            top: 48 + topExtra,
+            bottom: 48 + bottomExtra,
+            targetHeight,
+          };
+        });
+      }
+    });
+    observer.observe(contentRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   // Unique background dispatcher per project (full 100vw, rendered only when visible)
   const renderProjectBackground = () => {
-    if (!isBgActive) return null;
-    switch (projectId) {
-      case "flowdip":
-        return (
-          <div className="pds-floating-lines-fadein">
-            <FloatingLines
-              enabledWaves={["middle", "top", "bottom"]}
-              lineCount={2}
-              lineDistance={93}
-              bendRadius={1}
-              bendStrength={-0.5}
-              interactive={false}
-              parallax={true}
-              animationSpeed={0.8}
-              lineIntensity={0.9}
-              bloomSize={0}
-              gradientStart="#2CC091"
-              gradientMid="#158055"
-              gradientEnd="#22d3ee"
-              linesGradient={["#2CC091", "#158055", "#22d3ee"]}
-              mixBlendMode="normal"
-              backgroundColor="#08080a"
-            />
-          </div>
-        );
-      default:
-        return null;
-    }
+    if (!isBgActive || projectId?.toLowerCase() !== "flowdip") return null;
+    return (
+      <div className="pds-floating-lines-fadein">
+        <FloatingLines
+          enabledWaves={FLOWDIP_WAVES}
+          lineCount={2}
+          lineDistance={93}
+          bendRadius={1}
+          bendStrength={-0.5}
+          interactive={false}
+          parallax={true}
+          animationSpeed={0.8}
+          lineIntensity={0.9}
+          bloomSize={0}
+          linesGradient={FLOWDIP_GRADIENT}
+          mixBlendMode="normal"
+          backgroundColor="#08080a"
+        />
+      </div>
+    );
   };
 
   const tUI = {
@@ -284,123 +379,10 @@ export default function ProjectDetailSection({
             {/* 1. Wide Video Player on top */}
             <div className="pds-video-wrapper">
               {project?.video ? (
-                <div ref={videoContainerRef} className="pds-video-player-container">
-                  <video
-                    ref={videoRef}
-                    src={`${base}${project.video.replace(/^\/?(Portfolio\/)?/, "")}`}
-                    autoPlay
-                    loop
-                    muted={isMuted}
-                    playsInline
-                    preload="metadata"
-                    className="pds-video-element"
-                    onClick={toggleVideoPlay}
-                    onTimeUpdate={handleTimeUpdate}
-                    onLoadedMetadata={handleLoadedMetadata}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                  />
-
-                  {/* Center Play Overlay when paused */}
-                  {!isPlaying && (
-                    <button
-                      type="button"
-                      className="pds-video-center-play"
-                      onClick={toggleVideoPlay}
-                      aria-label="Play video"
-                    >
-                      <span className="pds-video-play-triangle" />
-                    </button>
-                  )}
-
-                  {/* Custom Bottom Control Bar */}
-                  <div className="pds-video-controls-bar">
-                    {/* Scrubbable Progress Bar */}
-                    <div
-                      className="pds-video-progress-track"
-                      onClick={handleSeek}
-                      title="Seek"
-                    >
-                      <div
-                        className="pds-video-progress-fill"
-                        style={{
-                          width: `${duration ? (currentTime / duration) * 100 : 0}%`,
-                          backgroundColor: accent,
-                        }}
-                      />
-                      <div
-                        className="pds-video-progress-thumb"
-                        style={{
-                          left: `${duration ? (currentTime / duration) * 100 : 0}%`,
-                          backgroundColor: accent,
-                        }}
-                      />
-                    </div>
-
-                    <div className="pds-video-controls-row">
-                      <div className="pds-video-controls-left">
-                        <button
-                          type="button"
-                          className="pds-video-btn"
-                          onClick={toggleVideoPlay}
-                          aria-label={isPlaying ? "Pause" : "Play"}
-                          title={isPlaying ? "Pause" : "Play"}
-                        >
-                          {isPlaying ? (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                              <rect x="6" y="4" width="4" height="16" rx="1" />
-                              <rect x="14" y="4" width="4" height="16" rx="1" />
-                            </svg>
-                          ) : (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                              <polygon points="5 3 19 12 5 21 5 3" />
-                            </svg>
-                          )}
-                        </button>
-
-                        <span className="pds-video-time">
-                          {formatTime(currentTime)} / {formatTime(duration)}
-                        </span>
-                      </div>
-
-                      <div className="pds-video-controls-right">
-                        <button
-                          type="button"
-                          className="pds-video-btn"
-                          onClick={toggleVideoMute}
-                          aria-label={isMuted ? "Unmute" : "Mute"}
-                          title={isMuted ? "Unmute" : "Mute"}
-                        >
-                          {isMuted ? (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" />
-                              <line x1="23" y1="9" x2="17" y2="15" />
-                              <line x1="17" y1="9" x2="23" y2="15" />
-                            </svg>
-                          ) : (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" />
-                              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                            </svg>
-                          )}
-                        </button>
-
-                        <button
-                          type="button"
-                          className="pds-video-btn"
-                          onClick={toggleFullscreen}
-                          aria-label="Toggle Fullscreen"
-                          title="Fullscreen"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <ProjectVideoPlayer
+                  videoSrc={`${base}${project.video.replace(/^\/?(Portfolio\/)?/, "")}`}
+                  accent={accent}
+                />
               ) : (
                 <div className="pds-video-placeholder">
                   <span className="pds-slot-hint">{tUI.mediaPlaceholder}</span>

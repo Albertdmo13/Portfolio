@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import Lenis from 'lenis';
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { portfolioData } from "./data";
@@ -187,42 +187,53 @@ const Icons = {
 
 const JAVA_ICON_DATA_URL = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Cpath fill='%23ffffff' d='M47.617 98.12c-19.192 5.362 11.677 16.439 36.115 5.969-4.003-1.556-6.874-3.351-6.874-3.351-10.897 2.06-15.952 2.222-25.844 1.092-8.164-.935-3.397-3.71-3.397-3.71zm33.189-10.46c-14.444 2.779-22.787 2.69-33.354 1.6-8.171-.845-2.822-4.805-2.822-4.805-21.137 7.016 11.767 14.977 41.309 6.336-3.14-1.106-5.133-3.131-5.133-3.131zm11.319-60.575c.001 0-42.731 10.669-22.323 34.187 6.024 6.935-1.58 13.17-1.58 13.17s15.289-7.891 8.269-17.777c-6.559-9.215-11.587-13.793 15.634-29.58zm9.998 81.144s3.529 2.91-3.888 5.159c-14.102 4.272-58.706 5.56-71.095.171-4.45-1.938 3.899-4.625 6.526-5.192 2.739-.593 4.303-.485 4.303-.485-4.952-3.487-32.013 6.85-13.742 9.815 49.821 8.076 90.817-3.637 77.896-9.468zM85 77.896c2.395-1.634 5.703-3.053 5.703-3.053s-9.424 1.685-18.813 2.474c-11.494.964-23.823 1.154-30.012.326-14.652-1.959 8.033-7.348 8.033-7.348s-8.812-.596-19.644 4.644C17.455 81.134 61.958 83.958 85 77.896zm5.609 15.145c-.108.29-.468.616-.468.616 31.273-8.221 19.775-28.979 4.822-23.725-1.312.464-2 1.543-2 1.543s.829-.334 2.678-.72c7.559-1.575 18.389 10.119-5.032 22.286zM64.181 70.069c-4.614-10.429-20.26-19.553.007-35.559C89.459 14.563 76.492 1.587 76.492 1.587c5.23 20.608-18.451 26.833-26.999 39.667-5.821 8.745 2.857 18.142 14.688 28.815zm27.274 51.748c-19.187 3.612-42.854 3.191-56.887.874 0 0 2.874 2.38 17.646 3.331 22.476 1.437 57-.8 57.816-11.436.001 0-1.57 4.032-18.575 7.231z'/%3E%3C/svg%3E";
 
+const TECH_ICON_MAP = {
+  "React": "react",
+  "JavaScript": "javascript",
+  "Python": "python",
+  "Flask": "flask",
+  "MySQL": "mysql",
+  "Docker": "docker",
+  "Qt": "qt",
+  "Raspberry Pi 5": "raspberrypi",
+  "C / C++": "cplusplus",
+  "SQL": "postgresql",
+  "HTML / CSS": "html5",
+  "Angular": "angular",
+  "Node.js": "nodedotjs",
+  "OpenGL": "opengl",
+  "Three.js basics": "threedotjs",
+  "Three.js básico": "threedotjs",
+  "Git": "git",
+  "GitHub": "github",
+  "Linux": "linux",
+  "Blender": "blender",
+  "Arduino": "arduino",
+  "Aseprite": "aseprite",
+  "GameMaker": "gamemaker",
+};
+
 const getTechIconUrl = (techName) => {
   if (techName === "Java") {
     return JAVA_ICON_DATA_URL;
   }
-  const map = {
-    "React": "react",
-    "JavaScript": "javascript",
-    "Python": "python",
-    "Flask": "flask",
-    "MySQL": "mysql",
-    "Docker": "docker",
-    "Qt": "qt",
-    "Raspberry Pi 5": "raspberrypi",
-    "C / C++": "cplusplus",
-    "SQL": "postgresql",
-    "HTML / CSS": "html5",
-    "Angular": "angular",
-    "Node.js": "nodedotjs",
-    "OpenGL": "opengl",
-    "Three.js basics": "threedotjs",
-    "Three.js básico": "threedotjs",
-    "Git": "git",
-    "GitHub": "github",
-    "Linux": "linux",
-    "Blender": "blender",
-    "Arduino": "arduino",
-    "Aseprite": "aseprite",
-    "GameMaker": "gamemaker",
-  };
-  const iconName = map[techName];
+  const iconName = TECH_ICON_MAP[techName];
   return iconName ? `https://cdn.simpleicons.org/${iconName}/white` : null;
 };
 
+const resolveAssetUrl = (base, path) => (path ? `${base}${path.replace(/^\/?(Portfolio\/)?/, "")}` : "");
+
+const scrollToEl = (target, offset = -60, duration = 1.2) => {
+  const el = typeof target === 'string' ? document.querySelector(target) : target;
+  if (!el) return;
+  if (window.lenis) {
+    window.lenis.scrollTo(el, { offset, duration });
+  } else {
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+};
+
 // Polished variants for project detail showcase
-// Quick opacity dissolve (0.22s) prevents clipped inner cards during collapse;
-// Balanced ease-in-out height transition (0.65s) avoids violent deceleration snaps.
 const projectDetailVariants = {
   initial: {
     opacity: 0,
@@ -249,6 +260,13 @@ const projectDetailVariants = {
   },
 };
 
+const sectionAnimation = {
+  initial: { opacity: 0 },
+  whileInView: { opacity: 1 },
+  viewport: { once: true, margin: "-50px" },
+  transition: { duration: 0.5 }
+};
+
 export default function App() {
   const [lang, setLang] = useState("en");
   const [isLoading, setIsLoading] = useState(true);
@@ -266,38 +284,24 @@ export default function App() {
   const [hoveredProjectIconId, setHoveredProjectIconId] = useState(null);
   const [suppressedSideButtonsProject, setSuppressedSideButtonsProject] = useState(null);
 
+  const base = import.meta.env.BASE_URL;
+  const assetUrl = useCallback((path) => resolveAssetUrl(base, path), [base]);
+
   const handleOpenProjectDetail = (projectId) => {
     setActiveProjectDetail(projectId);
-
-    // Scroll down to the project detail section with smooth Lenis animation
     setTimeout(() => {
-      const el = document.getElementById(`${projectId}-section`) || document.getElementById(projectId);
-      if (el) {
-        if (window.lenis) {
-          window.lenis.scrollTo(el, { offset: -60, duration: 1.2 });
-        } else {
-          el.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      }
+      scrollToEl(document.getElementById(`${projectId}-section`) || document.getElementById(projectId));
     }, 120);
   };
 
-  const handleCloseProjectDetail = () => {
+  const handleCloseProjectDetail = useCallback(() => {
     const currentId = activeProjectDetail;
-    const projectCardEl = currentId ? document.getElementById(`project-card-${currentId}`) : null;
-    const projectsEl = document.getElementById("projects");
-    const targetEl = projectCardEl || projectsEl;
+    const targetEl = (currentId ? document.getElementById(`project-card-${currentId}`) : null) || document.getElementById("projects");
 
     if (targetEl) {
       const rect = targetEl.getBoundingClientRect();
-      // If the user has scrolled past/down into the project detail section,
-      // smoothly glide viewport back up to the card in tandem with the collapse.
       if (rect.top < 60 || rect.bottom < 120) {
-        if (window.lenis) {
-          window.lenis.scrollTo(targetEl, { offset: -70, duration: 0.7 });
-        } else {
-          targetEl.scrollIntoView({ behavior: "smooth" });
-        }
+        scrollToEl(targetEl, -70, 0.7);
       }
     }
 
@@ -307,7 +311,7 @@ export default function App() {
 
     setActiveProjectDetail(null);
     setSuppressedSideButtonsProject(null);
-  };
+  }, [activeProjectDetail]);
 
   // Close project detail smoothly on Escape key press
   useEffect(() => {
@@ -319,7 +323,7 @@ export default function App() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeProjectDetail]);
+  }, [activeProjectDetail, handleCloseProjectDetail]);
 
   // Close expanded project cluster when tapping outside on mobile/touch screens
   useEffect(() => {
@@ -339,18 +343,10 @@ export default function App() {
 
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.toLowerCase();
-      if (hash.includes("flowdip")) {
+      if (window.location.hash.toLowerCase().includes("flowdip")) {
         setActiveProjectDetail("flowdip");
         setTimeout(() => {
-          const el = document.getElementById("flowdip-section") || document.getElementById("flowdip");
-          if (el) {
-            if (window.lenis) {
-              window.lenis.scrollTo(el, { offset: -60, duration: 1.2 });
-            } else {
-              el.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
-          }
+          scrollToEl(document.getElementById("flowdip-section") || document.getElementById("flowdip"));
         }, 150);
       }
     };
@@ -358,25 +354,23 @@ export default function App() {
     window.addEventListener("hashchange", handleHashChange);
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
+
   const heroStageRef = useRef(null);
   const heroContainerRef = useRef(null);
   const heroCardRef = useRef(null);
   const navHeaderRef = useRef(null);
   const uncompressedNavHeightRef = useRef(110);
   const compressedNavHeightRef = useRef(48);
-  const base = import.meta.env.BASE_URL;
 
-  // Snapped nav difference between uncompressed and compressed states (snapped to 32px grid: ~64px)
-  const uncompressedNavHeight = uncompressedNavHeightRef.current || 110;
-  const compressedNavHeight = compressedNavHeightRef.current || 48;
-  const rawNavDiff = Math.max(0, uncompressedNavHeight - compressedNavHeight);
-  const snappedNavDiff = Math.round(rawNavDiff / 32) * 32 || 64;
+  const getSnappedNavDiff = useCallback(() => {
+    const uncompressed = uncompressedNavHeightRef.current || 110;
+    const compressed = compressedNavHeightRef.current || 48;
+    return Math.round(Math.max(0, uncompressed - compressed) / 32) * 32 || 64;
+  }, []);
 
+  const snappedNavDiff = getSnappedNavDiff();
   const baseExtra = heroHeight > 0 && windowHeight > 0 ? Math.max(0, heroHeight - windowHeight) : 0;
   const needsHeroScroll = isMobile && baseExtra > 0;
-  // In mobile view, since the nav bar compresses early (~24px) when the hero section needs scrolling,
-  // the scrollable hero section can scroll higher by snappedNavDiff before becoming fixed.
-  // The total hero spacer height accounts for this extra scroll room.
   const effectiveHeroHeight = heroHeight + (needsHeroScroll ? snappedNavDiff : 0);
 
   useEffect(() => {
@@ -385,8 +379,6 @@ export default function App() {
       if (heroContainerRef.current) {
         const rawHeight = heroContainerRef.current.offsetHeight;
         if (rawHeight > 0) {
-          // Snap the hero height to the 32px background square grid (lines at 0, 32, 64, 96...)
-          // Clamped to at least 512px so spacer is always an exact multiple of 32
           const snappedHeight = Math.ceil(Math.max(512, rawHeight) / 32) * 32;
           setHeroHeight(snappedHeight);
         }
@@ -404,27 +396,17 @@ export default function App() {
     const updateScrollLogic = () => {
       const scrollY = window.scrollY || window.pageYOffset || 0;
       const currentWindowHeight = window.innerHeight;
-
-      const uncompressedNav = uncompressedNavHeightRef.current || 110;
-      const compressedNav = compressedNavHeightRef.current || 48;
-      const navDiff = Math.max(0, uncompressedNav - compressedNav);
-      const navSnappedDiff = Math.round(navDiff / 32) * 32 || 64;
+      const navSnappedDiff = getSnappedNavDiff();
 
       // Excess height when hero is taller than screen (2-stage scroll on mobile)
       const curBaseExtra = Math.max(0, heroHeight - currentWindowHeight);
       const needsScroll = isMobile && curBaseExtra > 0;
-
-      // In mobile view, since the nav bar compresses early (~24px) when hero needs scrolling,
-      // the scrollable hero section can scroll higher by navSnappedDiff before becoming fixed.
       const extraScroll = needsScroll ? Math.max(0, curBaseExtra + navSnappedDiff) : Math.max(0, curBaseExtra);
       const curEffectiveHeroHeight = heroHeight + (needsScroll ? navSnappedDiff : 0);
 
-      // When the hero section is too big and needs scrolling, sit way higher (early scroll ~24px)
-      // so the navigation bar compresses and collapses its links row, maximizing visible hero content.
-      // Otherwise, normally compress when the user scrolls past the hero section.
       const compressThreshold = needsScroll
         ? 24
-        : Math.max(0, heroHeight - uncompressedNav);
+        : Math.max(0, heroHeight - (uncompressedNavHeightRef.current || 110));
       setIsScrolled(scrollY >= compressThreshold);
 
       if (!heroStageRef.current || !heroHeight) {
@@ -432,11 +414,6 @@ export default function App() {
         return;
       }
 
-      // 2-stage scroll:
-      // Stage 1: When scrollY < extraScroll, the hero is positioned absolute at top: 0,
-      //          scrolling natively with the page on the GPU compositor thread without JS transform lag!
-      // Stage 2: When scrollY >= extraScroll, the hero is fixed at top: -extraScroll,
-      //          holding stationary while subsequent sections slide up over it.
       if (needsScroll && scrollY < extraScroll) {
         heroStageRef.current.style.position = 'absolute';
         heroStageRef.current.style.top = '0px';
@@ -497,36 +474,13 @@ export default function App() {
         window.lenis.off('scroll', handleScroll);
       }
     };
-  }, [heroHeight, isMobile, windowHeight]);
+  }, [heroHeight, isMobile, windowHeight, getSnappedNavDiff]);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-      setWindowHeight(window.innerHeight);
-      if (navHeaderRef.current) {
-        const h = navHeaderRef.current.offsetHeight;
-        if (h > 0) {
-          if (navHeaderRef.current.classList.contains('nav-compressed')) {
-            compressedNavHeightRef.current = h;
-          } else {
-            uncompressedNavHeightRef.current = h;
-          }
-        }
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    handleResize();
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
-  useEffect(() => {
+  const updateNavHeight = useCallback(() => {
     if (navHeaderRef.current) {
       const h = navHeaderRef.current.offsetHeight;
       if (h > 0) {
-        if (isScrolled) {
+        if (isScrolled || navHeaderRef.current.classList.contains('nav-compressed')) {
           compressedNavHeightRef.current = h;
         } else {
           uncompressedNavHeightRef.current = h;
@@ -535,10 +489,27 @@ export default function App() {
     }
   }, [isScrolled]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      setWindowHeight(window.innerHeight);
+      updateNavHeight();
+    };
+    window.addEventListener("resize", handleResize);
+    handleResize();
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, [updateNavHeight]);
+
+  useEffect(() => {
+    updateNavHeight();
+  }, [isScrolled, updateNavHeight]);
+
   // Simulate hover for grid elements (projects, publications, skills) on mobile based on scroll coordinates
   useEffect(() => {
     let activeCards = new Set();
     let ticking = false;
+    let cachedCards = null;
 
     const runMobileHover = () => {
       // Only active on mobile viewports (<= 768px)
@@ -553,9 +524,12 @@ export default function App() {
 
       // Focal reading line: central region of mobile viewport (~48% of screen height)
       const focusY = window.innerHeight * 0.48;
-      const targetCards = document.querySelectorAll(
-        '.projects-grid .project-card, .publications-list .project-card, .skills-grid .skill-category-card'
-      );
+      if (!cachedCards || cachedCards.length === 0) {
+        cachedCards = document.querySelectorAll(
+          '.projects-grid .project-card, .publications-list .project-card, .skills-grid .skill-category-card'
+        );
+      }
+      const targetCards = cachedCards;
 
       if (targetCards.length === 0) {
         ticking = false;
@@ -629,8 +603,13 @@ export default function App() {
       }
     };
 
+    const handleResizeOrScroll = () => {
+      cachedCards = null;
+      updateMobileHover();
+    };
+
     window.addEventListener('scroll', updateMobileHover, { passive: true });
-    window.addEventListener('resize', updateMobileHover);
+    window.addEventListener('resize', handleResizeOrScroll);
 
     if (window.lenis) {
       window.lenis.on('scroll', updateMobileHover);
@@ -694,7 +673,7 @@ export default function App() {
         if (id === '#' || !id) {
           lenis.scrollTo(0);
         } else {
-          lenis.scrollTo(id);
+          scrollToEl(id);
         }
       }
     };
@@ -709,13 +688,6 @@ export default function App() {
   }, []);
 
   const t = portfolioData[lang] || portfolioData.en;
-
-  const sectionAnimation = {
-    initial: { opacity: 0 },
-    whileInView: { opacity: 1 },
-    viewport: { once: true, margin: "-50px" },
-    transition: { duration: 0.5 }
-  };
 
   return (
     <>
@@ -779,13 +751,7 @@ export default function App() {
               t={t}
               lang={lang}
               Icons={Icons}
-              onContactClick={() => {
-                if (window.lenis) {
-                  window.lenis.scrollTo('#contact');
-                } else {
-                  document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
+              onContactClick={() => scrollToEl('#contact')}
             />
           </div>
         </div>
@@ -831,7 +797,7 @@ export default function App() {
               intensity={1.3}
               autoAnimate={true}
               onClick={() => {
-                window.open(`${base}${t.personalInfo.links.cv.replace(/^\/?(Portfolio\/)?/, "")}`, "_blank");
+                window.open(assetUrl(t.personalInfo.links.cv), "_blank");
               }}
             >
               <Icons.Cv />
@@ -913,22 +879,10 @@ export default function App() {
                               )}
                               {item.description && <p className="timeline-desc">{item.description}</p>}
                             </div>
-                            {item.logo && (
-                              item.link ? (
-                                <a href={item.link} target="_blank" rel="noreferrer" className="timeline-logo-link" style={{ display: 'flex' }}>
-                                  <img
-                                    src={`${base}${item.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
-                                    alt={`${item.institution} logo`}
-                                    width={72}
-                                    height={72}
-                                    loading="lazy"
-                                    decoding="async"
-                                    className="timeline-logo"
-                                  />
-                                </a>
-                              ) : (
+                            {item.logo && (() => {
+                              const logoImg = (
                                 <img
-                                  src={`${base}${item.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
+                                  src={assetUrl(item.logo)}
                                   alt={`${item.institution} logo`}
                                   width={72}
                                   height={72}
@@ -936,8 +890,13 @@ export default function App() {
                                   decoding="async"
                                   className="timeline-logo"
                                 />
-                              )
-                            )}
+                              );
+                              return item.link ? (
+                                <a href={item.link} target="_blank" rel="noreferrer" className="timeline-logo-link" style={{ display: 'flex' }}>
+                                  {logoImg}
+                                </a>
+                              ) : logoImg;
+                            })()}
                           </div>
                         </div>
                       </motion.div>
@@ -971,7 +930,7 @@ export default function App() {
                       {proj.video && (
                         <div className="project-media">
                           <video
-                            src={`${base}${proj.video.replace(/^\/?(Portfolio\/)?/, "")}`}
+                            src={assetUrl(proj.video)}
                             autoPlay
                             loop
                             muted
@@ -1034,58 +993,59 @@ export default function App() {
                               </div>
                             )}
 
-                            {proj.link ? (
-                              <a
-                                href={proj.link}
-                                target="_blank"
-                                rel="noreferrer"
-                                className={`project-seam-logo-link ${hoveredProjectIconId === proj.id ? "is-hovered" : ""}`}
-                                title={`${proj.title} logo`}
-                                onMouseEnter={() => setHoveredProjectIconId(proj.id)}
-                                onMouseLeave={() => setHoveredProjectIconId(null)}
-                                onClick={(e) => {
-                                  const hasExpandedLinks = Boolean(proj.hasDetails || proj.id === "flowdip" || proj.liveAppUrl || proj.link);
-                                  const isTouchOrMobile = isMobile || (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: none)").matches);
-                                  if (hasExpandedLinks && isTouchOrMobile) {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setActiveHoveredCluster(prev => prev === proj.id ? null : proj.id);
-                                  }
-                                }}
-                              >
+                            {(() => {
+                              const isHoveredClass = hoveredProjectIconId === proj.id ? "is-hovered" : "";
+                              const onMouseEnter = () => setHoveredProjectIconId(proj.id);
+                              const onMouseLeave = () => setHoveredProjectIconId(null);
+                              const logoImg = (
                                 <img
-                                  src={`${base}${proj.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
+                                  src={assetUrl(proj.logo)}
                                   alt={`${proj.title} logo`}
                                   width={64}
                                   height={64}
                                   loading="lazy"
                                   decoding="async"
-                                  className={`project-seam-logo ${hoveredProjectIconId === proj.id ? "is-hovered" : ""}`}
+                                  className={`project-seam-logo ${isHoveredClass}`}
                                 />
-                              </a>
-                            ) : (
-                              <div
-                                className={`project-seam-logo-container ${hoveredProjectIconId === proj.id ? "is-hovered" : ""}`}
-                                onMouseEnter={() => setHoveredProjectIconId(proj.id)}
-                                onMouseLeave={() => setHoveredProjectIconId(null)}
-                                onClick={(e) => {
-                                  if (proj.websiteUrl || proj.liveAppUrl || proj.link || proj.hasDetails) {
-                                    e.stopPropagation();
-                                    setActiveHoveredCluster(prev => prev === proj.id ? null : proj.id);
-                                  }
-                                }}
-                              >
-                                <img
-                                  src={`${base}${proj.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
-                                  alt={`${proj.title} logo`}
-                                  width={64}
-                                  height={64}
-                                  loading="lazy"
-                                  decoding="async"
-                                  className={`project-seam-logo ${hoveredProjectIconId === proj.id ? "is-hovered" : ""}`}
-                                />
-                              </div>
-                            )}
+                              );
+
+                              return proj.link ? (
+                                <a
+                                  href={proj.link}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className={`project-seam-logo-link ${isHoveredClass}`}
+                                  title={`${proj.title} logo`}
+                                  onMouseEnter={onMouseEnter}
+                                  onMouseLeave={onMouseLeave}
+                                  onClick={(e) => {
+                                    const hasExpandedLinks = Boolean(proj.hasDetails || proj.id === "flowdip" || proj.liveAppUrl || proj.link);
+                                    const isTouchOrMobile = isMobile || (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: none)").matches);
+                                    if (hasExpandedLinks && isTouchOrMobile) {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      setActiveHoveredCluster(prev => prev === proj.id ? null : proj.id);
+                                    }
+                                  }}
+                                >
+                                  {logoImg}
+                                </a>
+                              ) : (
+                                <div
+                                  className={`project-seam-logo-container ${isHoveredClass}`}
+                                  onMouseEnter={onMouseEnter}
+                                  onMouseLeave={onMouseLeave}
+                                  onClick={(e) => {
+                                    if (proj.websiteUrl || proj.liveAppUrl || proj.link || proj.hasDetails) {
+                                      e.stopPropagation();
+                                      setActiveHoveredCluster(prev => prev === proj.id ? null : proj.id);
+                                    }
+                                  }}
+                                >
+                                  {logoImg}
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
                       )}
@@ -1130,7 +1090,13 @@ export default function App() {
                           {(proj.hasDetails || proj.id === "flowdip") && (
                             <button
                               type="button"
-                              onClick={() => handleOpenProjectDetail(proj.id)}
+                              onClick={() => {
+                                if (activeProjectDetail === proj.id) {
+                                  handleCloseProjectDetail();
+                                } else {
+                                  handleOpenProjectDetail(proj.id);
+                                }
+                              }}
                               className="project-link-btn"
                               style={{ cursor: "pointer", background: "none", border: "1px solid var(--glass-border)" }}
                             >
@@ -1168,7 +1134,7 @@ export default function App() {
               >
                 {activeProjectDetail && (
                   <motion.div
-                    id={activeProjectDetail}
+                    id={`${activeProjectDetail}-section`}
                     key={`project-detail-section-${activeProjectDetail}`}
                     className="project-detail-motion-wrapper"
                     variants={projectDetailVariants}
@@ -1199,47 +1165,46 @@ export default function App() {
                 sectionAnimation={sectionAnimation}
               >
                 <div className="publications-list" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                  {t.publications && t.publications.map((pub, idx) => (
-                    <AnimatedCard
-                      key={idx}
-                      className="project-card publication-card"
-                      style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', cursor: 'pointer' }}
-                      delay={idx * 0.15}
-                      onClick={() => {
-                        if (pub.link) {
-                          window.open(pub.link, "_blank", "noopener,noreferrer");
-                        }
-                      }}
-                      onAuxClick={(e) => {
-                        if (e.button === 1 && pub.link) {
-                          window.open(pub.link, "_blank", "noopener,noreferrer");
-                        }
-                      }}
-                      tabIndex={0}
-                      role="link"
-                      aria-label={`${pub.title} - View Paper`}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          if (pub.link) window.open(pub.link, "_blank", "noopener,noreferrer");
-                        }
-                      }}
-                    >
-                      <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                        <div style={{ flexGrow: 1 }}>
-                          <h3 className="project-title" style={{ margin: 0, color: 'var(--text-main)' }}>{pub.title}</h3>
-                          {pub.authors && (
-                            <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.55)', fontStyle: 'italic' }}>
-                              {pub.authors}
-                            </p>
-                          )}
-                        </div>
-                        {pub.logo && (
-                          <img
-                            src={`${base}${pub.logo.replace(/^\/?(Portfolio\/)?/, "")}`}
-                            alt="Publication logo"
-                            width={64}
-                            height={42}
+                  {t.publications && t.publications.map((pub, idx) => {
+                    const openPaper = () => {
+                      if (pub.link) window.open(pub.link, "_blank", "noopener,noreferrer");
+                    };
+
+                    return (
+                      <AnimatedCard
+                        key={idx}
+                        className="project-card publication-card"
+                        style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', cursor: 'pointer' }}
+                        delay={idx * 0.15}
+                        onClick={openPaper}
+                        onAuxClick={(e) => {
+                          if (e.button === 1) openPaper();
+                        }}
+                        tabIndex={0}
+                        role="link"
+                        aria-label={`${pub.title} - View Paper`}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            openPaper();
+                          }
+                        }}
+                      >
+                        <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                          <div style={{ flexGrow: 1 }}>
+                            <h3 className="project-title" style={{ margin: 0, color: 'var(--text-main)' }}>{pub.title}</h3>
+                            {pub.authors && (
+                              <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.55)', fontStyle: 'italic' }}>
+                                {pub.authors}
+                              </p>
+                            )}
+                          </div>
+                          {pub.logo && (
+                            <img
+                              src={assetUrl(pub.logo)}
+                              alt="Publication logo"
+                              width={64}
+                              height={42}
                             loading="lazy"
                             decoding="async"
                             style={{ width: '64px', height: '42px', aspectRatio: '598.7 / 394.9', objectFit: 'contain', flexShrink: 0, filter: 'invert(1)', opacity: 0.8 }}
@@ -1259,7 +1224,8 @@ export default function App() {
                         </div>
                       )}
                     </AnimatedCard>
-                  ))}
+                    );
+                  })}
                 </div>
               </GridSnappedSection>
 

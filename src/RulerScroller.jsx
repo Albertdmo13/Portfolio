@@ -1,6 +1,17 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import './RulerScroller.css';
+
+function ActivePercentText({ progress }) {
+  const [percent, setPercent] = useState("000%");
+  useEffect(() => {
+    const unsub = progress.on("change", (v) => {
+      setPercent(Math.round(v * 100).toString().padStart(3, '0') + '%');
+    });
+    return unsub;
+  }, [progress]);
+  return <>{percent}</>;
+}
 
 const RulerScroller = ({
   label = "HERO",
@@ -12,6 +23,7 @@ const RulerScroller = ({
   const [activeSectionName, setActiveSectionName] = useState((label || "HERO").toUpperCase());
   const [activeSectionAccent, setActiveSectionAccent] = useState(null);
   const [sectionsData, setSectionsData] = useState([]);
+  const sectionsDataRef = useRef([]);
 
   // Butter-smooth scroll tracking with Framer Motion
   const { scrollYProgress } = useScroll();
@@ -22,15 +34,6 @@ const RulerScroller = ({
   });
 
   const activeTop = useTransform(smoothProgress, [0, 1], ["0%", "100%"]);
-  const [percentString, setPercentString] = useState("000%");
-
-  // Update percent readout as scroll progresses
-  useEffect(() => {
-    const unsubscribe = smoothProgress.onChange((v) => {
-      setPercentString(Math.round(v * 100).toString().padStart(3, '0') + '%');
-    });
-    return unsubscribe;
-  }, [smoothProgress]);
 
   // Robust calculation of section coordinates (including project detail sections)
   const calculateSections = useCallback(() => {
@@ -130,7 +133,23 @@ const RulerScroller = ({
       }
     }
 
-    setSectionsData(data);
+    sectionsDataRef.current = data;
+    setSectionsData((prev) => {
+      if (
+        prev.length === data.length &&
+        prev.every(
+          (p, i) =>
+            p.id === data[i].id &&
+            p.name === data[i].name &&
+            Math.abs(p.percentage - data[i].percentage) < 0.05 &&
+            p.accentColor === data[i].accentColor &&
+            p.isProject === data[i].isProject
+        )
+      ) {
+        return prev;
+      }
+      return data;
+    });
   }, [label, activeProjectDetail, activeProjectAccent, activeProjectTitle]);
 
   // Accurate Active Section Detection based on current scroll position
@@ -143,18 +162,20 @@ const RulerScroller = ({
 
     // Inside the Hero section
     if (scrollY < heroThreshold) {
-      setActiveSectionName((label || "HERO").toUpperCase());
-      setActiveSectionAccent(null);
+      const heroStr = (label || "HERO").toUpperCase();
+      setActiveSectionName((prev) => (prev !== heroStr ? heroStr : prev));
+      setActiveSectionAccent((prev) => (prev !== null ? null : prev));
       return;
     }
 
     const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
     // When user reached the bottom of the page, activate the last section
     if (window.innerHeight + scrollY >= scrollHeight - 60) {
-      if (sectionsData.length > 0) {
-        const lastSec = sectionsData[sectionsData.length - 1];
-        setActiveSectionName(lastSec.name);
-        setActiveSectionAccent(lastSec.accentColor);
+      const curData = sectionsDataRef.current;
+      if (curData.length > 0) {
+        const lastSec = curData[curData.length - 1];
+        setActiveSectionName((prev) => (prev !== lastSec.name ? lastSec.name : prev));
+        setActiveSectionAccent((prev) => (prev !== lastSec.accentColor ? lastSec.accentColor : prev));
         return;
       }
     }
@@ -205,25 +226,50 @@ const RulerScroller = ({
         name = activeProjectTitle;
       }
 
-      setActiveSectionName(name.toUpperCase());
-      setActiveSectionAccent(isProject ? (activeProjectAccent || currentActive.dataset.accentColor || '#2CC091') : null);
+      const nextName = name.toUpperCase();
+      const nextAccent = isProject
+        ? (activeProjectAccent || currentActive.dataset.accentColor || '#2CC091')
+        : null;
+
+      setActiveSectionName((prev) => (prev !== nextName ? nextName : prev));
+      setActiveSectionAccent((prev) => (prev !== nextAccent ? nextAccent : prev));
     }
-  }, [label, heroHeight, activeProjectDetail, activeProjectAccent, activeProjectTitle, sectionsData]);
+  }, [label, heroHeight, activeProjectDetail, activeProjectAccent, activeProjectTitle]);
 
   // Recalculate coordinates whenever layout changes or hero expands
   useEffect(() => {
+    let isMounted = true;
+
     calculateSections();
     updateActiveSection();
 
     // Staggered timers to ensure coordinates are accurate as layout and animations resolve
-    const t1 = setTimeout(() => { calculateSections(); updateActiveSection(); }, 200);
-    const t2 = setTimeout(() => { calculateSections(); updateActiveSection(); }, 600);
-    const t3 = setTimeout(() => { calculateSections(); updateActiveSection(); }, 1200);
-
-    // Watch for document body resize shifts (sections opening, collapsing)
-    const resizeObserver = new ResizeObserver(() => {
+    const t1 = setTimeout(() => {
+      if (!isMounted) return;
       calculateSections();
       updateActiveSection();
+    }, 200);
+    const t2 = setTimeout(() => {
+      if (!isMounted) return;
+      calculateSections();
+      updateActiveSection();
+    }, 600);
+    const t3 = setTimeout(() => {
+      if (!isMounted) return;
+      calculateSections();
+      updateActiveSection();
+    }, 1200);
+
+    // Watch for document body resize shifts (sections opening, collapsing)
+    let roRaf = 0;
+    const resizeObserver = new ResizeObserver(() => {
+      if (!isMounted) return;
+      if (roRaf) cancelAnimationFrame(roRaf);
+      roRaf = requestAnimationFrame(() => {
+        if (!isMounted) return;
+        calculateSections();
+        updateActiveSection();
+      });
     });
 
     if (document.body) {
@@ -232,9 +278,11 @@ const RulerScroller = ({
 
     let ticking = false;
     const throttledUpdate = () => {
+      if (!isMounted) return;
       if (!ticking) {
         ticking = true;
         requestAnimationFrame(() => {
+          if (!isMounted) return;
           updateActiveSection();
           ticking = false;
         });
@@ -251,15 +299,18 @@ const RulerScroller = ({
     // Listen to document font loading
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => {
+        if (!isMounted) return;
         calculateSections();
         updateActiveSection();
       });
     }
 
     return () => {
+      isMounted = false;
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
+      if (roRaf) cancelAnimationFrame(roRaf);
       resizeObserver.disconnect();
       window.removeEventListener('resize', calculateSections);
       window.removeEventListener('scroll', throttledUpdate);
@@ -267,7 +318,7 @@ const RulerScroller = ({
         window.lenis.off('scroll', throttledUpdate);
       }
     };
-  }, [calculateSections, updateActiveSection, heroHeight, activeProjectDetail]);
+  }, [calculateSections, updateActiveSection]);
 
   const handleSectionClick = (secId) => {
     if (secId === 'hero') {
@@ -360,7 +411,7 @@ const RulerScroller = ({
               transition: 'color 0.25s ease'
             }}
           >
-            {percentString}
+            <ActivePercentText progress={smoothProgress} />
           </span>
           <div
             className="ruler-line active-line"

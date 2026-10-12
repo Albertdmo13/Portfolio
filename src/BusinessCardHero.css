@@ -24,6 +24,38 @@
   box-shadow: none;
 }
 
+/* Decorative Background Logo Watermark */
+.card-watermark-emblem {
+  position: absolute;
+  top: 50%;
+  right: -20px;
+  transform: translateY(-50%);
+  height: 110%;
+  max-height: 460px;
+  aspect-ratio: 1 / 1;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-watermark-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0.03;
+  pointer-events: none;
+  user-select: none;
+  display: block;
+  transition: opacity 0.3s ease;
+}
+
+.business-card:hover .card-watermark-logo-img {
+  opacity: 0.045;
+}
+
 /* Top Row: Digital Chip & Live Status Badge */
 .card-top-row {
   display: flex;
@@ -174,5 +206,10 @@
   }
   .card-corner-watermark {
     display: none;
+  }
+  .card-watermark-emblem {
+    right: -30px;
+    height: 85%;
+    max-height: 320px;
   }
 }

@@ -10,6 +10,17 @@ export default function BusinessCardHero({ t, lang, onContactClick, Icons }) {
   return (
     <section className="hero-section">
       <div className="business-card">
+        {/* Large Decorative Watermark Emblem */}
+        <div className="card-watermark-emblem" aria-hidden="true">
+          <img
+            src={`${base}media/Albertdmo_logo.svg`}
+            alt=""
+            className="card-watermark-logo-img"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+
         {/* Top Row: Monogram Chip + Live Status Badge */}
         <div className="card-top-row">
             <div className="card-chip">
@@ -67,7 +78,6 @@ export default function BusinessCardHero({ t, lang, onContactClick, Icons }) {
                 intensity={1.5}
                 shineSize={14}
                 shineFade={35}
-                autoAnimate={true}
                 onClick={onContactClick}
               >
                 <Mail />

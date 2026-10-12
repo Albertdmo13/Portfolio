@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+
+const K = 12;
 
 export default function ImageCarousel({
   images = [],
@@ -10,44 +12,122 @@ export default function ImageCarousel({
 }) {
   const scrollRef = useRef(null);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [isHovered, setIsHovered] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeftState, setScrollLeftState] = useState(0);
-  const [dragged, setDragged] = useState(false);
 
-  // Duplicate the images enough times to ensure seamless infinite looping without excessive DOM nodes
-  const safeImages = Array.isArray(images) ? images : [];
-  const K = 4;
-  const extendedImages = safeImages.length > 0 ? Array(K).fill(safeImages).flat() : [];
+  const exactScrollRef = useRef(0);
+  const isHoveredRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  const isTouchingRef = useRef(false);
+  const scrollEndTimerRef = useRef(null);
+  const startXRef = useRef(0);
+  const scrollLeftRef = useRef(0);
+  const draggedRef = useRef(false);
+  const touchStartXRef = useRef(0);
+
+  // Duplicate the images enough times to ensure seamless infinite looping without hitting boundaries
+  const extendedImages = useMemo(() => {
+    const safeImages = Array.isArray(images) ? images : [];
+    return safeImages.length > 0 ? Array(K).fill(safeImages).flat() : [];
+  }, [images]);
 
   const handleMouseDown = (e) => {
-    setIsDragging(true);
-    setDragged(false);
-    setStartX(e.pageX - scrollRef.current.offsetLeft);
-    setScrollLeftState(scrollRef.current.scrollLeft);
+    if (!scrollRef.current) return;
+    isDraggingRef.current = true;
+    draggedRef.current = false;
+    clearTimeout(scrollEndTimerRef.current);
+    startXRef.current = e.pageX - scrollRef.current.offsetLeft;
+    scrollLeftRef.current = scrollRef.current.scrollLeft;
+    exactScrollRef.current = scrollRef.current.scrollLeft;
   };
 
   const handleMouseLeave = () => {
-    setIsHovered(false);
-    setIsDragging(false);
+    isHoveredRef.current = false;
+    isDraggingRef.current = false;
+    if (scrollRef.current) {
+      exactScrollRef.current = scrollRef.current.scrollLeft;
+    }
   };
 
   const handleMouseUp = () => {
-    setIsDragging(false);
+    isDraggingRef.current = false;
+    if (scrollRef.current) {
+      exactScrollRef.current = scrollRef.current.scrollLeft;
+    }
   };
 
   const handleMouseMove = (e) => {
-    if (!isDragging) return;
+    if (!isDraggingRef.current || !scrollRef.current) return;
     e.preventDefault();
-    setDragged(true);
     const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = x - startX;
-    scrollRef.current.scrollLeft = scrollLeftState - walk;
+    const walk = x - startXRef.current;
+    if (Math.abs(walk) > 4) {
+      draggedRef.current = true;
+    }
+    scrollRef.current.scrollLeft = scrollLeftRef.current - walk;
+    exactScrollRef.current = scrollRef.current.scrollLeft;
+  };
+
+  const handleTouchStart = (e) => {
+    isHoveredRef.current = true;
+    isTouchingRef.current = true;
+    draggedRef.current = false;
+    clearTimeout(scrollEndTimerRef.current);
+    if (e.touches && e.touches[0]) {
+      touchStartXRef.current = e.touches[0].clientX;
+    }
+    if (scrollRef.current) {
+      exactScrollRef.current = scrollRef.current.scrollLeft;
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches && e.touches[0]) {
+      const diff = Math.abs(e.touches[0].clientX - touchStartXRef.current);
+      if (diff > 6) {
+        draggedRef.current = true;
+      }
+    }
+    if (scrollRef.current) {
+      exactScrollRef.current = scrollRef.current.scrollLeft;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    isTouchingRef.current = false;
+    if (scrollRef.current) {
+      exactScrollRef.current = scrollRef.current.scrollLeft;
+    }
+    clearTimeout(scrollEndTimerRef.current);
+    // Allow touch momentum scrolling to settle naturally before resuming auto-glide
+    scrollEndTimerRef.current = setTimeout(() => {
+      if (!isTouchingRef.current && !isDraggingRef.current) {
+        isHoveredRef.current = false;
+        if (scrollRef.current) {
+          exactScrollRef.current = scrollRef.current.scrollLeft;
+        }
+      }
+    }, 450);
+  };
+
+  const handleScroll = () => {
+    if (!scrollRef.current) return;
+    exactScrollRef.current = scrollRef.current.scrollLeft;
+
+    // While momentum inertia continues after touch release or drag, defer resuming auto-glide
+    if (isTouchingRef.current || isHoveredRef.current || isDraggingRef.current) {
+      clearTimeout(scrollEndTimerRef.current);
+      scrollEndTimerRef.current = setTimeout(() => {
+        if (!isTouchingRef.current && !isDraggingRef.current) {
+          isHoveredRef.current = false;
+          if (scrollRef.current) {
+            exactScrollRef.current = scrollRef.current.scrollLeft;
+          }
+        }
+      }, 450);
+    }
   };
 
   const handleImageClick = (e, url) => {
-    if (dragged) {
+    if (draggedRef.current) {
       e.preventDefault();
       e.stopPropagation();
       return;
@@ -58,90 +138,88 @@ export default function ImageCarousel({
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    
-    // Initial start in the middle set to allow scrolling left
+
+    // Initial start in the middle set to allow scrolling left or right seamlessly
     if (el.scrollLeft === 0) {
-      el.scrollLeft = el.scrollWidth / K;
+      const initialScroll = (el.scrollWidth / K) * 5;
+      el.scrollLeft = initialScroll;
+      exactScrollRef.current = initialScroll;
+    } else {
+      exactScrollRef.current = el.scrollLeft;
     }
 
     let animationId = 0;
     let isVisible = false;
-    let exactScroll = el.scrollLeft;
     let lastTime = performance.now();
     const speed = 25; // Slower, elegant glide speed (pixels per second)
 
     const step = (time) => {
-      if (!isHovered && isVisible) {
-        const delta = (time - lastTime) / 1000;
-        if (delta > 0 && delta < 0.1) {
-          exactScroll += speed * delta;
-          el.scrollLeft = exactScroll;
+      const delta = (time - lastTime) / 1000;
+      lastTime = time;
 
-          const oneSetWidth = el.scrollWidth / K;
+      const currentEl = scrollRef.current;
+      if (currentEl) {
+        const isPaused = isHoveredRef.current || isDraggingRef.current || isTouchingRef.current;
+        if (!isPaused && isVisible && delta > 0 && delta < 0.1) {
+          exactScrollRef.current += speed * delta;
 
-          // Infinite loop seamless snapping
-          while (exactScroll >= oneSetWidth * 2) {
-            exactScroll -= oneSetWidth;
+          const oneSetWidth = currentEl.scrollWidth / K;
+          if (oneSetWidth > 0) {
+            while (exactScrollRef.current >= oneSetWidth * (K - 2)) {
+              exactScrollRef.current -= oneSetWidth * 4;
+            }
+            while (exactScrollRef.current <= oneSetWidth * 2) {
+              exactScrollRef.current += oneSetWidth * 4;
+            }
           }
-          while (exactScroll <= oneSetWidth) {
-            exactScroll += oneSetWidth;
-          }
+          currentEl.scrollLeft = exactScrollRef.current;
+        } else if (isPaused) {
+          exactScrollRef.current = currentEl.scrollLeft;
         }
       }
-      lastTime = time;
-      if (isVisible && !isHovered) {
-        animationId = requestAnimationFrame(step);
-      }
-    };
 
-    const startAnimation = () => {
-      if (animationId === 0) {
-        lastTime = performance.now();
+      if (isVisible) {
         animationId = requestAnimationFrame(step);
-      }
-    };
-
-    const stopAnimation = () => {
-      if (animationId !== 0) {
-        cancelAnimationFrame(animationId);
+      } else {
         animationId = 0;
       }
     };
 
     const io = new IntersectionObserver(([entry]) => {
       isVisible = entry.isIntersecting;
-      if (isVisible && !isHovered) {
-        startAnimation();
-      } else {
-        stopAnimation();
+      if (isVisible && animationId === 0) {
+        lastTime = performance.now();
+        animationId = requestAnimationFrame(step);
       }
     }, { threshold: 0.05 });
 
     io.observe(el);
 
-    if (!isHovered && isVisible) {
-      startAnimation();
-    }
+    lastTime = performance.now();
+    animationId = requestAnimationFrame(step);
 
     return () => {
-      stopAnimation();
+      if (animationId) cancelAnimationFrame(animationId);
+      clearTimeout(scrollEndTimerRef.current);
       io.disconnect();
     };
-  }, [isHovered]);
+  }, []);
 
-  if (safeImages.length === 0) return null;
+  if (extendedImages.length === 0) return null;
 
   return (
     <>
       <div 
         ref={scrollRef}
-        onMouseEnter={() => setIsHovered(true)}
+        onMouseEnter={() => { isHoveredRef.current = true; }}
         onMouseLeave={handleMouseLeave}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
-        onTouchStart={() => setIsHovered(true)}
-        onTouchEnd={() => setIsHovered(false)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onScroll={handleScroll}
         style={{ 
           display: 'flex', 
           alignItems: 'center',
@@ -160,16 +238,18 @@ export default function ImageCarousel({
           '--accent-color': accentColor,
         }}
       >
-        {extendedImages.map((imgUrl, i) => (
-          <img 
-            key={i}
-            src={`${base}${imgUrl.replace(/^\/?(Portfolio\/)?/, "")}`}
-            alt={`${altPrefix} ${i + 1}`}
-            loading="lazy"
-            decoding="async"
-            draggable={false}
-            height={180}
-            onClick={(e) => handleImageClick(e, `${base}${imgUrl.replace(/^\/?(Portfolio\/)?/, "")}`)}
+        {extendedImages.map((imgUrl, i) => {
+          const fullUrl = `${base}${imgUrl.replace(/^\/?(Portfolio\/)?/, "")}`;
+          return (
+            <img 
+              key={i}
+              src={fullUrl}
+              alt={`${altPrefix} ${i + 1}`}
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+              height={180}
+              onClick={(e) => handleImageClick(e, fullUrl)}
             style={{ 
               height: '180px', 
               width: 'auto', 
@@ -189,7 +269,8 @@ export default function ImageCarousel({
             onMouseDown={(e) => e.currentTarget.style.cursor = 'grabbing'}
             onMouseUp={(e) => e.currentTarget.style.cursor = 'grab'}
           />
-        ))}
+        );
+      })}
       </div>
 
       {createPortal(

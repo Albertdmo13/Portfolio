@@ -81,9 +81,6 @@ const SpecularButton = ({
   shineFade = 40,
   thickness = 1,
   speed = 0.35,
-  followMouse = true,
-  proximity = 250,
-  autoAnimate = false,
   disabled = false,
   onClick,
   className = '',
@@ -93,7 +90,7 @@ const SpecularButton = ({
   const fxRef = useRef(null);
   const propsRef = useRef({});
 
-  propsRef.current = { radius, lineColor, baseColor, intensity, shineSize, shineFade, thickness, speed, followMouse, proximity, autoAnimate };
+  propsRef.current = { radius, lineColor, baseColor, intensity, shineSize, shineFade, thickness, speed };
 
   useEffect(() => {
     const btn = btnRef.current;
@@ -163,11 +160,17 @@ const SpecularButton = ({
     let bright = 0;
     let last = performance.now();
     let raf = 0;
+    let isVisible = true;
+    let isPageVisible = typeof document !== 'undefined' ? !document.hidden : true;
 
     const lineC = new Color();
     const baseC = new Color();
 
     const update = now => {
+      if (!isVisible || !isPageVisible) {
+        raf = 0;
+        return;
+      }
       raf = requestAnimationFrame(update);
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
@@ -194,10 +197,50 @@ const SpecularButton = ({
       program.uniforms.uThickness.value = p.thickness * dpr;
       renderer.render({ scene: mesh });
     };
-    raf = requestAnimationFrame(update);
+
+    const startLoop = () => {
+      if (raf === 0 && isVisible && isPageVisible) {
+        last = performance.now();
+        raf = requestAnimationFrame(update);
+      }
+    };
+
+    const stopLoop = () => {
+      if (raf !== 0) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    const io = typeof IntersectionObserver !== 'undefined'
+      ? new IntersectionObserver(([entry]) => {
+          isVisible = entry.isIntersecting;
+          if (isVisible) {
+            startLoop();
+          } else {
+            stopLoop();
+          }
+        }, { threshold: 0.01 })
+      : null;
+
+    if (io) io.observe(btn);
+
+    const onVisibilityChange = () => {
+      isPageVisible = !document.hidden;
+      if (isPageVisible) {
+        startLoop();
+      } else {
+        stopLoop();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    startLoop();
 
     return () => {
-      cancelAnimationFrame(raf);
+      stopLoop();
+      if (io) io.disconnect();
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       ro.disconnect();
       btn.removeEventListener('pointerenter', onEnter);
       btn.removeEventListener('pointerleave', onLeave);
