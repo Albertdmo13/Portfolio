@@ -2,12 +2,20 @@
   position: fixed;
   right: 0;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-50%) translateX(0);
   display: flex;
   align-items: center;
   z-index: 100;
   font-family: "Space Grotesk", sans-serif;
   pointer-events: none; /* Let clicks pass through if needed */
+  opacity: 1;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ruler-scroller.ruler-hidden {
+  opacity: 0;
+  transform: translateY(-50%) translateX(32px);
+  pointer-events: none !important;
 }
 
 .ruler-ticks {

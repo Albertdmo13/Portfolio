@@ -54,7 +54,7 @@ export const portfolioData = {
         institution: "UCLM Escuela Superior de Informática",
         description: "Graduate studies specializing in advanced software engineering, distributed computing, intelligent systems, and computational research.",
         link: "https://esi.uclm.es",
-        logo: "media/LogoUCLM.jpg",
+        logos: ["media/LogoUCLM.jpg", "media/esi_logo.svg"],
       },
       {
         period: "2024 — Present",
@@ -62,7 +62,7 @@ export const portfolioData = {
         institution: "VISILAB",
         description: "Computer vision and artificial intelligence research laboratory, developing computational experiments and data pipelines.",
         link: "https://visilab.etsii.uclm.es",
-        logo: "media/VISILAB_Logo.svg",
+        logos: ["media/VISILAB_Logo.svg"],
       },
       {
         period: "2022 — 2026",
@@ -70,7 +70,7 @@ export const portfolioData = {
         institution: "UCLM Escuela Superior de Informática",
         description: "Comprehensive education covering algorithms, data structures, software architecture, operating systems, and computer graphics.",
         link: "https://esi.uclm.es",
-        logo: "media/LogoUCLM.jpg",
+        logos: ["media/LogoUCLM.jpg", "media/esi_logo.svg"],
       },
     ],
     projects: [
@@ -140,6 +140,14 @@ export const portfolioData = {
           "/Portfolio/media/Publication1_Figures/pipeline1_power_consumption.svg",
           "/Portfolio/media/Publication1_Figures/pipeline2_power_consumption.svg"
         ]
+      },
+      {
+        title: "Plataforma de Microscopía Multiespectral con Inteligencia Artificial sobre Hardware empotrado aplicada al procesamiento de imágenes en biomedicina",
+        logo: "/Portfolio/media/esi_logo.svg",
+        authors: "Alberto Díaz Maroto Ortiz",
+        abstract: "This document presents the development of a microscopy software platform designed for image analysis using Artificial Intelligence techniques. The proposed solution integrates a real-time image acquisition, visualization, and processing system. The application is designed to run on embedded hardware and low-cost microscopes. Furthermore, special attention has been paid to the optimization of computational resources, ease of use, the platform’s versatility to adapt to different fields of microscopy, and, finally, the maintainability of the software, applying the techniques learned throughout the degree.",
+        file: "/Portfolio/media/TFG_Alberto_Díaz_Maroto_Ortiz.pdf",
+        link: "/Portfolio/media/TFG_Alberto_Díaz_Maroto_Ortiz.pdf"
       }
     ],
     skillCategories: [
@@ -227,7 +235,7 @@ export const portfolioData = {
         institution: "UCLM Escuela Superior de Informática",
         description: "Estudios de posgrado especializados en ingeniería de software avanzada, computación distribuida, sistemas inteligentes e investigación computacional.",
         link: "https://esi.uclm.es",
-        logo: "media/LogoUCLM.jpg",
+        logos: ["media/LogoUCLM.jpg", "media/esi_logo.svg"],
       },
       {
         period: "2024 — Presente",
@@ -235,7 +243,7 @@ export const portfolioData = {
         institution: "VISILAB",
         description: "Laboratorio de investigación en visión por computador e inteligencia artificial, desarrollando experimentos computacionales y flujos de datos.",
         link: "https://visilab.etsii.uclm.es",
-        logo: "media/VISILAB_Logo.svg",
+        logos: ["media/VISILAB_Logo.svg"],
       },
       {
         period: "2022 — 2026",
@@ -243,7 +251,7 @@ export const portfolioData = {
         institution: "UCLM Escuela Superior de Informática",
         description: "Formación integral en algoritmos, estructuras de datos, arquitectura del software, sistemas operativos y computación gráfica.",
         link: "https://esi.uclm.es",
-        logo: "media/LogoUCLM.jpg",
+        logos: ["media/LogoUCLM.jpg", "media/esi_logo.svg"],
       },
     ],
     projects: [
@@ -313,6 +321,14 @@ export const portfolioData = {
           "/Portfolio/media/Publication1_Figures/pipeline1_power_consumption.svg",
           "/Portfolio/media/Publication1_Figures/pipeline2_power_consumption.svg"
         ]
+      },
+      {
+        title: "Plataforma de Microscopía Multiespectral con Inteligencia Artificial sobre Hardware empotrado aplicada al procesamiento de imágenes en biomedicina",
+        logo: "/Portfolio/media/esi_logo.svg",
+        authors: "Alberto Díaz Maroto Ortiz",
+        abstract: "Este trabajo de fin de grado presenta el desarrollo de una plataforma software de microscopía diseñada para el análisis de imágenes mediante técnicas de Inteligencia Artificial. La solución propuesta integra un sistema de adquisición, visualización y procesamiento de imágenes en tiempo real. La aplicación está concebida para funcionar en hardware embebido y en microscopios de bajo coste. Además, se ha puesto especial atención en la optimización de los recursos computacionales, la facilidad de uso, la versatilidad de la plataforma para adaptarse a distintos ámbitos de la microscopía y, finalmente, en la mantenibilidad y capacidad de mejora del software, aplicando las técnicas aprendidas durante el grado.",
+        file: "/Portfolio/media/TFG_Alberto_Díaz_Maroto_Ortiz.pdf",
+        link: "/Portfolio/media/TFG_Alberto_Díaz_Maroto_Ortiz.pdf"
       }
     ],
     skillCategories: [

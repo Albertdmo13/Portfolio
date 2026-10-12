@@ -18,7 +18,8 @@ const RulerScroller = ({
   heroHeight = 0,
   activeProjectDetail = null,
   activeProjectAccent = null,
-  activeProjectTitle = null
+  activeProjectTitle = null,
+  visible = true
 }) => {
   const [activeSectionName, setActiveSectionName] = useState((label || "HERO").toUpperCase());
   const [activeSectionAccent, setActiveSectionAccent] = useState(null);
@@ -362,7 +363,7 @@ const RulerScroller = ({
   }, [totalTicks]);
 
   return (
-    <div className="ruler-scroller">
+    <div className={`ruler-scroller ${!visible ? 'ruler-hidden' : ''}`}>
       <div className="ruler-ticks">
         {/* Background Static Ticks */}
         {staticTicks}

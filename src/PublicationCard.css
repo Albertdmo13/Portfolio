@@ -1,0 +1,105 @@
+/* ========================================================
+   Publication Card Component
+   ======================================================== */
+
+.publication-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.publication-card:focus-visible {
+  outline: 2px solid var(--accent-color) !important;
+  outline-offset: -2px;
+}
+
+.publication-card:hover .project-title {
+  color: #ffffff;
+}
+
+.pub-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.pub-meta {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.pub-meta .project-title {
+  margin: 0;
+  color: var(--text-main);
+  transition: color 0.2s ease;
+}
+
+.pub-authors {
+  margin: 8px 0 0 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.pub-logo-container {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pub-logo-img {
+  width: auto;
+  height: 42px;
+  max-width: 68px;
+  object-fit: contain;
+  flex-shrink: 0;
+  opacity: 0.9;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.pub-logo-img--invert {
+  filter: invert(1);
+  opacity: 0.8;
+}
+
+.publication-card:hover .pub-logo-img {
+  opacity: 1;
+  transform: scale(1.04);
+}
+
+.pub-pdf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: rgba(255, 255, 255, 0.03);
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.publication-card:hover .pub-pdf-badge {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: var(--text-main);
+}
+
+.pub-desc {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.pub-carousel-container {
+  margin-top: 16px;
+}

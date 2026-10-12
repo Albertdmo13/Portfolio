@@ -47,6 +47,36 @@
 html {
   background-color: var(--bg-backdrop);
   overflow-anchor: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* Custom modern scrollbar matching the dark crystal aesthetic */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  transition: background-color 0.25s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.38);
+}
+
+/* Hide scrollbar thumb while in hero section, exactly like the navigation bar */
+html.hero-nav-hidden::-webkit-scrollbar-thumb {
+  background: transparent !important;
+}
+
+html.hero-nav-hidden {
+  scrollbar-color: transparent transparent !important;
 }
 
 body {

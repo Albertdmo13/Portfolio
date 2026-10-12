@@ -10,6 +10,9 @@ export default function BusinessCardHero({ t, lang, onContactClick, Icons }) {
   return (
     <section className="hero-section">
       <div className="business-card">
+        {/* Metal Flash / Specular Sheen Pass Overlay */}
+        <div className="card-metal-sheen" aria-hidden="true" />
+
         {/* Large Decorative Watermark Emblem */}
         <div className="card-watermark-emblem" aria-hidden="true">
           <img

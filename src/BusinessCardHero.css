@@ -2,26 +2,93 @@
    Crystal Glass Business Card Hero Component
    ======================================================== */
 
+.hero-section {
+  width: 100%;
+}
+
 .business-card {
   position: relative;
   width: 100%;
   border-radius: 0;
-  padding: 42px 46px;
-  background: transparent;
+  padding: 68px 54px;
+  background: rgba(187, 163, 255, 0.04);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: none;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 26px;
+  gap: 36px;
 }
 
 .business-card:hover {
   border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(187, 163, 255, 0.055);
   box-shadow: none;
+}
+
+/* Metal Flash / Specular Sheen Pass Animation */
+.card-metal-sheen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 4;
+  border-radius: 0;
+}
+
+.card-metal-sheen::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  left: -80%;
+  width: 55%;
+  height: 220%;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 28%,
+    rgba(255, 255, 255, 0.01) 36%,
+    rgba(220, 235, 255, 0.08) 44%,
+    rgba(255, 255, 255, 0.20) 48%,
+    rgba(255, 255, 255, 0.32) 50%,
+    rgba(255, 255, 255, 0.20) 52%,
+    rgba(220, 235, 255, 0.08) 56%,
+    rgba(255, 255, 255, 0.01) 64%,
+    transparent 72%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.business-card:hover .card-metal-sheen::after {
+  animation: metalFlashPass 1.45s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes metalFlashPass {
+  0% {
+    left: -80%;
+    opacity: 0;
+  }
+  14% {
+    opacity: 0.75;
+  }
+  86% {
+    left: 155%;
+    opacity: 0.75;
+  }
+  100% {
+    left: 155%;
+    opacity: 0;
+  }
 }
 
 /* Decorative Background Logo Watermark */
@@ -184,8 +251,8 @@
 /* Mobile Responsive */
 @media (max-width: 680px) {
   .business-card {
-    padding: 28px 22px;
-    gap: 20px;
+    padding: 38px 22px;
+    gap: 24px;
   }
   .card-top-row {
     flex-direction: column;

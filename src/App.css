@@ -3,8 +3,7 @@
    ======================================================== */
 
 /* Shared Grid Canvas Background */
-.background-layer,
-.loading-screen {
+.background-layer {
   background-color: #08080a;
   background-image: 
     linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
@@ -38,7 +37,7 @@
 }
 
 /* ========================================================
-   Initial Loading Screen
+   Initial Loading Screen (Clean Minimalist Void)
    ======================================================== */
 .loading-screen {
   position: fixed;
@@ -50,6 +49,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #08080a;
+  background-image: none !important;
   pointer-events: auto;
 }
 
@@ -61,11 +62,13 @@
   top: 0;
   left: 0;
   width: 100%;
+  height: 100vh;
+  min-height: 100vh;
   z-index: 1;
   pointer-events: none;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   overflow: hidden;
   will-change: transform;
   transition: visibility 0.15s ease;
@@ -94,22 +97,69 @@
 .hero-foreground-container {
   width: 100%;
   max-width: 1088px;
+  min-height: 100vh;
   position: relative;
   z-index: 1;
-  border-left: 1px solid var(--glass-border);
-  border-right: 1px solid var(--glass-border);
+  border-left: none;
+  border-right: none;
   background-color: transparent;
-  padding: 120px 40px 40px;
+  padding: 40px 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Business Card Fade Wrapper (fades out smoothly as user scrolls) */
 .hero-card-fade-wrapper {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   pointer-events: auto;
   will-change: opacity;
+}
+
+/* Subtle Hero Scroll Indicator */
+.hero-scroll-indicator {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 26px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: color 0.25s ease, transform 0.25s ease;
+  user-select: none;
+  padding: 4px 12px;
+}
+
+.hero-scroll-indicator:hover {
+  color: #ffffff;
+  transform: translateY(2px);
+}
+
+.scroll-indicator-arrow {
+  animation: heroScrollBounce 2.2s infinite ease-in-out;
+}
+
+@keyframes heroScrollBounce {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(4px);
+    opacity: 0.9;
+  }
 }
 
 /* Spacer reserving hero height in document flow */
@@ -191,6 +241,15 @@
   border-bottom: 1px solid var(--glass-border);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   padding: 16px 0;
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, padding 0.3s ease;
+}
+
+.nav-header.nav-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .nav-content {
@@ -218,7 +277,7 @@
 .nav-links-inner {
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 16px;
   flex: 1;
   justify-content: flex-end;
   margin-right: 22px;
@@ -233,11 +292,33 @@
 .nav-link {
   font-size: 0.86rem;
   color: var(--text-secondary);
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease;
+  position: relative;
+  padding: 5px 10px;
+  border-radius: 0;
+  text-decoration: none;
 }
 
 .nav-link:hover {
   color: var(--text-main);
+}
+
+.nav-link.is-active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 500;
+  border-radius: 0;
+}
+
+.nav-link.is-active::after {
+  content: "";
+  position: absolute;
+  bottom: 0px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent-color);
+  border-radius: 0;
 }
 
 .nav-cv-btn {
@@ -488,24 +569,25 @@
 
 @media (max-width: 860px) {
   .section-label-track {
-    display: block !important;
-    position: absolute;
-    top: 0;
-    left: calc(-50vw + 50%);
-    width: 100vw;
-    height: 100%;
-    padding-top: 10px !important;
-    box-sizing: border-box;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding-top: 28px !important;
+    box-sizing: border-box !important;
     text-align: center !important;
-    pointer-events: none;
-    z-index: 20;
+    pointer-events: none !important;
+    z-index: 20 !important;
   }
 
   .section-label {
     top: 64px !important;
-    margin: 0 auto !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+    margin: 0 !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -518,7 +600,7 @@
     backdrop-filter: blur(14px) !important;
     -webkit-backdrop-filter: blur(14px) !important;
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    border-radius: 9999px !important;
+    border-radius: 0 !important;
     padding: 6px 14px !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
     pointer-events: auto !important;
@@ -616,6 +698,8 @@
 
 /* Translucent Crystal Timeline Cards with Specular Borders */
 .timeline-card {
+  position: relative;
+  overflow: hidden;
   flex-grow: 1;
   padding: 20px 24px;
   border-radius: 0;
@@ -651,12 +735,19 @@
   background: color-mix(in srgb, var(--accent-color) 70%, transparent);
 }
 
+.timeline-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
 .timeline-header {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 14px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
 }
 
 .timeline-role {
@@ -665,10 +756,58 @@
   color: var(--text-main);
 }
 
+.timeline-period-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
 .timeline-period {
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
   white-space: nowrap;
+}
+
+.timeline-period-logos {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.timeline-inline-logo {
+  height: 28px;
+  width: auto;
+  max-width: 64px;
+  object-fit: contain;
+  display: block;
+  opacity: 1 !important;
+  transition: transform 0.2s ease;
+}
+
+.timeline-inline-logo:hover {
+  transform: scale(1.08);
+}
+
+.timeline-inline-logo.is-uclm {
+  height: 26px;
+  max-width: 44px;
+  background: #ffffff;
+  border-radius: 0;
+  padding: 1.5px 3px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-sizing: border-box;
+}
+
+.timeline-inline-logo.is-esi {
+  height: 30px;
+  max-width: 48px;
+}
+
+.timeline-inline-logo.is-visilab {
+  height: 26px;
+  max-width: 58px;
+  border-radius: 0;
 }
 
 .timeline-institution {
@@ -692,32 +831,6 @@
   font-size: 0.88rem;
   color: var(--text-muted);
   line-height: 1.6;
-}
-
-.timeline-inner {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-}
-
-.timeline-content {
-  flex-grow: 1;
-}
-
-.timeline-logo {
-  width: 72px;
-  height: 72px;
-  object-fit: contain;
-  border-radius: 0;
-  flex-shrink: 0;
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 6px;
-}
-
-.timeline-logo-link {
-  display: flex;
-  transition: transform 0.2s ease;
-  cursor: pointer;
 }
 
 /* Crystal Projects Grid (Spacious 2-column) */
@@ -1520,9 +1633,18 @@
   }
 }
 
+@media (max-width: 1128px) {
+  .hero-foreground-container {
+    padding: 32px 20px;
+  }
+}
+
 @media (max-width: 680px) {
   .hero-foreground-container {
-    padding: 240px 20px 30px;
+    padding: 24px 16px;
+    min-height: 100vh;
+    justify-content: center;
+    align-items: center;
   }
 
   .main-content.sections-main {
@@ -1580,16 +1702,34 @@
     padding: 16px 18px;
   }
 
-  .timeline-inner {
-    flex-direction: column-reverse;
+  .timeline-header {
+    flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 4px;
   }
 
-  .timeline-logo {
-    width: 56px !important;
-    height: 56px !important;
-    margin-bottom: -4px;
+  .timeline-period-container {
+    gap: 10px;
+  }
+
+  .timeline-inline-logo {
+    height: 24px;
+    max-width: 48px;
+  }
+
+  .timeline-inline-logo.is-uclm {
+    height: 22px;
+    max-width: 36px;
+  }
+
+  .timeline-inline-logo.is-esi {
+    height: 26px;
+    max-width: 40px;
+  }
+
+  .timeline-inline-logo.is-visilab {
+    height: 22px;
+    max-width: 50px;
   }
 }
 
@@ -1602,12 +1742,7 @@
   }
 
   .nav-header {
-    padding: 12px 0 !important;
-    transition: padding 0.3s ease;
-  }
-
-  .nav-header.nav-compressed {
-    padding: 8px 0 !important;
+    padding: 10px 0 !important;
   }
 
   .nav-content {
@@ -1616,14 +1751,9 @@
     grid-template-areas:
       "brand actions"
       "links links";
-    row-gap: 16px;
+    row-gap: 8px;
     align-items: center;
-    padding: 0 20px;
-    transition: row-gap 0.3s ease;
-  }
-
-  .nav-header.nav-compressed .nav-content {
-    row-gap: 0;
+    padding: 0 16px;
   }
 
   .nav-brand {
@@ -1638,20 +1768,25 @@
   .nav-links-inner {
     grid-area: links;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     width: 100%;
     margin: 0;
-    gap: 12px;
-    max-height: 400px;
-    opacity: 1;
-    overflow: hidden;
-    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+    gap: 6px;
+    padding-bottom: 2px;
   }
 
-  .nav-header.nav-compressed .nav-links-inner {
-    max-height: 0;
-    opacity: 0;
+  .nav-links-inner::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-link {
+    font-size: 0.8rem;
+    white-space: nowrap;
+    padding: 4px 8px;
   }
 
   /* Make all buttons bigger for touch on mobile */
@@ -1670,6 +1805,7 @@
     min-height: 44px;
     display: flex;
     align-items: center;
+    border-radius: 0 !important;
   }
 
   .rubber-segment {

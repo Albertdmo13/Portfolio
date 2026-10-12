@@ -12,6 +12,7 @@ import RulerScroller from "./RulerScroller";
 import CopyEmailButton from "./CopyEmailButton";
 import Grainient from "./Grainient";
 import ProjectDetailSection from "./ProjectDetailSection";
+import PublicationCard from "./PublicationCard";
 import "./App.css";
 
 function AnimatedCard({ children, className, style, delay = 0, ...props }) {
@@ -260,6 +261,72 @@ const projectDetailVariants = {
   },
 };
 
+function ProjectPreviewVideo({ src }) {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+
+    const playVideo = () => {
+      const p = video.play();
+      if (p !== undefined) {
+        p.catch(() => {
+          const unlock = () => {
+            video.play().catch(() => {});
+            window.removeEventListener('touchstart', unlock);
+            window.removeEventListener('click', unlock);
+          };
+          window.addEventListener('touchstart', unlock, { passive: true });
+          window.addEventListener('click', unlock, { passive: true });
+        });
+      }
+    };
+
+    playVideo();
+
+    let observer;
+    if (typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              playVideo();
+            } else {
+              video.pause();
+            }
+          });
+        },
+        { threshold: 0.05 }
+      );
+      observer.observe(video);
+    }
+
+    return () => {
+      if (observer) observer.disconnect();
+    };
+  }, [src]);
+
+  return (
+    <video
+      ref={videoRef}
+      src={src}
+      autoPlay
+      loop
+      muted
+      playsInline
+      webkit-playsinline="true"
+      preload="auto"
+      className="project-video"
+      style={{ aspectRatio: '16 / 9' }}
+    />
+  );
+}
+
 const sectionAnimation = {
   initial: { opacity: 0 },
   whileInView: { opacity: 1 },
@@ -273,6 +340,8 @@ export default function App() {
   const [loaderStatus, setLoaderStatus] = useState("working");
   const [accentColor, setAccentColor] = useState("#60a5fa");
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isNavVisible, setIsNavVisible] = useState(false);
+  const [activeNavSection, setActiveNavSection] = useState("");
   const [isMobile, setIsMobile] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 768 : false));
   const [windowHeight, setWindowHeight] = useState(() => (typeof window !== "undefined" ? window.innerHeight : 800));
   const [heroHeight, setHeroHeight] = useState(0);
@@ -362,24 +431,20 @@ export default function App() {
   const uncompressedNavHeightRef = useRef(110);
   const compressedNavHeightRef = useRef(48);
 
-  const getSnappedNavDiff = useCallback(() => {
-    const uncompressed = uncompressedNavHeightRef.current || 110;
-    const compressed = compressedNavHeightRef.current || 48;
-    return Math.round(Math.max(0, uncompressed - compressed) / 32) * 32 || 64;
-  }, []);
-
-  const snappedNavDiff = getSnappedNavDiff();
   const baseExtra = heroHeight > 0 && windowHeight > 0 ? Math.max(0, heroHeight - windowHeight) : 0;
   const needsHeroScroll = isMobile && baseExtra > 0;
-  const effectiveHeroHeight = heroHeight + (needsHeroScroll ? snappedNavDiff : 0);
+  const effectiveHeroHeight = heroHeight + (needsHeroScroll ? baseExtra : 0);
 
   useEffect(() => {
     if (!heroContainerRef.current) return;
     const updateHeight = () => {
       if (heroContainerRef.current) {
         const rawHeight = heroContainerRef.current.offsetHeight;
-        if (rawHeight > 0) {
-          const snappedHeight = Math.ceil(Math.max(512, rawHeight) / 32) * 32;
+        const curWindowHeight = window.innerHeight || 800;
+        // Hero section occupies the whole screen vertically (at least 100vh)
+        const targetHeight = Math.max(curWindowHeight, rawHeight);
+        if (targetHeight > 0) {
+          const snappedHeight = Math.ceil(targetHeight / 32) * 32;
           setHeroHeight(snappedHeight);
         }
       }
@@ -387,7 +452,11 @@ export default function App() {
     updateHeight();
     const ro = new ResizeObserver(updateHeight);
     ro.observe(heroContainerRef.current);
-    return () => ro.disconnect();
+    window.addEventListener("resize", updateHeight);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", updateHeight);
+    };
   }, []);
 
   useEffect(() => {
@@ -396,36 +465,72 @@ export default function App() {
     const updateScrollLogic = () => {
       const scrollY = window.scrollY || window.pageYOffset || 0;
       const currentWindowHeight = window.innerHeight;
-      const navSnappedDiff = getSnappedNavDiff();
+
+      // Show navbar and scrollbar only after user scrolls down from top of hero
+      const showNav = scrollY > 50;
+      setIsNavVisible(prev => (prev !== showNav ? showNav : prev));
+      if (typeof document !== 'undefined') {
+        document.documentElement.classList.toggle('hero-nav-hidden', !showNav);
+      }
 
       // Excess height when hero is taller than screen (2-stage scroll on mobile)
       const curBaseExtra = Math.max(0, heroHeight - currentWindowHeight);
       const needsScroll = isMobile && curBaseExtra > 0;
-      const extraScroll = needsScroll ? Math.max(0, curBaseExtra + navSnappedDiff) : Math.max(0, curBaseExtra);
-      const curEffectiveHeroHeight = heroHeight + (needsScroll ? navSnappedDiff : 0);
+      const curEffectiveHeroHeight = heroHeight + (needsScroll ? curBaseExtra : 0);
 
-      const compressThreshold = needsScroll
-        ? 24
-        : Math.max(0, heroHeight - (uncompressedNavHeightRef.current || 110));
+      const compressThreshold = isMobile ? 24 : Math.max(0, heroHeight - (uncompressedNavHeightRef.current || 110));
       setIsScrolled(scrollY >= compressThreshold);
+
+      // Active section detection for navigation bar
+      const navSections = ['experience', 'projects', 'publications', 'skills', 'contact'];
+      let currentNav = '';
+
+      if (scrollY >= heroHeight * 0.45) {
+        const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+        if (currentWindowHeight + scrollY >= scrollHeight - 70) {
+          currentNav = 'contact';
+        } else {
+          if (activeProjectDetail) {
+            const detailEl = document.getElementById(activeProjectDetail);
+            if (detailEl) {
+              const rect = detailEl.getBoundingClientRect();
+              if (rect.top <= currentWindowHeight * 0.45 && rect.bottom > 80) {
+                currentNav = 'projects';
+              }
+            }
+          }
+
+          if (!currentNav) {
+            const focusY = currentWindowHeight * 0.38;
+            for (let i = navSections.length - 1; i >= 0; i--) {
+              const id = navSections[i];
+              const el = document.getElementById(id);
+              if (el) {
+                const rect = el.getBoundingClientRect();
+                if (rect.top <= focusY) {
+                  currentNav = id;
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+      setActiveNavSection(prev => (prev !== currentNav ? currentNav : prev));
 
       if (!heroStageRef.current || !heroHeight) {
         ticking = false;
         return;
       }
 
-      if (needsScroll && scrollY < extraScroll) {
-        heroStageRef.current.style.position = 'absolute';
-        heroStageRef.current.style.top = '0px';
-        heroStageRef.current.style.transform = 'none';
-      } else {
-        heroStageRef.current.style.position = 'fixed';
-        heroStageRef.current.style.top = needsScroll ? `-${extraScroll}px` : '0px';
-        heroStageRef.current.style.transform = 'none';
-      }
+      // Smooth GPU-accelerated translation: hero stays position:fixed at top:0px, translating continuously without snapping
+      const currentOffset = needsScroll ? Math.min(scrollY, curBaseExtra) : 0;
+      heroStageRef.current.style.position = 'fixed';
+      heroStageRef.current.style.top = '0px';
+      heroStageRef.current.style.transform = currentOffset > 0 ? `translate3d(0, -${currentOffset}px, 0)` : 'none';
 
       if (heroCardRef.current) {
-        const stage2Scroll = Math.max(0, scrollY - extraScroll);
+        const stage2Scroll = Math.max(0, scrollY - curBaseExtra);
         const stage2Range = Math.max(1, currentWindowHeight * 0.55);
         const progress = Math.min(1, stage2Scroll / stage2Range);
         const opacity = 1 - progress;
@@ -473,8 +578,11 @@ export default function App() {
       if (window.lenis) {
         window.lenis.off('scroll', handleScroll);
       }
+      if (typeof document !== 'undefined') {
+        document.documentElement.classList.remove('hero-nav-hidden');
+      }
     };
-  }, [heroHeight, isMobile, windowHeight, getSnappedNavDiff]);
+  }, [heroHeight, isMobile, windowHeight, activeProjectDetail]);
 
   const updateNavHeight = useCallback(() => {
     if (navHeaderRef.current) {
@@ -753,22 +861,72 @@ export default function App() {
               Icons={Icons}
               onContactClick={() => scrollToEl('#contact')}
             />
+            <button
+              type="button"
+              className="hero-scroll-indicator"
+              onClick={() => scrollToEl('#experience')}
+              aria-label={lang === 'es' ? 'Desplazar hacia abajo' : 'Scroll down'}
+            >
+              <span className="scroll-indicator-text">{lang === 'es' ? 'Desplazar' : 'Scroll'}</span>
+              <svg
+                className="scroll-indicator-arrow"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
 
       {/* Navigation Bar */}
-      <header ref={navHeaderRef} className={`nav-header ${isMobile && isScrolled ? 'nav-compressed' : ''}`}>
+      <header
+        ref={navHeaderRef}
+        className={`nav-header ${!isNavVisible ? 'nav-hidden' : ''} ${isMobile && isScrolled ? 'nav-compressed' : ''}`}
+      >
         <div className="nav-content">
           <a href="#" className="nav-brand">
             {t.personalInfo.shortName}
           </a>
           <div className="nav-links-inner">
-            <a href="#experience" className="nav-link">{t.nav.experience}</a>
-            <a href="#projects" className="nav-link">{t.nav.projects}</a>
-            <a href="#publications" className="nav-link">{t.nav.publications}</a>
-            <a href="#skills" className="nav-link">{t.nav.skills}</a>
-            <a href="#contact" className="nav-link">{t.nav.contact}</a>
+            <a
+              href="#experience"
+              className={`nav-link ${activeNavSection === 'experience' ? 'is-active' : ''}`}
+            >
+              {t.nav.experience}
+            </a>
+            <a
+              href="#projects"
+              className={`nav-link ${activeNavSection === 'projects' ? 'is-active' : ''}`}
+            >
+              {t.nav.projects}
+            </a>
+            <a
+              href="#publications"
+              className={`nav-link ${activeNavSection === 'publications' ? 'is-active' : ''}`}
+            >
+              {t.nav.publications}
+            </a>
+            <a
+              href="#skills"
+              className={`nav-link ${activeNavSection === 'skills' ? 'is-active' : ''}`}
+            >
+              {t.nav.skills}
+            </a>
+            <a
+              href="#contact"
+              className={`nav-link ${activeNavSection === 'contact' ? 'is-active' : ''}`}
+            >
+              {t.nav.contact}
+            </a>
           </div>
           <div className="nav-actions">
             <RubberSegment
@@ -810,6 +968,7 @@ export default function App() {
       {/* Ruler Scroller */}
       <RulerScroller
         label="HERO"
+        visible={isNavVisible}
         heroHeight={effectiveHeroHeight}
         activeProjectDetail={activeProjectDetail}
         activeProjectAccent={
@@ -846,25 +1005,42 @@ export default function App() {
                 <div className="timeline-container">
                   <div className="timeline-track" />
                   <div className="timeline-items">
-                    {t.trajectory.map((item, idx) => (
-                      <motion.div
-                        key={idx}
-                        className="timeline-item"
-                        initial={{ opacity: 0, y: 16 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, amount: 0.15 }}
-                        transition={{ duration: 0.35, delay: idx * 0.08 }}
-                      >
-                        <div className="timeline-marker">
-                          <span className="timeline-dot" />
-                          <span className="timeline-connector" />
-                        </div>
-                        <div className="timeline-card">
-                          <div className="timeline-inner">
+                    {t.trajectory.map((item, idx) => {
+                      const itemLogos = item.logos || (item.logo ? [item.logo] : []);
+                      return (
+                        <motion.div
+                          key={idx}
+                          className="timeline-item"
+                          initial={{ opacity: 0, y: 16 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true, amount: 0.15 }}
+                          transition={{ duration: 0.35, delay: idx * 0.08 }}
+                        >
+                          <div className="timeline-marker">
+                            <span className="timeline-dot" />
+                            <span className="timeline-connector" />
+                          </div>
+                          <div className="timeline-card">
                             <div className="timeline-content">
                               <div className="timeline-header">
                                 <h3 className="timeline-role">{item.role}</h3>
-                                <span className="timeline-period">{item.period}</span>
+                                <div className="timeline-period-container">
+                                  <span className="timeline-period">{item.period}</span>
+                                  {itemLogos.length > 0 && (
+                                    <div className="timeline-period-logos" aria-hidden="true">
+                                      {itemLogos.map((logoPath, lIdx) => (
+                                        <img
+                                          key={lIdx}
+                                          src={assetUrl(logoPath)}
+                                          alt=""
+                                          loading="lazy"
+                                          decoding="async"
+                                          className={`timeline-inline-logo ${logoPath.includes('LogoUCLM') ? 'is-uclm' : ''} ${logoPath.includes('esi_logo') ? 'is-esi' : ''} ${logoPath.includes('VISILAB') ? 'is-visilab' : ''}`}
+                                        />
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                               {item.institution && (
                                 <p className="timeline-institution">
@@ -879,28 +1055,10 @@ export default function App() {
                               )}
                               {item.description && <p className="timeline-desc">{item.description}</p>}
                             </div>
-                            {item.logo && (() => {
-                              const logoImg = (
-                                <img
-                                  src={assetUrl(item.logo)}
-                                  alt={`${item.institution} logo`}
-                                  width={72}
-                                  height={72}
-                                  loading="lazy"
-                                  decoding="async"
-                                  className="timeline-logo"
-                                />
-                              );
-                              return item.link ? (
-                                <a href={item.link} target="_blank" rel="noreferrer" className="timeline-logo-link" style={{ display: 'flex' }}>
-                                  {logoImg}
-                                </a>
-                              ) : logoImg;
-                            })()}
                           </div>
-                        </div>
-                      </motion.div>
-                    ))}
+                        </motion.div>
+                      );
+                    })}
                   </div>
                 </div>
               </GridSnappedSection>
@@ -929,16 +1087,7 @@ export default function App() {
                     >
                       {proj.video && (
                         <div className="project-media">
-                          <video
-                            src={assetUrl(proj.video)}
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            preload="metadata"
-                            className="project-video"
-                            style={{ aspectRatio: '16 / 9' }}
-                          />
+                          <ProjectPreviewVideo src={assetUrl(proj.video)} />
                         </div>
                       )}
                       {proj.logo && (
@@ -1165,67 +1314,17 @@ export default function App() {
                 sectionAnimation={sectionAnimation}
               >
                 <div className="publications-list" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                  {t.publications && t.publications.map((pub, idx) => {
-                    const openPaper = () => {
-                      if (pub.link) window.open(pub.link, "_blank", "noopener,noreferrer");
-                    };
-
-                    return (
-                      <AnimatedCard
-                        key={idx}
-                        className="project-card publication-card"
-                        style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', cursor: 'pointer' }}
-                        delay={idx * 0.15}
-                        onClick={openPaper}
-                        onAuxClick={(e) => {
-                          if (e.button === 1) openPaper();
-                        }}
-                        tabIndex={0}
-                        role="link"
-                        aria-label={`${pub.title} - View Paper`}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            openPaper();
-                          }
-                        }}
-                      >
-                        <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                          <div style={{ flexGrow: 1 }}>
-                            <h3 className="project-title" style={{ margin: 0, color: 'var(--text-main)' }}>{pub.title}</h3>
-                            {pub.authors && (
-                              <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.55)', fontStyle: 'italic' }}>
-                                {pub.authors}
-                              </p>
-                            )}
-                          </div>
-                          {pub.logo && (
-                            <img
-                              src={assetUrl(pub.logo)}
-                              alt="Publication logo"
-                              width={64}
-                              height={42}
-                            loading="lazy"
-                            decoding="async"
-                            style={{ width: '64px', height: '42px', aspectRatio: '598.7 / 394.9', objectFit: 'contain', flexShrink: 0, filter: 'invert(1)', opacity: 0.8 }}
-                          />
-                        )}
-                      </div>
-                      <p className="project-desc" style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6' }}>
-                        <strong>Abstract:</strong> {pub.abstract}
-                      </p>
-                      {pub.images && pub.images.length > 0 && (
-                        <div
-                          style={{ marginTop: '16px' }}
-                          onClick={(e) => e.stopPropagation()}
-                          onAuxClick={(e) => e.stopPropagation()}
-                        >
-                          <ImageCarousel images={pub.images} base={base} />
-                        </div>
-                      )}
-                    </AnimatedCard>
-                    );
-                  })}
+                  {t.publications && t.publications.map((pub, idx) => (
+                    <PublicationCard
+                      key={pub.title || idx}
+                      pub={pub}
+                      idx={idx}
+                      lang={lang}
+                      assetUrl={assetUrl}
+                      base={base}
+                      Icons={Icons}
+                    />
+                  ))}
                 </div>
               </GridSnappedSection>
 
