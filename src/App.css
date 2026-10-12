@@ -5,25 +5,25 @@
 /* Shared Grid Canvas Background */
 .background-layer {
   background-color: #08080a;
-  background-image: 
+  background-image:
     linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
     radial-gradient(circle at 50% 0%, rgba(135, 95, 245, 0.035) 0%, transparent 60%),
     linear-gradient(180deg, #0a0a10 0%, #08080a 100%);
-  background-size: 
-    32px 32px, 
-    32px 32px, 
-    100% 100%, 
+  background-size:
+    32px 32px,
+    32px 32px,
+    100% 100%,
     100% 100%;
   background-position:
     calc(50% - 16px) 0,
     calc(50% - 16px) 0,
     center top,
     center top;
-  background-repeat: 
-    repeat, 
-    repeat, 
-    no-repeat, 
+  background-repeat:
+    repeat,
+    repeat,
+    no-repeat,
     no-repeat;
 }
 
@@ -154,10 +154,13 @@
 }
 
 @keyframes heroScrollBounce {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
     opacity: 0.4;
   }
+
   50% {
     transform: translateY(4px);
     opacity: 0.9;
@@ -180,17 +183,17 @@
   width: 100%;
   min-height: 100vh;
   background-color: #08080a;
-  background-image: 
+  background-image:
     linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
     radial-gradient(ellipse 90% 50% at 50% 0%, rgba(135, 95, 245, 0.035) 0%, transparent 60%),
     radial-gradient(circle at 85% 25%, rgba(120, 80, 235, 0.018) 0%, transparent 50%),
     linear-gradient(180deg, #0a0a10 0%, #08080a 40%, #060608 100%);
-  background-size: 
-    32px 32px, 
-    32px 32px, 
-    100% 1200px, 
-    100% 1400px, 
+  background-size:
+    32px 32px,
+    32px 32px,
+    100% 1200px,
+    100% 1400px,
     100% 100%;
   background-position:
     calc(50% - 16px) 0,
@@ -198,11 +201,11 @@
     center top,
     center top,
     center top;
-  background-repeat: 
-    repeat, 
-    repeat, 
-    no-repeat, 
-    no-repeat, 
+  background-repeat:
+    repeat,
+    repeat,
+    no-repeat,
+    no-repeat,
     no-repeat;
   display: flex;
   justify-content: center;
@@ -543,7 +546,7 @@
 }
 
 .section-label-track {
-  position: absolute;
+  position: sticky;
   top: 0;
   left: 0;
   width: 100%;
@@ -551,7 +554,8 @@
   padding-top: 48px;
   box-sizing: border-box;
   pointer-events: none;
-  z-index: 4;
+  z-index: 40;
+  transition: none !important;
 }
 
 .section-label {
@@ -583,10 +587,14 @@
     box-sizing: border-box !important;
     pointer-events: none !important;
     z-index: 20 !important;
+    transition: none !important;
   }
 
   .section-label {
-    top: 54px !important;
+    /* Directly tracks the active navbar height with an 8px offset */
+    top: calc(var(--active-nav-height, 54px) + 8px) !important;
+    transition: none !important;
+    /* No independent animation */
     position: sticky !important;
     margin: 0 auto !important;
     display: inline-flex !important;
@@ -972,9 +980,9 @@
   box-shadow: none;
   transform: translateX(10px);
   transition: max-width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.2s ease,
-              transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              margin-right 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.2s ease,
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    margin-right 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
 }
 
@@ -986,7 +994,8 @@
   opacity: 1;
   pointer-events: auto;
   transform: translateX(0);
-  margin-right: -1px; /* border-collapse with logo, zero air space */
+  margin-right: -1px;
+  /* border-collapse with logo, zero air space */
   border: none;
 }
 
@@ -1028,9 +1037,9 @@
   outline-offset: -3px;
   position: relative;
   transition: background-color 0.2s ease,
-              color 0.2s ease,
-              border-color 0.2s ease,
-              outline-color 0.2s ease;
+    color 0.2s ease,
+    border-color 0.2s ease,
+    outline-color 0.2s ease;
 }
 
 .project-seam-action-btn:last-child {
@@ -1038,7 +1047,8 @@
 }
 
 .project-seam-action-btn:not(:first-child) {
-  margin-left: -1px; /* border-collapse between buttons */
+  margin-left: -1px;
+  /* border-collapse between buttons */
 }
 
 .project-seam-action-btn svg {
@@ -1157,10 +1167,12 @@
   width: 64px;
   height: 64px;
   object-fit: contain;
-  border-radius: 0; /* straight corners matching grid elements */
+  border-radius: 0;
+  /* straight corners matching grid elements */
   background-color: var(--glass-card, #08120e);
   border: 1px solid var(--glass-border);
-  box-shadow: none; /* reduced glow, clean and minimalist */
+  box-shadow: none;
+  /* reduced glow, clean and minimalist */
   outline: 3px solid transparent;
   outline-offset: -3px;
   transition: outline-color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
@@ -1190,13 +1202,16 @@
   .project-seam-action-cluster {
     right: 16px;
   }
+
   .project-seam-expanded-buttons {
     height: 52px;
   }
+
   .project-card:hover:not(.side-buttons-suppressed) .project-seam-expanded-buttons,
   .project-card:not(.side-buttons-suppressed) .project-seam-action-cluster.is-expanded .project-seam-expanded-buttons {
     max-width: 220px;
   }
+
   .project-seam-action-btn {
     height: 100%;
     min-width: 76px;
@@ -1204,14 +1219,17 @@
     font-size: 0.78rem;
     gap: 6px;
   }
+
   .project-seam-action-btn svg {
     width: 13px;
     height: 13px;
   }
+
   .project-seam-logo-link,
   .project-seam-logo-container {
     height: 52px;
   }
+
   .project-seam-logo {
     width: 52px;
     height: 52px;
@@ -1627,6 +1645,7 @@
 
 /* Responsive adjustments */
 @media (max-width: 1088px) {
+
   .foreground-layer,
   .hero-foreground-container {
     border-left: none;
@@ -1851,7 +1870,6 @@
     font-size: 0.78rem;
     white-space: nowrap;
     padding: 5px 10px;
-    border-radius: 6px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
     color: var(--text-secondary);
@@ -1879,4 +1897,4 @@
     font-size: 0.95rem;
     min-height: 44px;
   }
-}
+}

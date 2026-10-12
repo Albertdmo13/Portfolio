@@ -39,6 +39,9 @@ function GridSnappedSection({
   label,
   isLast = false,
   sectionAnimation,
+  isMobile,
+  mobileMenuOpen,
+  onLabelClick,
   children
 }) {
   const contentRef = useRef(null);
@@ -51,7 +54,7 @@ function GridSnappedSection({
     const measure = () => {
       const h = el.offsetHeight;
       if (!h) return;
-      const minPadding = 80; // Minimum 80px total vertical breathing space (~40px top, ~40px bottom)
+      const minPadding = 80;
       const targetHeight = Math.ceil((h + minPadding) / 32) * 32;
       const extra = targetHeight - h;
       const top = Math.floor(extra / 2);
@@ -95,8 +98,54 @@ function GridSnappedSection({
       {isLast && <div className="section-divider-line" style={{ top: '100%' }} />}
       {label && (
         <div className="section-label-track">
-          <h2 className="section-label">
-            {label}
+          <h2
+            className={`section-label ${isMobile ? 'is-touchable' : ''}`}
+            onClick={isMobile ? onLabelClick : undefined}
+            role={isMobile ? "button" : undefined}
+            tabIndex={isMobile ? 0 : undefined}
+            aria-expanded={isMobile ? mobileMenuOpen : undefined}
+            onKeyDown={
+              isMobile
+                ? (e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onLabelClick?.();
+                  }
+                }
+                : undefined
+            }
+            style={{
+              cursor: isMobile ? 'pointer' : undefined,
+              userSelect: isMobile ? 'none' : undefined,
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: isMobile ? 'manipulation' : undefined,
+              display: isMobile ? 'inline-flex' : undefined,
+              alignItems: isMobile ? 'center' : undefined,
+              gap: isMobile ? '8px' : undefined
+            }}
+          >
+            <span>{label}</span>
+            {isMobile && (
+              <svg
+                className="section-label-arrow"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{
+                  transform: mobileMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.25s ease',
+                  flexShrink: 0
+                }}
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            )}
           </h2>
         </div>
       )}
@@ -117,7 +166,7 @@ const Icons = {
   Linkedin: () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-      <rect x="2" y="9" width="4" height="12" />
+      <rect x="2" width="4" height="12" y="9" />
       <circle cx="4" cy="4" r="2" />
     </svg>
   ),
@@ -234,7 +283,6 @@ const scrollToEl = (target, offset = -60, duration = 1.2) => {
   }
 };
 
-
 function ProjectPreviewVideo({ src }) {
   const videoRef = useRef(null);
 
@@ -251,7 +299,7 @@ function ProjectPreviewVideo({ src }) {
       if (p !== undefined) {
         p.catch(() => {
           const unlock = () => {
-            video.play().catch(() => {});
+            video.play().catch(() => { });
             window.removeEventListener('touchstart', unlock);
             window.removeEventListener('click', unlock);
           };
@@ -330,6 +378,10 @@ export default function App() {
 
   const base = import.meta.env.BASE_URL;
   const assetUrl = useCallback((path) => resolveAssetUrl(base, path), [base]);
+
+  const toggleMobileMenu = useCallback(() => {
+    setMobileMenuOpen((prev) => !prev);
+  }, []);
 
   const handleOpenProjectDetail = (projectId) => {
     setActiveProjectDetail(projectId);
@@ -425,7 +477,6 @@ export default function App() {
       } else if (heroContainerRef.current) {
         const rawHeight = heroContainerRef.current.offsetHeight;
         const curWindowHeight = window.innerHeight || 800;
-        // Hero section occupies the whole screen vertically (at least 100vh)
         const targetHeight = Math.max(curWindowHeight, rawHeight);
         if (targetHeight > 0) {
           const snappedHeight = Math.ceil(targetHeight / 32) * 32;
@@ -450,7 +501,6 @@ export default function App() {
       const scrollY = window.scrollY || window.pageYOffset || 0;
       const currentWindowHeight = window.innerHeight;
 
-      // Show navbar and scrollbar only after user scrolls down from top of hero
       const showNav = scrollY > 50;
       setIsNavVisible(prev => (prev !== showNav ? showNav : prev));
       if (typeof document !== 'undefined') {
@@ -462,7 +512,6 @@ export default function App() {
         : scrollY >= Math.max(0, heroHeight - (uncompressedNavHeightRef.current || 110));
       setIsScrolled(shouldCompress);
 
-      // Active section detection for navigation bar
       const navSections = ['experience', 'projects', 'publications', 'skills', 'contact'];
       let currentNav = '';
 
@@ -494,7 +543,6 @@ export default function App() {
         return;
       }
 
-      // Hero stage stays pinned to viewport without moving upwards, preventing background cropping
       heroStageRef.current.style.position = 'fixed';
       heroStageRef.current.style.top = '0px';
       heroStageRef.current.style.transform = 'none';
@@ -551,6 +599,7 @@ export default function App() {
     if (navHeaderRef.current) {
       const h = navHeaderRef.current.offsetHeight;
       if (h > 0) {
+        document.documentElement.style.setProperty('--active-nav-height', `${h}px`);
         if (isScrolled || navHeaderRef.current.classList.contains('nav-compressed')) {
           compressedNavHeightRef.current = h;
         } else {
@@ -559,6 +608,34 @@ export default function App() {
       }
     }
   }, [isScrolled]);
+
+  // Live frame-by-frame synchronization of the active navbar height for the sticky section tag
+  useEffect(() => {
+    const navEl = navHeaderRef.current;
+    if (!navEl) return;
+
+    const updateLiveHeight = () => {
+      const h = navEl.offsetHeight;
+      if (h > 0) {
+        document.documentElement.style.setProperty('--active-nav-height', `${h}px`);
+      }
+    };
+
+    updateLiveHeight();
+
+    let ro;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(updateLiveHeight);
+      ro.observe(navEl);
+    }
+
+    window.addEventListener('resize', updateLiveHeight);
+
+    return () => {
+      if (ro) ro.disconnect();
+      window.removeEventListener('resize', updateLiveHeight);
+    };
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -583,7 +660,6 @@ export default function App() {
     let cachedCards = null;
 
     const runMobileHover = () => {
-      // Only active on mobile viewports (<= 768px)
       if (window.innerWidth > 768) {
         if (activeCards.size > 0) {
           activeCards.forEach((card) => card.classList.remove('is-hovered'));
@@ -593,7 +669,6 @@ export default function App() {
         return;
       }
 
-      // Focal reading line: central region of mobile viewport (~48% of screen height)
       const focusY = window.innerHeight * 0.48;
       if (!cachedCards || cachedCards.length === 0) {
         cachedCards = document.querySelectorAll(
@@ -615,7 +690,6 @@ export default function App() {
         const card = targetCards[i];
         const rect = card.getBoundingClientRect();
 
-        // Card strictly encompasses the focal line
         if (rect.top <= focusY && rect.bottom >= focusY) {
           newActiveCards.add(card);
         } else if (rect.bottom > 80 && rect.top < window.innerHeight - 80) {
@@ -628,12 +702,10 @@ export default function App() {
         }
       }
 
-      // If between card boundaries or during quick scrolls, latch onto the closest clearly visible card
       if (newActiveCards.size === 0 && closestCard && minDistance < window.innerHeight * 0.35) {
         newActiveCards.add(closestCard);
       }
 
-      // Only perform DOM updates if the active set has changed
       let hasChanged = activeCards.size !== newActiveCards.size;
       if (!hasChanged) {
         for (const card of newActiveCards) {
@@ -909,36 +981,6 @@ export default function App() {
             </a>
           </div>
           <div className="nav-actions">
-            {isMobile && isScrolled && (
-              <button
-                type="button"
-                className="nav-mobile-toggle-btn"
-                onClick={() => setMobileMenuOpen((prev) => !prev)}
-                aria-label={mobileMenuOpen ? (lang === 'es' ? 'Cerrar navegación' : 'Close navigation') : (lang === 'es' ? 'Abrir navegación' : 'Open navigation')}
-                aria-expanded={mobileMenuOpen}
-              >
-                <span className="nav-mobile-toggle-label">
-                  {t.nav[activeNavSection] || (lang === 'es' ? 'Secciones' : 'Sections')}
-                </span>
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{
-                    transform: mobileMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.25s ease'
-                  }}
-                  aria-hidden="true"
-                >
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </button>
-            )}
             <RubberSegment
               items={[
                 { value: "en", label: "EN" },
@@ -984,14 +1026,12 @@ export default function App() {
 
       {/* Main Page Layout Layer */}
       <div className="background-layer">
-        {/* Spacer reserving the hero section's exact height in document flow */}
         <div
           className="hero-scroll-spacer"
           style={{ height: effectiveHeroHeight > 0 ? `${effectiveHeroHeight}px` : undefined }}
           aria-hidden="true"
         />
 
-        {/* Subsequent Content Layer that scrolls on top and occludes the fixed hero stage */}
         <div className="subsequent-content-layer">
           <div className="foreground-layer">
             <main className="main-content sections-main animate-in">
@@ -1000,6 +1040,9 @@ export default function App() {
                 id="experience"
                 label={t.sections.trajectory}
                 sectionAnimation={sectionAnimation}
+                isMobile={isMobile}
+                mobileMenuOpen={mobileMenuOpen}
+                onLabelClick={toggleMobileMenu}
               >
                 <div className="timeline-container">
                   <div className="timeline-track" />
@@ -1067,6 +1110,9 @@ export default function App() {
                 id="projects"
                 label={t.sections.projects}
                 sectionAnimation={sectionAnimation}
+                isMobile={isMobile}
+                mobileMenuOpen={mobileMenuOpen}
+                onLabelClick={toggleMobileMenu}
               >
                 <div className="projects-grid">
                   {t.projects.map((proj, idx) => (
@@ -1273,12 +1319,14 @@ export default function App() {
                 </div>
               </GridSnappedSection>
 
-
               {/* Publications Section */}
               <GridSnappedSection
                 id="publications"
                 label={t.sections.publications || "Publications"}
                 sectionAnimation={sectionAnimation}
+                isMobile={isMobile}
+                mobileMenuOpen={mobileMenuOpen}
+                onLabelClick={toggleMobileMenu}
               >
                 <div className="publications-list" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                   {t.publications && t.publications.map((pub, idx) => (
@@ -1300,6 +1348,9 @@ export default function App() {
                 id="skills"
                 label={t.sections.skills}
                 sectionAnimation={sectionAnimation}
+                isMobile={isMobile}
+                mobileMenuOpen={mobileMenuOpen}
+                onLabelClick={toggleMobileMenu}
               >
                 <div className="skills-grid">
                   {t.skillCategories.map((cat, idx) => (
@@ -1342,6 +1393,9 @@ export default function App() {
                 label={t.sections.contact}
                 isLast={true}
                 sectionAnimation={sectionAnimation}
+                isMobile={isMobile}
+                mobileMenuOpen={mobileMenuOpen}
+                onLabelClick={toggleMobileMenu}
               >
                 <div className="contact-card">
                   <h3 className="contact-card-title">{t.contact.title}</h3>
