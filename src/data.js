@@ -15,7 +15,7 @@ export const portfolioData = {
       },
     },
     roles: [
-      "Master's Student in Computer Engineering",
+      "Master's Student",
       "Software Developer",
       "Researcher at VISILAB",
       "Game Developer",
@@ -196,7 +196,7 @@ export const portfolioData = {
       },
     },
     roles: [
-      "Estudiante de Máster en Ing. Informática",
+      "Estudiante de Máster",
       "Desarrollador de Software",
       "Investigador en VISILAB",
       "Desarrollador de Videojuegos",

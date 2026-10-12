@@ -569,25 +569,24 @@
 
 @media (max-width: 860px) {
   .section-label-track {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: flex-start !important;
+    display: block !important;
+    text-align: center !important;
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
     height: 100% !important;
-    padding-top: 28px !important;
+    padding-top: 8px !important;
     box-sizing: border-box !important;
-    text-align: center !important;
     pointer-events: none !important;
     z-index: 20 !important;
   }
 
   .section-label {
-    top: 64px !important;
-    margin: 0 !important;
+    top: 54px !important;
+    position: sticky !important;
+    margin: 0 auto !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -1743,6 +1742,24 @@
 
   .nav-header {
     padding: 10px 0 !important;
+    transition: padding 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  }
+
+  .nav-header.nav-compressed {
+    padding: 7px 0 !important;
+  }
+
+  .nav-header.nav-compressed .nav-content {
+    row-gap: 0 !important;
+  }
+
+  .nav-header.nav-compressed .nav-links-inner {
+    max-height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    padding-bottom: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
   }
 
   .nav-content {
@@ -1754,6 +1771,7 @@
     row-gap: 8px;
     align-items: center;
     padding: 0 16px;
+    transition: row-gap 0.3s ease;
   }
 
   .nav-brand {
@@ -1777,6 +1795,9 @@
     margin: 0;
     gap: 6px;
     padding-bottom: 2px;
+    max-height: 80px;
+    opacity: 1;
+    transition: max-height 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, margin 0.3s ease, padding 0.3s ease;
   }
 
   .nav-links-inner::-webkit-scrollbar {

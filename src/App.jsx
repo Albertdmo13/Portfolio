@@ -478,8 +478,20 @@ export default function App() {
       const needsScroll = isMobile && curBaseExtra > 0;
       const curEffectiveHeroHeight = heroHeight + (needsScroll ? curBaseExtra : 0);
 
-      const compressThreshold = isMobile ? 24 : Math.max(0, heroHeight - (uncompressedNavHeightRef.current || 110));
-      setIsScrolled(scrollY >= compressThreshold);
+      let shouldCompress = false;
+      if (isMobile) {
+        const expEl = document.getElementById('experience');
+        if (expEl) {
+          const rect = expEl.getBoundingClientRect();
+          shouldCompress = rect.top <= 100;
+        } else {
+          shouldCompress = scrollY >= Math.max(0, curEffectiveHeroHeight - 80);
+        }
+      } else {
+        const compressThreshold = Math.max(0, heroHeight - (uncompressedNavHeightRef.current || 110));
+        shouldCompress = scrollY >= compressThreshold;
+      }
+      setIsScrolled(shouldCompress);
 
       // Active section detection for navigation bar
       const navSections = ['experience', 'projects', 'publications', 'skills', 'contact'];
