@@ -234,32 +234,6 @@ const scrollToEl = (target, offset = -60, duration = 1.2) => {
   }
 };
 
-// Polished variants for project detail showcase
-const projectDetailVariants = {
-  initial: {
-    opacity: 0,
-    height: 0,
-    overflow: "hidden",
-  },
-  animate: {
-    opacity: 1,
-    height: "auto",
-    transition: {
-      height: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
-      opacity: { duration: 0.35, ease: "easeOut" },
-    },
-    transitionEnd: { overflow: "visible" },
-  },
-  exit: {
-    opacity: 0,
-    height: 0,
-    overflow: "hidden",
-    transition: {
-      opacity: { duration: 0.22, ease: "easeOut" },
-      height: { duration: 0.65, ease: [0.4, 0, 0.2, 1] },
-    },
-  },
-};
 
 function ProjectPreviewVideo({ src }) {
   const videoRef = useRef(null);
@@ -340,6 +314,7 @@ export default function App() {
   const [loaderStatus, setLoaderStatus] = useState("working");
   const [accentColor, setAccentColor] = useState("#60a5fa");
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isNavVisible, setIsNavVisible] = useState(false);
   const [activeNavSection, setActiveNavSection] = useState("");
   const [isMobile, setIsMobile] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 768 : false));
@@ -358,28 +333,36 @@ export default function App() {
 
   const handleOpenProjectDetail = (projectId) => {
     setActiveProjectDetail(projectId);
-    setTimeout(() => {
-      scrollToEl(document.getElementById(`${projectId}-section`) || document.getElementById(projectId));
-    }, 120);
   };
 
   const handleCloseProjectDetail = useCallback(() => {
-    const currentId = activeProjectDetail;
-    const targetEl = (currentId ? document.getElementById(`project-card-${currentId}`) : null) || document.getElementById("projects");
-
-    if (targetEl) {
-      const rect = targetEl.getBoundingClientRect();
-      if (rect.top < 60 || rect.bottom < 120) {
-        scrollToEl(targetEl, -70, 0.7);
-      }
-    }
-
     if (window.location.hash.toLowerCase().includes("flowdip")) {
       history.replaceState(null, "", window.location.pathname + window.location.search);
     }
 
     setActiveProjectDetail(null);
     setSuppressedSideButtonsProject(null);
+  }, []);
+
+  // Lock body scroll and pause smooth scroll while detail overlay is active
+  useEffect(() => {
+    if (activeProjectDetail) {
+      if (window.lenis) {
+        window.lenis.stop();
+      }
+      document.body.style.overflow = "hidden";
+    } else {
+      if (window.lenis) {
+        window.lenis.start();
+      }
+      document.body.style.overflow = "";
+    }
+    return () => {
+      if (window.lenis) {
+        window.lenis.start();
+      }
+      document.body.style.overflow = "";
+    };
   }, [activeProjectDetail]);
 
   // Close project detail smoothly on Escape key press
@@ -414,9 +397,6 @@ export default function App() {
     const handleHashChange = () => {
       if (window.location.hash.toLowerCase().includes("flowdip")) {
         setActiveProjectDetail("flowdip");
-        setTimeout(() => {
-          scrollToEl(document.getElementById("flowdip-section") || document.getElementById("flowdip"));
-        }, 150);
       }
     };
 
@@ -431,14 +411,18 @@ export default function App() {
   const uncompressedNavHeightRef = useRef(110);
   const compressedNavHeightRef = useRef(48);
 
-  const baseExtra = heroHeight > 0 && windowHeight > 0 ? Math.max(0, heroHeight - windowHeight) : 0;
-  const needsHeroScroll = isMobile && baseExtra > 0;
-  const effectiveHeroHeight = heroHeight + (needsHeroScroll ? baseExtra : 0);
+  const effectiveHeroHeight = isMobile
+    ? (windowHeight || 800)
+    : (heroHeight > 0 ? heroHeight : (windowHeight || 800));
 
   useEffect(() => {
     if (!heroContainerRef.current) return;
     const updateHeight = () => {
-      if (heroContainerRef.current) {
+      const curWindowHeight = window.innerHeight || 800;
+      setWindowHeight(curWindowHeight);
+      if (window.innerWidth <= 768) {
+        setHeroHeight(curWindowHeight);
+      } else if (heroContainerRef.current) {
         const rawHeight = heroContainerRef.current.offsetHeight;
         const curWindowHeight = window.innerHeight || 800;
         // Hero section occupies the whole screen vertically (at least 100vh)
@@ -473,45 +457,20 @@ export default function App() {
         document.documentElement.classList.toggle('hero-nav-hidden', !showNav);
       }
 
-      // Excess height when hero is taller than screen (2-stage scroll on mobile)
-      const curBaseExtra = Math.max(0, heroHeight - currentWindowHeight);
-      const needsScroll = isMobile && curBaseExtra > 0;
-      const curEffectiveHeroHeight = heroHeight + (needsScroll ? curBaseExtra : 0);
-
-      let shouldCompress = false;
-      if (isMobile) {
-        const expEl = document.getElementById('experience');
-        if (expEl) {
-          const rect = expEl.getBoundingClientRect();
-          shouldCompress = rect.top <= 100;
-        } else {
-          shouldCompress = scrollY >= Math.max(0, curEffectiveHeroHeight - 80);
-        }
-      } else {
-        const compressThreshold = Math.max(0, heroHeight - (uncompressedNavHeightRef.current || 110));
-        shouldCompress = scrollY >= compressThreshold;
-      }
+      const shouldCompress = isMobile
+        ? scrollY >= Math.max(0, (heroHeight || currentWindowHeight) - 100)
+        : scrollY >= Math.max(0, heroHeight - (uncompressedNavHeightRef.current || 110));
       setIsScrolled(shouldCompress);
 
       // Active section detection for navigation bar
       const navSections = ['experience', 'projects', 'publications', 'skills', 'contact'];
       let currentNav = '';
 
-      if (scrollY >= heroHeight * 0.45) {
+      if (scrollY >= (heroHeight || currentWindowHeight) * 0.45) {
         const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
         if (currentWindowHeight + scrollY >= scrollHeight - 70) {
           currentNav = 'contact';
         } else {
-          if (activeProjectDetail) {
-            const detailEl = document.getElementById(activeProjectDetail);
-            if (detailEl) {
-              const rect = detailEl.getBoundingClientRect();
-              if (rect.top <= currentWindowHeight * 0.45 && rect.bottom > 80) {
-                currentNav = 'projects';
-              }
-            }
-          }
-
           if (!currentNav) {
             const focusY = currentWindowHeight * 0.38;
             for (let i = navSections.length - 1; i >= 0; i--) {
@@ -535,16 +494,14 @@ export default function App() {
         return;
       }
 
-      // Smooth GPU-accelerated translation: hero stays position:fixed at top:0px, translating continuously without snapping
-      const currentOffset = needsScroll ? Math.min(scrollY, curBaseExtra) : 0;
+      // Hero stage stays pinned to viewport without moving upwards, preventing background cropping
       heroStageRef.current.style.position = 'fixed';
       heroStageRef.current.style.top = '0px';
-      heroStageRef.current.style.transform = currentOffset > 0 ? `translate3d(0, -${currentOffset}px, 0)` : 'none';
+      heroStageRef.current.style.transform = 'none';
 
       if (heroCardRef.current) {
-        const stage2Scroll = Math.max(0, scrollY - curBaseExtra);
-        const stage2Range = Math.max(1, currentWindowHeight * 0.55);
-        const progress = Math.min(1, stage2Scroll / stage2Range);
+        const stage2Range = Math.max(1, currentWindowHeight * 0.5);
+        const progress = Math.min(1, scrollY / stage2Range);
         const opacity = 1 - progress;
 
         heroCardRef.current.style.opacity = opacity.toFixed(3);
@@ -558,7 +515,7 @@ export default function App() {
         }
       }
 
-      const occluded = scrollY >= curEffectiveHeroHeight;
+      const occluded = scrollY >= (isMobile ? currentWindowHeight : heroHeight);
       setIsHeroOccluded(prev => (prev !== occluded ? occluded : prev));
 
       if (occluded) {
@@ -579,17 +536,11 @@ export default function App() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleScroll);
-    if (window.lenis) {
-      window.lenis.on('scroll', handleScroll);
-    }
     updateScrollLogic();
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleScroll);
-      if (window.lenis) {
-        window.lenis.off('scroll', handleScroll);
-      }
       if (typeof document !== 'undefined') {
         document.documentElement.classList.remove('hero-nav-hidden');
       }
@@ -709,6 +660,7 @@ export default function App() {
       ticking = false;
     };
 
+    let lastHoverRun = 0;
     const updateMobileHover = () => {
       if (window.innerWidth > 768) {
         if (activeCards.size > 0) {
@@ -717,6 +669,9 @@ export default function App() {
         }
         return;
       }
+      const now = performance.now();
+      if (now - lastHoverRun < 90) return;
+      lastHoverRun = now;
       if (!ticking) {
         ticking = true;
         requestAnimationFrame(runMobileHover);
@@ -731,20 +686,13 @@ export default function App() {
     window.addEventListener('scroll', updateMobileHover, { passive: true });
     window.addEventListener('resize', handleResizeOrScroll);
 
-    if (window.lenis) {
-      window.lenis.on('scroll', updateMobileHover);
-    }
-
     updateMobileHover();
     const timer = setTimeout(updateMobileHover, 500);
 
     return () => {
       clearTimeout(timer);
       window.removeEventListener('scroll', updateMobileHover);
-      window.removeEventListener('resize', updateMobileHover);
-      if (window.lenis) {
-        window.lenis.off('scroll', updateMobileHover);
-      }
+      window.removeEventListener('resize', handleResizeOrScroll);
       activeCards.forEach((card) => card.classList.remove('is-hovered'));
     };
   }, []);
@@ -834,7 +782,6 @@ export default function App() {
         id="hero"
         className="hero-fixed-stage"
         ref={heroStageRef}
-        style={{ height: effectiveHeroHeight > 0 ? `${effectiveHeroHeight}px` : undefined }}
       >
         <div className="hero-background-grainient" aria-hidden="true">
           <Grainient
@@ -902,45 +849,96 @@ export default function App() {
       {/* Navigation Bar */}
       <header
         ref={navHeaderRef}
-        className={`nav-header ${!isNavVisible ? 'nav-hidden' : ''} ${isMobile && isScrolled ? 'nav-compressed' : ''}`}
+        className={`nav-header ${!isNavVisible ? 'nav-hidden' : ''} ${isMobile && isScrolled && !mobileMenuOpen ? 'nav-compressed' : ''}`}
       >
         <div className="nav-content">
-          <a href="#" className="nav-brand">
+          <a
+            href="#"
+            className="nav-brand"
+            onClick={() => {
+              if (isMobile) setMobileMenuOpen(false);
+            }}
+          >
             {t.personalInfo.shortName}
           </a>
           <div className="nav-links-inner">
             <a
               href="#experience"
               className={`nav-link ${activeNavSection === 'experience' ? 'is-active' : ''}`}
+              onClick={() => {
+                if (isMobile) setMobileMenuOpen(false);
+              }}
             >
               {t.nav.experience}
             </a>
             <a
               href="#projects"
               className={`nav-link ${activeNavSection === 'projects' ? 'is-active' : ''}`}
+              onClick={() => {
+                if (isMobile) setMobileMenuOpen(false);
+              }}
             >
               {t.nav.projects}
             </a>
             <a
               href="#publications"
               className={`nav-link ${activeNavSection === 'publications' ? 'is-active' : ''}`}
+              onClick={() => {
+                if (isMobile) setMobileMenuOpen(false);
+              }}
             >
               {t.nav.publications}
             </a>
             <a
               href="#skills"
               className={`nav-link ${activeNavSection === 'skills' ? 'is-active' : ''}`}
+              onClick={() => {
+                if (isMobile) setMobileMenuOpen(false);
+              }}
             >
               {t.nav.skills}
             </a>
             <a
               href="#contact"
               className={`nav-link ${activeNavSection === 'contact' ? 'is-active' : ''}`}
+              onClick={() => {
+                if (isMobile) setMobileMenuOpen(false);
+              }}
             >
               {t.nav.contact}
             </a>
           </div>
           <div className="nav-actions">
+            {isMobile && isScrolled && (
+              <button
+                type="button"
+                className="nav-mobile-toggle-btn"
+                onClick={() => setMobileMenuOpen((prev) => !prev)}
+                aria-label={mobileMenuOpen ? (lang === 'es' ? 'Cerrar navegación' : 'Close navigation') : (lang === 'es' ? 'Abrir navegación' : 'Open navigation')}
+                aria-expanded={mobileMenuOpen}
+              >
+                <span className="nav-mobile-toggle-label">
+                  {t.nav[activeNavSection] || (lang === 'es' ? 'Secciones' : 'Sections')}
+                </span>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{
+                    transform: mobileMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.25s ease'
+                  }}
+                  aria-hidden="true"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+            )}
             <RubberSegment
               items={[
                 { value: "en", label: "EN" },
@@ -982,17 +980,6 @@ export default function App() {
         label="HERO"
         visible={isNavVisible}
         heroHeight={effectiveHeroHeight}
-        activeProjectDetail={activeProjectDetail}
-        activeProjectAccent={
-          activeProjectDetail
-            ? t.projects.find((p) => p.id === activeProjectDetail)?.accentColor || "#2CC091"
-            : null
-        }
-        activeProjectTitle={
-          activeProjectDetail
-            ? t.projects.find((p) => p.id === activeProjectDetail)?.title || "FlowDiP"
-            : null
-        }
       />
 
       {/* Main Page Layout Layer */}
@@ -1286,38 +1273,6 @@ export default function App() {
                 </div>
               </GridSnappedSection>
 
-              {/* Slid Project Detail Section (FlowDiP) */}
-              <AnimatePresence
-                onExitComplete={() => {
-                  window.dispatchEvent(new Event('resize'));
-                  if (window.lenis) window.lenis.resize();
-                }}
-              >
-                {activeProjectDetail && (
-                  <motion.div
-                    id={`${activeProjectDetail}-section`}
-                    key={`project-detail-section-${activeProjectDetail}`}
-                    className="project-detail-motion-wrapper"
-                    variants={projectDetailVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    onAnimationComplete={() => {
-                      window.dispatchEvent(new Event('resize'));
-                      if (window.lenis) window.lenis.resize();
-                    }}
-                  >
-                    <ProjectDetailSection
-                      projectId={activeProjectDetail}
-                      project={t.projects.find((p) => p.id === activeProjectDetail)}
-                      onClose={handleCloseProjectDetail}
-                      lang={lang}
-                      Icons={Icons}
-                      getTechIconUrl={getTechIconUrl}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
 
               {/* Publications Section */}
               <GridSnappedSection
@@ -1427,6 +1382,20 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      {/* Project Detail Overlay Modal */}
+      <AnimatePresence>
+        {activeProjectDetail && (
+          <ProjectDetailSection
+            projectId={activeProjectDetail}
+            project={t.projects.find((p) => p.id === activeProjectDetail)}
+            onClose={handleCloseProjectDetail}
+            lang={lang}
+            Icons={Icons}
+            getTechIconUrl={getTechIconUrl}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

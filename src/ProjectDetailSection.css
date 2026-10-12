@@ -1,151 +1,40 @@
 /* ========================================================
-   Project Detail Showcase Section
+   Project Detail Showcase Overlay Modal
    Spacious, crystal glass aesthetic matching portfolio style
-   Page-wide background with vertical lines on top
+   Opens as an overlay lightbox with zero document flow layout shifts
    ======================================================== */
 
-.project-detail-section {
-  position: relative;
-  width: 100%;
-  box-sizing: border-box;
-  background: transparent;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.project-detail-section .section-divider-line {
-  left: 0;
-  width: 100%;
-  pointer-events: none;
-}
-
-/* Sticky section label / FlowDiP logo track positioned cleanly in left margin */
-.project-detail-section .section-label-track {
-  position: absolute;
-  top: 0;
-  left: 40px;
-  width: auto;
-  height: 100%;
-  padding-top: 48px;
-  box-sizing: border-box;
-  pointer-events: none;
-  z-index: 10;
-}
-
-.project-detail-section .section-label {
-  position: sticky;
-  top: 104px;
-  margin: 0;
-  margin-left: 0;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
-  pointer-events: auto;
-}
-
-/* Left margin sticky FlowDiP logo */
-.section-label--logo {
+.pds-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(6, 6, 8, 0.85);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   display: flex;
   align-items: center;
-  line-height: 1;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
-}
-
-.section-label-logo-img {
-  height: 104px;
-  min-height: 56px;
-  width: auto;
-  min-width: 160px;
-  max-width: 330px;
-  object-fit: contain;
-  display: block;
-  user-select: none;
-  filter: none;
-  transition: transform 0.2s ease;
-}
-
-@media (max-width: 1600px) {
-  .section-label-logo-img {
-    height: 80px;
-    max-width: 260px;
-  }
-}
-
-@media (max-width: 1440px) {
-  .section-label-logo-img {
-    height: 64px;
-    max-width: 205px;
-  }
-}
-
-@media (max-width: 1200px) {
-  .section-label-logo-img {
-    height: 50px;
-    max-width: 160px;
-  }
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+  justify-content: center;
+  padding: 32px 20px;
+  box-sizing: border-box;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
 }
 
-/* Page-wide background layer spanning 100vw to occlude background grid lines */
-.pds-page-background {
+/* Ambient background layer for particle / wave effects (FlowDiP FloatingLines) */
+.pds-overlay-ambient-bg {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #08080a;
-  z-index: 0;
+  inset: 0;
   pointer-events: none;
-  overflow: hidden;
-}
-
-/* Three.js FloatingLines container inside page-wide background (fully opaque) */
-.pds-page-background .floating-lines-container {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  opacity: 1; /* Fully opaque - not transparent! */
-  mix-blend-mode: normal;
   z-index: 0;
+  opacity: 0.45;
+  overflow: hidden;
 }
 
 .pds-floating-lines-fadein {
   width: 100%;
   height: 100%;
   position: absolute;
-  top: 0;
-  left: 0;
-  animation: pdsFadeIn 0.75s ease forwards;
+  inset: 0;
+  animation: pdsFadeIn 0.6s ease forwards;
 }
 
 @keyframes pdsFadeIn {
@@ -157,45 +46,25 @@
   }
 }
 
-/* Centered content frame aligning with portfolio 1088px grid (padding controlled dynamically by grid-snapping) */
-.pds-frame {
+/* Centered Crystal Glass Modal Dialog */
+.pds-overlay-dialog {
   position: relative;
-  z-index: 3;
+  z-index: 2;
   width: 100%;
-  max-width: 1088px;
-  margin: 0 auto;
-  padding-left: 40px;
-  padding-right: 40px;
-  box-sizing: border-box;
+  max-width: 1020px;
+  max-height: calc(100vh - 64px);
+  max-height: calc(100dvh - 64px);
+  background: rgba(14, 14, 18, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 30px 90px -15px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-}
-
-.pds-content-inner {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ========================================================
-   Unified Crystal Glass Showcase Card matching portfolio style
-   ======================================================== */
-.pds-card {
-  position: relative;
-  width: 100%;
-  background: var(--glass-card);
-  border: 1px solid var(--glass-border);
-  border-radius: 0;
-  box-shadow: none;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: border-color 0.25s ease, background-color 0.25s ease;
 }
 
 /* Signature accent indicator bar matching .project-card::before */
-.pds-card::before {
+.pds-overlay-dialog::before {
   content: "";
   position: absolute;
   top: 0;
@@ -203,77 +72,128 @@
   right: 0;
   height: 3px;
   background: var(--project-accent, #2CC091);
-  opacity: 0.85;
-  z-index: 5;
+  opacity: 0.9;
+  z-index: 10;
   pointer-events: none;
 }
 
 /* --------------------------------------------------------
-   Top Control Bar - Integrated Card Header
+   Top Control Bar - Integrated Modal Header
    -------------------------------------------------------- */
 .pds-top-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 14px 24px;
-  background: rgba(0, 0, 0, 0.25);
-  border-bottom: 1px solid var(--glass-border);
-  border-radius: 0;
+  padding: 14px 22px;
+  background: rgba(20, 20, 26, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .pds-top-bar-left {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
 }
 
 .pds-accent-pip {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--project-accent, #2CC091);
   flex-shrink: 0;
+  box-shadow: 0 0 8px var(--project-accent, #2CC091);
+}
+
+.pds-header-logo-img {
+  height: 28px;
+  width: auto;
+  max-width: 220px;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  filter: none;
 }
 
 .pds-top-title {
   margin: 0;
-  font-size: 1.12rem;
+  font-size: 1.15rem;
   font-weight: 600;
-  color: var(--text-main);
+  color: #ffffff;
   letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pds-top-subtitle {
   font-size: 0.84rem;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pds-top-bar-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.pds-header-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.pds-header-action-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+}
+
+.pds-header-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--project-accent, #2CC091);
+  color: var(--project-accent, #2CC091);
 }
 
 .pds-control-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
+  padding: 6px 12px;
   font-family: inherit;
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  background: var(--glass-card);
-  border: 1px solid var(--glass-border);
-  color: var(--text-secondary);
-  border-radius: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: 4px;
   cursor: pointer;
   user-select: none;
   transition: all 0.2s ease;
-  box-shadow: none;
 }
 
 .pds-control-btn svg {
@@ -283,9 +203,35 @@
 }
 
 .pds-control-btn--close:hover {
-  background: #16161a;
+  background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.7);
   color: #ef4444;
+}
+
+/* --------------------------------------------------------
+   Scrollable Modal Content Body
+   -------------------------------------------------------- */
+.pds-modal-scroll-body {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.pds-modal-scroll-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pds-modal-scroll-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pds-modal-scroll-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
 }
 
 /* --------------------------------------------------------
@@ -295,7 +241,7 @@
   position: relative;
   width: 100%;
   background: #000000;
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   overflow: hidden;
 }
 
@@ -303,7 +249,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  max-height: 520px;
+  max-height: 480px;
   background: #000000;
   overflow: hidden;
   display: flex;
@@ -329,6 +275,7 @@
   border-radius: 50%;
   background: rgba(10, 10, 14, 0.72);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.25);
   display: flex;
   align-items: center;
@@ -343,7 +290,6 @@
   background: var(--project-accent, #2CC091);
   color: #000000;
   transform: translate(-50%, -50%) scale(1.08);
-  box-shadow: none;
 }
 
 .pds-video-play-triangle {
@@ -360,7 +306,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(to top, rgba(8, 8, 12, 0.92) 0%, rgba(8, 8, 12, 0.5) 65%, transparent 100%);
+  background: linear-gradient(to top, rgba(8, 8, 12, 0.94) 0%, rgba(8, 8, 12, 0.5) 65%, transparent 100%);
   padding: 16px 20px 12px;
   display: flex;
   flex-direction: column;
@@ -390,7 +336,6 @@
   height: 100%;
   border-radius: 2px;
   pointer-events: none;
-  box-shadow: none;
 }
 
 .pds-video-progress-thumb {
@@ -483,9 +428,9 @@
 .pds-carousel-wrapper {
   width: 100%;
   box-sizing: border-box;
-  background: rgba(0, 0, 0, 0.22);
-  border-bottom: 1px solid var(--glass-border);
-  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 10px;
 }
 
 /* --------------------------------------------------------
@@ -494,7 +439,7 @@
 .pds-description-block {
   padding: 24px 28px;
   background: rgba(255, 255, 255, 0.015);
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   box-sizing: border-box;
 }
 
@@ -502,12 +447,12 @@
   margin: 0;
   font-size: 0.98rem;
   line-height: 1.7;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.85);
   letter-spacing: 0.01em;
 }
 
 /* --------------------------------------------------------
-   4. Footer Block: Technologies & Buttons
+   4. Footer Block: Technologies & Action Buttons
    -------------------------------------------------------- */
 .pds-footer-block {
   display: flex;
@@ -515,12 +460,12 @@
   justify-content: space-between;
   gap: 20px;
   padding: 20px 28px;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.25);
   flex-wrap: wrap;
   box-sizing: border-box;
 }
 
-/* Tags Row (Matching .project-tag) */
+/* Tags Row */
 .pds-tags-row {
   display: flex;
   flex-wrap: wrap;
@@ -529,12 +474,12 @@
 }
 
 .pds-tag-pill {
-  font-size: 0.88rem;
-  padding: 6px 14px;
-  border-radius: 0;
-  background: var(--glass-pill);
-  border: 1px solid var(--glass-border);
-  color: var(--text-muted);
+  font-size: 0.84rem;
+  padding: 5px 12px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.65);
   transition: border-color 0.2s ease, color 0.2s ease;
   display: inline-flex;
   align-items: center;
@@ -543,8 +488,8 @@
 }
 
 .pds-tag-pill:hover {
-  border-color: color-mix(in srgb, var(--project-accent, var(--accent-color)) 40%, var(--glass-border));
-  color: var(--text-main);
+  border-color: color-mix(in srgb, var(--project-accent, var(--accent-color)) 40%, rgba(255, 255, 255, 0.2));
+  color: #ffffff;
 }
 
 /* Action Buttons Row */
@@ -560,20 +505,19 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 9px 18px;
   font-family: inherit;
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  border-radius: 0;
+  border-radius: 4px;
   cursor: pointer;
   text-decoration: none;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-card);
-  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.85);
   transition: all 0.2s ease;
-  box-shadow: none;
 }
 
 .pds-action-btn svg {
@@ -584,13 +528,13 @@
 }
 
 .pds-action-btn:hover {
-  background: var(--glass-card-hover);
-  border-color: var(--glass-border-hover);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
   color: #ffffff;
 }
 
 .pds-action-btn--primary {
-  background: var(--glass-card);
+  background: rgba(255, 255, 255, 0.04);
   border-color: var(--project-accent, #2CC091);
   color: var(--project-accent, #2CC091);
 }
@@ -604,8 +548,6 @@
   background: var(--project-accent, #2CC091) !important;
   color: #000000 !important;
   font-weight: 700 !important;
-  outline: 3px solid var(--project-accent, #2CC091);
-  outline-offset: -3px;
 }
 
 .pds-action-btn--primary:hover svg {
@@ -617,78 +559,45 @@
    Responsive
    -------------------------------------------------------- */
 @media (max-width: 860px) {
-  .project-detail-section .section-label-track {
-    display: block !important;
-    text-align: center !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    padding-top: 8px !important;
-    box-sizing: border-box !important;
-    pointer-events: none !important;
-    z-index: 20 !important;
+  .pds-overlay-backdrop {
+    padding: 12px;
   }
 
-  .project-detail-section .section-label {
-    top: 54px !important;
-    position: sticky !important;
-    margin: 0 auto !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border-radius: 0 !important;
-    padding: 0 !important;
-  }
-
-  .section-label--logo {
-    padding: 0 !important;
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border: none !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-  }
-
-  .project-detail-section .section-label-logo-img {
-    height: 48px !important;
-    min-height: 48px !important;
-    width: auto !important;
-    min-width: 140px !important;
-    max-width: 220px !important;
-    filter: none !important;
-  }
-
-  .pds-frame {
-    padding-left: 20px;
-    padding-right: 20px;
+  .pds-overlay-dialog {
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
   }
 
   .pds-top-bar {
-    padding: 12px 18px;
+    padding: 12px 14px;
+  }
+
+  .pds-header-logo-img {
+    height: 22px;
+    max-width: 160px;
+  }
+
+  .pds-top-subtitle {
+    display: none;
   }
 
   .pds-video-player-container {
-    max-height: 280px;
+    max-height: 260px;
   }
 
   .pds-description-block {
-    padding: 18px 20px;
+    padding: 16px 18px;
+  }
+
+  .pds-description-text {
+    font-size: 0.92rem;
   }
 
   .pds-footer-block {
     flex-direction: column;
     align-items: stretch;
-    gap: 16px;
-    padding: 16px 20px;
+    gap: 14px;
+    padding: 16px 18px;
   }
 
   .pds-actions-row {
@@ -701,4 +610,3 @@
     justify-content: center;
   }
 }
-

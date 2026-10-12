@@ -251,32 +251,81 @@
 /* Mobile Responsive */
 @media (max-width: 680px) {
   .business-card {
-    padding: 38px 22px;
-    gap: 24px;
+    padding: 24px 18px;
+    gap: 16px;
   }
   .card-top-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .card-chip {
+    gap: 10px;
+  }
+  .card-chip-emblem {
+    width: 34px;
+    height: 34px;
+  }
+  .card-chip-logo {
+    width: 20px;
+    height: 20px;
+  }
+  .card-chip-id {
+    font-size: 0.78rem;
+  }
+  .card-chip-sub {
+    font-size: 0.64rem;
+  }
+  .status-badge {
+    padding: 4px 10px;
+    font-size: 0.72rem;
+  }
+  .card-body {
+    gap: 12px;
+  }
+  .hero-title {
+    font-size: 1.85rem;
+    line-height: 1.15;
+  }
+  .hero-role {
+    font-size: 0.95rem;
+    min-height: 1.5rem;
+  }
+  .hero-bio {
+    font-size: 0.88rem;
+    line-height: 1.55;
   }
   .card-footer-row {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
+    align-items: stretch;
+    gap: 12px;
+    padding-top: 14px;
   }
   .card-actions-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     width: 100%;
   }
   .card-actions-left > * {
     width: 100%;
     justify-content: center;
   }
+  .card-actions-right {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+  }
   .card-corner-watermark {
     display: none;
   }
   .card-watermark-emblem {
-    right: -30px;
-    height: 85%;
-    max-height: 320px;
+    right: -24px;
+    height: 80%;
+    max-height: 260px;
   }
 }
+

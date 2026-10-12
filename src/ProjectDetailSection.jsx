@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
 import FloatingLines from "./FloatingLines";
 import ImageCarousel from "./ImageCarousel";
 import "./ProjectDetailSection.css";
@@ -98,10 +99,9 @@ function ProjectVideoPlayer({ videoSrc, accent }) {
         onClick={toggleVideoPlay}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
       />
 
+      {/* Center play button overlay when paused */}
       {!isPlaying && (
         <button
           type="button"
@@ -109,16 +109,14 @@ function ProjectVideoPlayer({ videoSrc, accent }) {
           onClick={toggleVideoPlay}
           aria-label="Play video"
         >
-          <span className="pds-video-play-triangle" />
+          <div className="pds-video-play-triangle" />
         </button>
       )}
 
+      {/* Video Controls Bar */}
       <div className="pds-video-controls-bar">
-        <div
-          className="pds-video-progress-track"
-          onClick={handleSeek}
-          title="Seek"
-        >
+        {/* Seek track */}
+        <div className="pds-video-progress-track" onClick={handleSeek}>
           <div
             className="pds-video-progress-fill"
             style={{
@@ -135,6 +133,7 @@ function ProjectVideoPlayer({ videoSrc, accent }) {
           />
         </div>
 
+        {/* Buttons row */}
         <div className="pds-video-controls-row">
           <div className="pds-video-controls-left">
             <button
@@ -142,16 +141,37 @@ function ProjectVideoPlayer({ videoSrc, accent }) {
               className="pds-video-btn"
               onClick={toggleVideoPlay}
               aria-label={isPlaying ? "Pause" : "Play"}
-              title={isPlaying ? "Pause" : "Play"}
             >
               {isPlaying ? (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                   <rect x="6" y="4" width="4" height="16" rx="1" />
                   <rect x="14" y="4" width="4" height="16" rx="1" />
                 </svg>
               ) : (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              )}
+            </button>
+
+            <button
+              type="button"
+              className="pds-video-btn"
+              onClick={toggleVideoMute}
+              aria-label={isMuted ? "Unmute" : "Mute"}
+            >
+              {isMuted ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                  <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6" />
+                  <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23" />
+                  <line x1="12" y1="19" x2="12" y2="23" />
+                  <line x1="8" y1="23" x2="16" y2="23" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
                 </svg>
               )}
             </button>
@@ -165,34 +185,14 @@ function ProjectVideoPlayer({ videoSrc, accent }) {
             <button
               type="button"
               className="pds-video-btn"
-              onClick={toggleVideoMute}
-              aria-label={isMuted ? "Unmute" : "Mute"}
-              title={isMuted ? "Unmute" : "Mute"}
-            >
-              {isMuted ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" />
-                  <line x1="23" y1="9" x2="17" y2="15" />
-                  <line x1="17" y1="9" x2="23" y2="15" />
-                </svg>
-              ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" />
-                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                </svg>
-              )}
-            </button>
-
-            <button
-              type="button"
-              className="pds-video-btn"
               onClick={toggleFullscreen}
-              aria-label="Toggle Fullscreen"
-              title="Fullscreen"
+              aria-label="Fullscreen"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 3 21 3 21 9" />
+                <polyline points="9 21 3 21 3 15" />
+                <line x1="21" y1="3" x2="14" y2="10" />
+                <line x1="3" y1="21" x2="10" y2="14" />
               </svg>
             </button>
           </div>
@@ -213,55 +213,28 @@ export default function ProjectDetailSection({
   const base = import.meta.env.BASE_URL;
   const accent = project?.accentColor || "#2CC091";
 
-  // Grid Snapping: Snap total section height strictly to integer multiples of 32px
-  // ensuring zero coordinate disruption to any subsequent portfolio sections.
-  const contentRef = useRef(null);
-  const [padding, setPadding] = useState({ top: 48, bottom: 48, targetHeight: 0 });
-
-  // Deferred background state: allows instant 60fps opening slide without blocking on WebGL context/shader compilation
+  // Deferred background state: allows instant 60fps opening without blocking on WebGL context/shader compilation
   const [isBgActive, setIsBgActive] = useState(false);
 
   useEffect(() => {
-    // Delay mounting heavy Three.js canvas by 350ms until the opening slide animation is settled
     const timer = setTimeout(() => {
       setIsBgActive(true);
-    }, 350);
+    }, 250);
     return () => clearTimeout(timer);
   }, []);
 
+  // Close on Escape key press
   useEffect(() => {
-    if (!contentRef.current) return;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const measuredHeight = entry.contentRect.height;
-        if (measuredHeight <= 0) continue;
-        const basePadding = 96; // 48 top + 48 bottom
-        const totalHeight = measuredHeight + basePadding;
-        const targetHeight = Math.ceil(totalHeight / 32) * 32;
-        const extra = Math.max(0, targetHeight - totalHeight);
-        const topExtra = Math.floor(extra / 2);
-        const bottomExtra = extra - topExtra;
-        setPadding((prev) => {
-          if (
-            prev.top === 48 + topExtra &&
-            prev.bottom === 48 + bottomExtra &&
-            prev.targetHeight === targetHeight
-          ) {
-            return prev;
-          }
-          return {
-            top: 48 + topExtra,
-            bottom: 48 + bottomExtra,
-            targetHeight,
-          };
-        });
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose?.();
       }
-    });
-    observer.observe(contentRef.current);
-    return () => observer.disconnect();
-  }, []);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
-  // Unique background dispatcher per project (full 100vw, rendered only when visible)
+  // Unique background dispatcher per project
   const renderProjectBackground = () => {
     if (!isBgActive || projectId?.toLowerCase() !== "flowdip") return null;
     return (
@@ -279,7 +252,7 @@ export default function ProjectDetailSection({
           bloomSize={0}
           linesGradient={FLOWDIP_GRADIENT}
           mixBlendMode="normal"
-          backgroundColor="#08080a"
+          backgroundColor="transparent"
         />
       </div>
     );
@@ -295,178 +268,191 @@ export default function ProjectDetailSection({
   };
 
   return (
-    <section
-      id={projectId}
-      data-accent-color={accent}
-      data-section-name={project?.title || "FlowDiP"}
-      className="project-detail-section"
-      style={{
-        "--project-accent": accent,
-        height: padding.targetHeight ? `${padding.targetHeight}px` : undefined,
-        minHeight: padding.targetHeight ? `${padding.targetHeight}px` : undefined,
-        boxSizing: "border-box",
-      }}
+    <motion.div
+      className="pds-overlay-backdrop"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.22, ease: "easeOut" }}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
       aria-label={`${project?.title || "Project"} details`}
     >
-      {/* Top Section Divider Line matching portfolio 32px background grid */}
-      <div className="section-divider-line" style={{ top: 0 }} />
-
-      {/* Sticky section label on the left margin matching all other sections */}
-      <div className="section-label-track">
-        <h2
-          className={`section-label ${projectId?.toLowerCase() === "flowdip" ? "section-label--logo" : ""}`}
-        >
-          {projectId?.toLowerCase() === "flowdip" ? (
-            <>
-              <img
-                src={`${base}media/FlowDiP_wide.svg`}
-                alt="FlowDiP"
-                width="284"
-                height="96"
-                className="section-label-logo-img"
-              />
-              <span className="sr-only">FlowDiP</span>
-            </>
-          ) : (
-            project?.title || "FLOWDIP"
-          )}
-        </h2>
-      </div>
-
-      {/* Page-wide background replacing background grid lines exclusively on this section */}
-      <div className="pds-page-background" aria-hidden="true">
+      {/* Ambient background lines */}
+      <div className="pds-overlay-ambient-bg" aria-hidden="true">
         {renderProjectBackground()}
       </div>
 
-      {/* Main Content Card matching portfolio style with grid-snapped padding */}
-      <div
-        className="pds-frame"
-        style={{
-          paddingTop: `${padding.top}px`,
-          paddingBottom: `${padding.bottom}px`,
-        }}
+      <motion.div
+        className="pds-overlay-dialog"
+        initial={{ opacity: 0, scale: 0.94, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 10 }}
+        transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
+        onClick={(e) => e.stopPropagation()}
+        style={{ "--project-accent": accent }}
       >
-        <div ref={contentRef} className="pds-content-inner">
-          <div className="pds-card">
-            {/* Top Control Bar (Integrated Card Header) */}
-            <div className="pds-top-bar">
-              <div className="pds-top-bar-left">
-                <span
-                  className="pds-accent-pip"
-                  style={{ backgroundColor: accent }}
-                  aria-hidden="true"
-                />
-                <h3 className="pds-top-title">{project?.title || "Project Detail"}</h3>
-                <span className="pds-top-subtitle">{project?.subtitle || ""}</span>
-              </div>
+        {/* Top Control Bar (Integrated Card Header) */}
+        <div className="pds-top-bar">
+          <div className="pds-top-bar-left">
+            <span
+              className="pds-accent-pip"
+              style={{ backgroundColor: accent }}
+              aria-hidden="true"
+            />
+            {projectId?.toLowerCase() === "flowdip" ? (
+              <img
+                src={`${base}media/FlowDiP_wide.svg`}
+                alt="FlowDiP"
+                height="28"
+                className="pds-header-logo-img"
+              />
+            ) : (
+              <h3 className="pds-top-title">{project?.title || "Project Detail"}</h3>
+            )}
+            {project?.subtitle && (
+              <span className="pds-top-subtitle">{project.subtitle}</span>
+            )}
+          </div>
 
-              <div className="pds-top-bar-controls">
-                {onClose && (
-                  <button
-                    type="button"
-                    className="pds-control-btn pds-control-btn--close"
-                    onClick={onClose}
-                    title={tUI.close}
-                    aria-label={tUI.close}
+          <div className="pds-top-bar-controls">
+            {(project?.link || project?.liveAppUrl) && (
+              <a
+                href={project.liveAppUrl || project.link}
+                target="_blank"
+                rel="noreferrer"
+                className="pds-header-action-btn"
+                title={tUI.liveApp}
+              >
+                {Icons?.External && <Icons.External />}
+                <span>{tUI.liveApp}</span>
+              </a>
+            )}
+            {onClose && (
+              <button
+                type="button"
+                className="pds-control-btn pds-control-btn--close"
+                onClick={onClose}
+                title={tUI.close}
+                aria-label={tUI.close}
+              >
+                {Icons?.Close ? (
+                  <Icons.Close />
+                ) : (
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
                   >
-                    {Icons?.Close && <Icons.Close />}
-                    <span>{tUI.close}</span>
-                  </button>
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                 )}
-              </div>
-            </div>
+                <span>{tUI.close}</span>
+              </button>
+            )}
+          </div>
+        </div>
 
-            {/* 1. Wide Video Player on top */}
-            <div className="pds-video-wrapper">
-              {project?.video ? (
-                <ProjectVideoPlayer
-                  videoSrc={`${base}${project.video.replace(/^\/?(Portfolio\/)?/, "")}`}
-                  accent={accent}
-                />
-              ) : (
-                <div className="pds-video-placeholder">
-                  <span className="pds-slot-hint">{tUI.mediaPlaceholder}</span>
-                  <span className="pds-slot-subhint">{tUI.mediaFormat}</span>
-                </div>
-              )}
-            </div>
-
-            {/* 2. Carousel right below the video player */}
-            {project?.images && project.images.length > 0 && (
-              <div className="pds-carousel-wrapper">
-                <ImageCarousel
-                  images={project.images}
-                  base={base}
-                  accentColor={accent}
-                  altPrefix={`${project?.title || "Project"} preview`}
-                />
+        {/* Scrollable Modal Content */}
+        <div className="pds-modal-scroll-body">
+          {/* 1. Wide Video Player on top */}
+          <div className="pds-video-wrapper">
+            {project?.video ? (
+              <ProjectVideoPlayer
+                videoSrc={`${base}${project.video.replace(/^\/?(Portfolio\/)?/, "")}`}
+                accent={accent}
+              />
+            ) : (
+              <div className="pds-video-placeholder">
+                <span className="pds-slot-hint">{tUI.mediaPlaceholder}</span>
+                <span className="pds-slot-subhint">{tUI.mediaFormat}</span>
               </div>
             )}
+          </div>
 
-            {/* 3. Description below the carousel */}
-            <div className="pds-description-block">
-              <p className="pds-description-text">
-                {project?.description || tUI.descPlaceholder}
-              </p>
+          {/* 2. Carousel right below the video player */}
+          {project?.images && project.images.length > 0 && (
+            <div className="pds-carousel-wrapper">
+              <ImageCarousel
+                images={project.images}
+                base={base}
+                accentColor={accent}
+                altPrefix={`${project?.title || "Project"} preview`}
+              />
+            </div>
+          )}
+
+          {/* 3. Description below the carousel */}
+          <div className="pds-description-block">
+            <p className="pds-description-text">
+              {project?.description || tUI.descPlaceholder}
+            </p>
+          </div>
+
+          {/* 4. Technologies and Buttons below description */}
+          <div className="pds-footer-block">
+            {/* Technologies */}
+            <div className="pds-tags-row">
+              {project?.tags && project.tags.length > 0 ? (
+                project.tags.map((tag, i) => {
+                  const iconUrl = getTechIconUrl ? getTechIconUrl(tag) : null;
+                  return (
+                    <span key={i} className="pds-tag-pill">
+                      {iconUrl && (
+                        <img
+                          src={iconUrl}
+                          alt={tag}
+                          width={16}
+                          height={16}
+                          style={{ width: "16px", height: "16px", flexShrink: 0 }}
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      )}
+                      {tag}
+                    </span>
+                  );
+                })
+              ) : null}
             </div>
 
-            {/* 4. Technologies and Buttons below description */}
-            <div className="pds-footer-block">
-              {/* Technologies */}
-              <div className="pds-tags-row">
-                {project?.tags && project.tags.length > 0 ? (
-                  project.tags.map((tag, i) => {
-                    const iconUrl = getTechIconUrl ? getTechIconUrl(tag) : null;
-                    return (
-                      <span key={i} className="pds-tag-pill">
-                        {iconUrl && (
-                          <img
-                            src={iconUrl}
-                            alt={tag}
-                            width={16}
-                            height={16}
-                            style={{ width: "16px", height: "16px", flexShrink: 0 }}
-                            onError={(e) => {
-                              e.currentTarget.style.display = "none";
-                            }}
-                          />
-                        )}
-                        {tag}
-                      </span>
-                    );
-                  })
-                ) : null}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pds-actions-row">
-                {(project?.link || project?.liveAppUrl) && (
-                  <a
-                    href={project.liveAppUrl || project.link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="pds-action-btn pds-action-btn--primary"
-                  >
-                    {Icons?.External && <Icons.External />}
-                    <span>{tUI.liveApp}</span>
-                  </a>
-                )}
-                {project?.github && (
-                  <a
-                    href={project.github}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="pds-action-btn"
-                  >
-                    {Icons?.Github && <Icons.Github />}
-                    <span>{tUI.source}</span>
-                  </a>
-                )}
-              </div>
+            {/* Action Buttons */}
+            <div className="pds-actions-row">
+              {(project?.link || project?.liveAppUrl) && (
+                <a
+                  href={project.liveAppUrl || project.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="pds-action-btn pds-action-btn--primary"
+                >
+                  {Icons?.External && <Icons.External />}
+                  <span>{tUI.liveApp}</span>
+                </a>
+              )}
+              {project?.github && (
+                <a
+                  href={project.github}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="pds-action-btn"
+                >
+                  {Icons?.Github && <Icons.Github />}
+                  <span>{tUI.source}</span>
+                </a>
+              )}
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </motion.div>
+    </motion.div>
   );
 }

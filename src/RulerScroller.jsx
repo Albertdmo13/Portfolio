@@ -16,9 +16,6 @@ function ActivePercentText({ progress }) {
 const RulerScroller = ({
   label = "HERO",
   heroHeight = 0,
-  activeProjectDetail = null,
-  activeProjectAccent = null,
-  activeProjectTitle = null,
   visible = true
 }) => {
   const [activeSectionName, setActiveSectionName] = useState((label || "HERO").toUpperCase());
@@ -36,77 +33,38 @@ const RulerScroller = ({
 
   const activeTop = useTransform(smoothProgress, [0, 1], ["0%", "100%"]);
 
-  // Robust calculation of section coordinates (including project detail sections)
+  // Robust calculation of section coordinates
   const calculateSections = useCallback(() => {
     const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
     const totalScrollable = scrollHeight - window.innerHeight;
 
     if (totalScrollable <= 0) return;
 
-    // Query standard sections and project detail sections
-    const rawSections = Array.from(document.querySelectorAll('.section, .project-detail-section, .project-detail-motion-wrapper'));
+    // Query standard portfolio sections
+    const rawSections = Array.from(document.querySelectorAll('.section'));
     const heroName = (label || "HERO").toUpperCase();
-
-    // Deduplicate in case a wrapper contains the inner section
-    const uniqueSections = [];
-    const seenIds = new Set();
-
-    rawSections.forEach((sec) => {
-      const targetSec = sec.classList.contains('project-detail-motion-wrapper')
-        ? (sec.querySelector('.project-detail-section') || sec)
-        : sec;
-      const secId = targetSec.id || sec.id;
-      if (!secId || seenIds.has(secId)) return;
-
-      const isProject =
-        targetSec.classList.contains('project-detail-section') ||
-        targetSec.classList.contains('project-detail-motion-wrapper') ||
-        secId === activeProjectDetail;
-
-      // Only include a project detail section when it is actively open and visible
-      if (isProject) {
-        if (!activeProjectDetail || secId !== activeProjectDetail) return;
-        const h = targetSec.offsetHeight || targetSec.getBoundingClientRect().height;
-        if (h <= 0) return;
-      }
-
-      seenIds.add(secId);
-      uniqueSections.push(targetSec);
-    });
 
     // Top section is always the HERO starting at 0%
     const data = [
       { id: 'hero', name: heroName, percentage: 0, accentColor: null, isProject: false }
     ];
 
-    uniqueSections.forEach((sec) => {
+    rawSections.forEach((sec) => {
       const rect = sec.getBoundingClientRect();
       const absoluteTop = window.scrollY + rect.top;
 
       let percentage = (absoluteTop / totalScrollable) * 100;
       percentage = Math.max(0, Math.min(100, percentage));
 
-      const titleEl = sec.querySelector('.section-label') || sec.querySelector('.pds-top-title');
-      const isProject =
-        sec.classList.contains('project-detail-section') ||
-        sec.classList.contains('project-detail-motion-wrapper') ||
-        sec.id === activeProjectDetail;
-
-      let name = titleEl ? titleEl.textContent.trim() : sec.id;
-      if (isProject && activeProjectTitle) {
-        name = activeProjectTitle;
-      }
-
-      const accentColor = isProject
-        ? (activeProjectAccent || sec.dataset.accentColor || sec.style.getPropertyValue('--project-accent')?.trim() || '#2CC091')
-        : null;
+      const titleEl = sec.querySelector('.section-label');
+      const name = titleEl ? titleEl.textContent.trim() : sec.id;
 
       data.push({
         id: sec.id,
         name: name.toUpperCase(),
         percentage,
-        isProject,
-        accentColor
+        isProject: false,
+        accentColor: null
       });
     });
 
@@ -142,19 +100,18 @@ const RulerScroller = ({
           (p, i) =>
             p.id === data[i].id &&
             p.name === data[i].name &&
-            Math.abs(p.percentage - data[i].percentage) < 0.05 &&
-            p.accentColor === data[i].accentColor &&
-            p.isProject === data[i].isProject
+            Math.abs(p.percentage - data[i].percentage) < 0.05
         )
       ) {
         return prev;
       }
       return data;
     });
-  }, [label, activeProjectDetail, activeProjectAccent, activeProjectTitle]);
+  }, [label]);
 
   // Accurate Active Section Detection based on current scroll position
   const updateActiveSection = useCallback(() => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 1200) return;
     const scrollY = window.scrollY || window.pageYOffset || 0;
     const extraScroll = Math.max(0, heroHeight - window.innerHeight);
     const heroThreshold = heroHeight > 0
@@ -183,15 +140,7 @@ const RulerScroller = ({
 
     // Section at reading focus line (35% from viewport top)
     const focusY = window.innerHeight * 0.35;
-    const rawSections = Array.from(document.querySelectorAll('.section, .project-detail-section'))
-      .filter((sec) => {
-        if (sec.classList.contains('project-detail-section')) {
-          if (!activeProjectDetail || sec.id !== activeProjectDetail) return false;
-          const h = sec.offsetHeight || sec.getBoundingClientRect().height;
-          return h > 0;
-        }
-        return true;
-      });
+    const rawSections = Array.from(document.querySelectorAll('.section'));
     let currentActive = null;
 
     for (const sec of rawSections) {
@@ -217,25 +166,14 @@ const RulerScroller = ({
     }
 
     if (currentActive) {
-      const titleEl = currentActive.querySelector('.section-label') || currentActive.querySelector('.pds-top-title');
-      const isProject =
-        currentActive.classList.contains('project-detail-section') ||
-        currentActive.id === activeProjectDetail;
-
-      let name = titleEl ? titleEl.textContent.trim() : currentActive.id;
-      if (isProject && activeProjectTitle) {
-        name = activeProjectTitle;
-      }
-
+      const titleEl = currentActive.querySelector('.section-label');
+      const name = titleEl ? titleEl.textContent.trim() : currentActive.id;
       const nextName = name.toUpperCase();
-      const nextAccent = isProject
-        ? (activeProjectAccent || currentActive.dataset.accentColor || '#2CC091')
-        : null;
 
       setActiveSectionName((prev) => (prev !== nextName ? nextName : prev));
-      setActiveSectionAccent((prev) => (prev !== nextAccent ? nextAccent : prev));
+      setActiveSectionAccent(null);
     }
-  }, [label, heroHeight, activeProjectDetail, activeProjectAccent, activeProjectTitle]);
+  }, [label, heroHeight]);
 
   // Recalculate coordinates whenever layout changes or hero expands
   useEffect(() => {
@@ -293,10 +231,6 @@ const RulerScroller = ({
     window.addEventListener('resize', calculateSections);
     window.addEventListener('scroll', throttledUpdate, { passive: true });
 
-    if (window.lenis) {
-      window.lenis.on('scroll', throttledUpdate);
-    }
-
     // Listen to document font loading
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => {
@@ -315,9 +249,6 @@ const RulerScroller = ({
       resizeObserver.disconnect();
       window.removeEventListener('resize', calculateSections);
       window.removeEventListener('scroll', throttledUpdate);
-      if (window.lenis) {
-        window.lenis.off('scroll', throttledUpdate);
-      }
     };
   }, [calculateSections, updateActiveSection]);
 
