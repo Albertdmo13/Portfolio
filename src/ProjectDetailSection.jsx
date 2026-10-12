@@ -37,7 +37,7 @@ function ProjectVideoPlayer({ videoSrc, accent }) {
   const toggleVideoPlay = () => {
     if (!videoRef.current) return;
     if (videoRef.current.paused) {
-      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => { });
     } else {
       videoRef.current.pause();
       setIsPlaying(false);
@@ -249,7 +249,7 @@ export default function ProjectDetailSection({
           parallax={true}
           animationSpeed={0.8}
           lineIntensity={0.9}
-          bloomSize={0}
+          bloomSize={0.5}
           linesGradient={FLOWDIP_GRADIENT}
           mixBlendMode="normal"
           backgroundColor="transparent"

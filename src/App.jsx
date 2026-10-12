@@ -54,7 +54,7 @@ function GridSnappedSection({
     const measure = () => {
       const h = el.offsetHeight;
       if (!h) return;
-      const minPadding = 80;
+      const minPadding = 80; // Minimum 80px total vertical breathing space (~40px top, ~40px bottom)
       const targetHeight = Math.ceil((h + minPadding) / 32) * 32;
       const extra = targetHeight - h;
       const top = Math.floor(extra / 2);
@@ -86,6 +86,7 @@ function GridSnappedSection({
       id={id}
       className="section"
       style={{
+        position: 'relative',
         height: padding.targetHeight ? `${padding.targetHeight}px` : undefined,
         minHeight: padding.targetHeight ? `${padding.targetHeight}px` : undefined,
         paddingTop: `${padding.top}px`,
@@ -96,8 +97,23 @@ function GridSnappedSection({
     >
       <div className="section-divider-line" style={{ top: 0 }} />
       {isLast && <div className="section-divider-line" style={{ top: '100%' }} />}
+
+      {/* Label track is absolutely positioned and does not displace the content below */}
       {label && (
-        <div className="section-label-track">
+        <div
+          className="section-label-track"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+            zIndex: 40
+          }}
+        >
           <h2
             className={`section-label ${isMobile ? 'is-touchable' : ''}`}
             onClick={isMobile ? onLabelClick : undefined}
@@ -149,7 +165,17 @@ function GridSnappedSection({
           </h2>
         </div>
       )}
-      <div ref={contentRef} className="section-content-wrapper">
+
+      {/* Content wrapper strictly centered with equal top and bottom padding */}
+      <div
+        ref={contentRef}
+        className="section-content-wrapper"
+        style={{
+          position: 'relative',
+          width: '100%',
+          display: 'flow-root'
+        }}
+      >
         {children}
       </div>
     </motion.section>
@@ -609,7 +635,6 @@ export default function App() {
     }
   }, [isScrolled]);
 
-  // Live frame-by-frame synchronization of the active navbar height for the sticky section tag
   useEffect(() => {
     const navEl = navHeaderRef.current;
     if (!navEl) return;

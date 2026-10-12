@@ -59,13 +59,13 @@ uniform vec2 parallaxOffset;
 uniform vec3 lineGradient[8];
 uniform int lineGradientCount;
 uniform vec3 backgroundColor;
+uniform bool isTransparent;
 uniform bool lightMode;
 
 const vec3 BLACK = vec3(0.0);
 const vec3 PINK  = vec3(233.0, 71.0, 245.0) / 255.0;
 const vec3 BLUE  = vec3(47.0,  75.0, 162.0) / 255.0;
 
-// Optimized 2D rotation with single sin/cos evaluation
 mat2 rotate(float r) {
   float c = cos(r);
   float s = sin(r);
@@ -81,7 +81,6 @@ vec3 background_color(vec2 uv) {
   return col * 0.5;
 }
 
-// Unrolled constant-index gradient sampling for 100% GPU driver compatibility & rich colors
 vec3 sampleGradientStop(int idx) {
   if (idx <= 0) return lineGradient[0];
   if (idx == 1) return lineGradient[1];
@@ -117,21 +116,21 @@ vec3 getLineColor(float t, vec3 baseColor) {
   return mix(c1, c2, f);
 }
 
-// Optimized wave equation with precalculated bend delta and time constants
+// Wave equation with thicker core lines and soft, wide ambient bloom
 float wave(vec2 uv, float offset, float time, float x_movement, float bendDelta) {
   float amp = sin(offset + time * 0.2) * 0.3;
   float y   = sin(uv.x + offset + x_movement) * amp + bendDelta;
 
   float dist = abs(uv.y - y);
 
-  // Defined core line
-  float core = 0.016 / (dist * 14.0 + 0.008);
+  // Thicker core line (gentler falloff and wider base profile)
+  float core = 0.042 / (dist * 6.8 + 0.014);
 
-  // Atmospheric bloom halo
+  // Expanded atmospheric bloom that illuminates the surrounding backdrop
   float bloom = 0.0;
   if (bloomSize > 0.001) {
-    float bSize = clamp(bloomSize, 0.05, 2.5);
-    bloom = (0.013 * bSize) / (dist * (3.8 / bSize) + 0.022) * exp(-dist * (4.2 / bSize));
+    float bSize = max(bloomSize, 0.05);
+    bloom = (0.045 * bSize) / (dist * (1.9 / bSize) + 0.038) * exp(-dist * (1.7 / bSize));
   }
 
   return core + bloom;
@@ -151,7 +150,6 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
   float time = iTime * animationSpeed;
   float x_movement = time * 0.1;
 
-  // Hoist cursor radial falloff calculation once per fragment
   float bendDelta = 0.0;
   if (interactive && bendInfluence > 0.0001) {
     vec2 mouseUv = (2.0 * iMouse - iResolution.xy) / iResolution.y;
@@ -160,7 +158,6 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     bendDelta = (mouseUv.y - baseUv.y) * exp(-dot(d, d) * bendRadius) * bendStrength * bendInfluence;
   }
 
-  // Hoist logarithmic distance once per fragment
   float logDist = log(length(baseUv) + 1.0);
 
   if (enableBottom) {
@@ -179,7 +176,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         time,
         x_movement,
         bendDelta
-      ) * 0.35;
+      ) * 0.45;
     }
   }
 
@@ -199,7 +196,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         time,
         x_movement,
         bendDelta
-      );
+      ) * 1.15;
     }
   }
 
@@ -220,7 +217,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         time,
         x_movement,
         bendDelta
-      ) * 0.25;
+      ) * 0.35;
     }
   }
 
@@ -234,6 +231,11 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     chroma /= max(chromaPeak, 0.0001);
     vec3 ink = mix(chroma, clamp(chroma * 0.82, 0.0, 1.0), smoothstep(0.5, 1.0, coverage));
     fragColor = vec4(mix(vec3(1.0), ink, coverage * 0.94), 1.0);
+  } else if (isTransparent) {
+    vec3 finalRgb = col * lineIntensity;
+    float peak = max(finalRgb.r, max(finalRgb.g, finalRgb.b));
+    float alpha = smoothstep(0.0, 0.85, peak);
+    fragColor = vec4(finalRgb, alpha);
   } else {
     fragColor = vec4(backgroundColor + col * lineIntensity, 1.0);
   }
@@ -249,24 +251,28 @@ void main() {
 const MAX_GRADIENT_STOPS = 8;
 
 function hexToVec3(hex) {
+  if (!hex || hex === 'transparent' || hex === 'none') {
+    return new Vector3(0, 0, 0);
+  }
+
   let value = hex.trim();
 
   if (value.startsWith('#')) {
     value = value.slice(1);
   }
 
-  let r = 255;
-  let g = 255;
-  let b = 255;
+  let r = 0;
+  let g = 0;
+  let b = 0;
 
   if (value.length === 3) {
-    r = parseInt(value[0] + value[0], 16);
-    g = parseInt(value[1] + value[1], 16);
-    b = parseInt(value[2] + value[2], 16);
+    r = parseInt(value[0] + value[0], 16) || 0;
+    g = parseInt(value[1] + value[1], 16) || 0;
+    b = parseInt(value[2] + value[2], 16) || 0;
   } else if (value.length === 6) {
-    r = parseInt(value.slice(0, 2), 16);
-    g = parseInt(value.slice(2, 4), 16);
-    b = parseInt(value.slice(4, 6), 16);
+    r = parseInt(value.slice(0, 2), 16) || 0;
+    g = parseInt(value.slice(2, 4), 16) || 0;
+    b = parseInt(value.slice(4, 6), 16) || 0;
   }
 
   return new Vector3(r / 255, g / 255, b / 255);
@@ -298,7 +304,7 @@ export default function FloatingLines({
   mixBlendMode = 'normal',
   backgroundColor = '#08080a',
   lineIntensity = 1.0,
-  bloomSize = 0.7,
+  bloomSize = 1.2,
   lightMode = false,
   paused = false
 }) {
@@ -311,7 +317,7 @@ export default function FloatingLines({
   const currentParallaxRef = useRef(new Vector2(0, 0));
 
   const pausedRef = useRef(paused);
-  const loopControlRef = useRef({ start: () => {}, stop: () => {} });
+  const loopControlRef = useRef({ start: () => { }, stop: () => { } });
 
   useEffect(() => {
     pausedRef.current = paused;
@@ -325,8 +331,6 @@ export default function FloatingLines({
   const effectiveGradient =
     linesGradient ||
     (gradientStart ? [gradientStart, gradientMid, gradientEnd].filter(Boolean) : undefined);
-
-
 
   const getLineCount = waveType => {
     if (typeof lineCount === 'number') return lineCount;
@@ -364,6 +368,8 @@ export default function FloatingLines({
 
     let active = true;
 
+    const isTransparent = backgroundColor === 'transparent' || backgroundColor === 'none';
+
     const scene = new Scene();
 
     const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -371,12 +377,18 @@ export default function FloatingLines({
 
     const renderer = new WebGLRenderer({
       antialias: false,
-      alpha: false,
+      alpha: isTransparent,
       powerPreference: 'high-performance'
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
+    renderer.domElement.style.display = 'block';
+
+    if (isTransparent) {
+      renderer.setClearColor(0x000000, 0);
+    }
+
     container.appendChild(renderer.domElement);
 
     const uniforms = {
@@ -431,6 +443,7 @@ export default function FloatingLines({
       },
       lineGradientCount: { value: 0 },
       backgroundColor: { value: hexToVec3(backgroundColor) },
+      isTransparent: { value: isTransparent },
       lightMode: { value: lightMode }
     };
 
@@ -448,7 +461,7 @@ export default function FloatingLines({
       uniforms,
       vertexShader,
       fragmentShader,
-      transparent: false
+      transparent: isTransparent
     });
 
     const geometry = new PlaneGeometry(2, 2);
@@ -482,13 +495,13 @@ export default function FloatingLines({
     const ro =
       typeof ResizeObserver !== 'undefined'
         ? new ResizeObserver(() => {
-            if (!active) return;
-            if (resizeRaf) cancelAnimationFrame(resizeRaf);
-            resizeRaf = requestAnimationFrame(() => {
-              setSize();
-              if (isVisible && !pausedRef.current) startLoop();
-            });
-          })
+          if (!active) return;
+          if (resizeRaf) cancelAnimationFrame(resizeRaf);
+          resizeRaf = requestAnimationFrame(() => {
+            setSize();
+            if (isVisible && !pausedRef.current) startLoop();
+          });
+        })
         : null;
 
     if (ro) ro.observe(container);
@@ -526,7 +539,7 @@ export default function FloatingLines({
     const tick = () => {
       if (!active || !isVisible || pausedRef.current) {
         raf = 0;
-        return; // Halt RAF completely when off-screen or paused to save 100% GPU and CPU resources
+        return;
       }
 
       uniforms.iTime.value = clock.getElapsedTime();
@@ -569,28 +582,27 @@ export default function FloatingLines({
     const io =
       typeof IntersectionObserver !== 'undefined'
         ? new IntersectionObserver(
-            ([entry]) => {
-              if (!active) return;
-              isVisible = entry.isIntersecting;
-              if (isVisible) {
-                startLoop();
-              } else {
-                stopLoop();
-              }
-            },
-            { threshold: 0.001 }
-          )
+          ([entry]) => {
+            if (!active) return;
+            isVisible = entry.isIntersecting;
+            if (isVisible) {
+              startLoop();
+            } else {
+              stopLoop();
+            }
+          },
+          { threshold: 0.001 }
+        )
         : null;
 
     if (io) io.observe(container);
 
-    // Initial paint and loop initiation
     renderer.render(scene, camera);
     startLoop();
 
     return () => {
       active = false;
-      loopControlRef.current = { start: () => {}, stop: () => {} };
+      loopControlRef.current = { start: () => { }, stop: () => { } };
 
       stopLoop();
 
@@ -612,7 +624,6 @@ export default function FloatingLines({
         renderer.domElement.parentElement.removeChild(renderer.domElement);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     gradientKey,
     wavesKey,
